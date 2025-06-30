@@ -1,8 +1,8 @@
 # requirements.txt
-
-#Dependências do Sistema SOL Backend
-#Sistema Inteligente de Recomendação Musical para Apoio à Saúde Mental
-
+"""
+Dependências do Sistema SOL Backend
+Sistema Inteligente de Recomendação Musical para Apoio à Saúde Mental
+"""
 
 # Framework Web e API
 fastapi==0.104.1
@@ -35,13 +35,13 @@ pytest-cov==4.1.0
 structlog==23.2.0
 rich==13.7.0
 
-
+---
 
 # .env.example
-
-#Exemplo de Configuração do Sistema SOL
-#Copie para .env e ajuste os valores
-
+"""
+Exemplo de Configuração do Sistema SOL
+Copie para .env e ajuste os valores
+"""
 
 # Banco de Dados PostgreSQL
 DATABASE_URL="postgresql://sol_user:sol_password_123@localhost:5432/sol_db"
@@ -250,13 +250,13 @@ model UserFeedback {
   @@map("user_feedback")
 }
 
-
+---
 
 # app/config.py
-
-#Configurações do Sistema SOL
-#Centraliza todas as configurações da aplicação
-
+"""
+Configurações do Sistema SOL
+Centraliza todas as configurações da aplicação
+"""
 
 import os
 from typing import List
@@ -386,12 +386,13 @@ def validate_settings() -> None:
 if __name__ != "__main__":
     validate_settings()
 
+---
 
 # app/database.py
-
-#Configuração do Banco de Dados - Sistema SOL
-#Gerencia conexões com PostgreSQL usando Prisma
-
+"""
+Configuração do Banco de Dados - Sistema SOL
+Gerencia conexões com PostgreSQL usando Prisma
+"""
 
 import asyncio
 import logging
