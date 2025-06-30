@@ -34,3 +34,65 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+# ====================================
+
+# DOCKER
+
+# ====================================
+
+# Iniciar ambiente completo
+
+docker-compose up -d
+
+# Parar ambiente
+
+docker-compose down
+
+# Ver logs dos containers
+
+docker-compose logs -f
+
+# Reiniciar apenas o banco
+
+docker-compose restart postgres
+
+# ====================================
+
+# PRISMA
+
+# ====================================
+
+# Aplicar mudanças no schema
+
+npx prisma db push
+
+# Criar nova migração
+
+npx prisma migrate dev --name "nome-da-migração"
+
+# Visualizar banco
+
+npx prisma studio
+
+# Reset completo do banco (cuidado!)
+
+npx prisma migrate reset
+
+# ====================================
+
+# DESENVOLVIMENTO
+
+# ====================================
+
+# Iniciar servidor de desenvolvimento
+
+npm run dev
+
+# Build para produção
+
+npm run build
+
+# Verificar tipos TypeScript
+
+npx tsc --noEmit

@@ -1,0 +1,206 @@
+// Schema do banco de dados para o Sistema SOL
+// Este schema reflete a arquitetura de recomendação musical baseada em análise emocional
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ====================================
+// MODELOS DE USUÁRIO E AUTENTICAÇÃO
+// ====================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Configurações do usuário
+  isActive  Boolean  @default(true)
+  
+  // Relacionamentos
+  emotionalProfiles EmotionalProfile[]
+  playlists        Playlist[]
+  feedbacks        Feedback[]
+  preferences      UserPreference[]
+  
+  @@map("users")
+}
+
+// ====================================
+// MODELOS DE ANÁLISE EMOCIONAL
+// ====================================
+
+// Perfil emocional capturado do usuário em um momento específico
+model EmotionalProfile {
+  id          String   @id @default(cuid())
+  userId      String
+  
+  // Estados emocionais (escala 0-10)
+  anger       Float    @db.DoublePrecision // Raiva
+  fear        Float    @db.DoublePrecision // Medo
+  joy         Float    @db.DoublePrecision // Alegria
+  sadness     Float    @db.DoublePrecision // Tristeza
+  surprise    Float    @db.DoublePrecision // Surpresa
+  
+  // Contexto da captura
+  context     String?  // Ex: "manhã", "trabalho", "exercício"
+  timestamp   DateTime @default(now())
+  
+  // Relacionamentos
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("emotional_profiles")
+}
+
+// ====================================
+// MODELOS DE MÚSICA E CATÁLOGO
+// ====================================
+
+// Música com seus atributos emocionais e musicais
+model Music {
+  id            String  @id @default(cuid())
+  
+  // Metadados da música
+  spotifyId     String? @unique
+  name          String
+  artist        String
+  album         String?
+  duration      Int?    // Duração em milissegundos
+  genre         String
+  
+  // Atributos emocionais (análise BERT/GPT ou manual)
+  anger         Float   @db.DoublePrecision
+  fear          Float   @db.DoublePrecision
+  joy           Float   @db.DoublePrecision
+  sadness       Float   @db.DoublePrecision
+  surprise      Float   @db.DoublePrecision
+  
+  // Atributos musicais (Spotify Audio Features)
+  danceability  Float?  @db.DoublePrecision
+  energy        Float?  @db.DoublePrecision
+  valence       Float?  @db.DoublePrecision // Positividade musical
+  acousticness  Float?  @db.DoublePrecision
+  instrumentalness Float? @db.DoublePrecision
+  speechiness   Float?  @db.DoublePrecision
+  tempo         Float?  @db.DoublePrecision
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamentos
+  playlistMusics PlaylistMusic[]
+  
+  @@map("musics")
+}
+
+// ====================================
+// MODELOS DE RECOMENDAÇÃO E PLAYLIST
+// ====================================
+
+// Playlist gerada pelo sistema SOL
+model Playlist {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  
+  // Estado emocional alvo que gerou esta playlist
+  targetAnger    Float @db.DoublePrecision
+  targetFear     Float @db.DoublePrecision
+  targetJoy      Float @db.DoublePrecision
+  targetSadness  Float @db.DoublePrecision
+  targetSurprise Float @db.DoublePrecision
+  
+  // Metadados da recomendação
+  algorithm      String  // "fuzzy", "collaborative", "hybrid"
+  confidence     Float?  @db.DoublePrecision // Confiança da recomendação
+  
+  // Relacionamentos
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  musics         PlaylistMusic[]
+  feedbacks      Feedback[]
+  
+  @@map("playlists")
+}
+
+// Tabela de associação entre playlist e música (com ordem)
+model PlaylistMusic {
+  id         String   @id @default(cuid())
+  playlistId String
+  musicId    String
+  order      Int      // Ordem da música na playlist
+  
+  // Score de match emocional para esta música específica
+  emotionalScore Float? @db.DoublePrecision
+  
+  // Relacionamentos
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  music      Music    @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  
+  @@unique([playlistId, musicId])
+  @@map("playlist_musics")
+}
+
+// ====================================
+// MODELOS DE FEEDBACK E APRENDIZADO
+// ====================================
+
+// Feedback do usuário sobre playlist gerada
+model Feedback {
+  id                String   @id @default(cuid())
+  userId            String
+  playlistId        String
+  
+  // Avaliação da playlist
+  rating            Int      // 1-5 estrelas
+  helpful           Boolean? // A playlist foi útil?
+  emotionalChange   String?  // "melhorou", "piorou", "neutro"
+  comments          String?
+  
+  // Estado emocional APÓS ouvir a playlist
+  postAnger         Float?   @db.DoublePrecision
+  postFear          Float?   @db.DoublePrecision
+  postJoy           Float?   @db.DoublePrecision
+  postSadness       Float?   @db.DoublePrecision
+  postSurprise      Float?   @db.DoublePrecision
+  
+  createdAt         DateTime @default(now())
+  
+  // Relacionamentos
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlist          Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  
+  @@map("feedbacks")
+}
+
+// ====================================
+// MODELOS DE PREFERÊNCIAS DO USUÁRIO
+// ====================================
+
+// Preferências musicais do usuário
+model UserPreference {
+  id            String   @id @default(cuid())
+  userId        String
+  
+  // Preferências de gênero
+  genre         String
+  preference    Float    @db.DoublePrecision // 0-1 (0=não gosta, 1=adora)
+  
+  // Metadados
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamentos
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, genre])
+  @@map("user_preferences")
+}
