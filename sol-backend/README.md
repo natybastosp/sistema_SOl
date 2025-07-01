@@ -315,8 +315,8 @@ Este projeto está licenciado sob a [MIT License](LICENSE) - veja o arquivo LICE
 
 ## 👥 Autores
 
-- **Juliana Alves Pacheco** - _Desenvolvimento e Pesquisa_ - [GitHub](https://github.com/julianaalvesdf0)
-- **Natália Bastos Pereira** - _Desenvolvimento e Pesquisa_ - [GitHub](https://github.com/naty-bastosp)
+- **Juliana Alves Pacheco** - _Desenvolvimento e Pesquisa_ - [GitHub](https://github.com/Pacchecojuliana)
+- **Natália Bastos Pereira** - _Desenvolvimento e Pesquisa_ - [GitHub](https://github.com/natybastosp)
 
 ### Orientação Acadêmica
 
