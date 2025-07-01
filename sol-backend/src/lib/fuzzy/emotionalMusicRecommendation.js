@@ -267,18 +267,27 @@ class ImprovedFuzzyMusicRecommendationEngine {
     ];
   }
 
-  async generateRecommendations(emotionalState, userId, playlistSize = 15) {
+  async generateRecommendations(
+    emotionalState,
+    userId,
+    playlistSize = 15,
+    userPreferences = []
+  ) {
     console.log("🧠 Iniciando análise fuzzy aprimorada do estado emocional...");
+    console.log(`👤 Preferências: ${userPreferences.join(", ") || "Nenhuma"}`);
 
     const ruleActivations = this.fuzzifyEmotionalState(emotionalState);
-    const musicalStrategy = this.inferMusicalStrategy(ruleActivations);
+    const therapeuticStrategy = this.inferMusicalStrategy(ruleActivations);
 
-    // Busca em cascata inteligente - garantindo sempre resultados
+    const personalizedStrategy =
+      userPreferences.length > 0
+        ? this.balanceWithPreferences(therapeuticStrategy, userPreferences)
+        : therapeuticStrategy;
+
     const candidateMusics = await this.intelligentCascadeSearch(
-      musicalStrategy,
+      personalizedStrategy,
       playlistSize * 2
     );
-
     const finalPlaylist = this.selectOptimalPlaylist(
       candidateMusics,
       emotionalState,
@@ -286,13 +295,14 @@ class ImprovedFuzzyMusicRecommendationEngine {
     );
     const explanation = this.generateDetailedExplanation(
       ruleActivations,
-      musicalStrategy,
-      finalPlaylist
+      personalizedStrategy,
+      finalPlaylist,
+      userPreferences
     );
 
     return {
       playlist: finalPlaylist,
-      strategy: musicalStrategy,
+      strategy: personalizedStrategy,
       explanation: explanation,
       confidence: this.calculateConfidence(ruleActivations),
       searchMetrics: this.getSearchMetrics(),
@@ -587,6 +597,41 @@ class ImprovedFuzzyMusicRecommendationEngine {
     }));
 
     return [...existing, ...markedNew];
+  }
+
+  balanceWithPreferences(therapeuticStrategy, userPreferences) {
+    console.log("🎵 Balanceando com preferências do usuário...");
+
+    const balanced = { ...therapeuticStrategy };
+    balanced.genreWeights = new Map(therapeuticStrategy.genreWeights);
+
+    // Boost para gêneros que o usuário gosta E são terapêuticos
+    userPreferences.forEach((userGenre) => {
+      for (let [therapeuticGenre, weight] of therapeuticStrategy.genreWeights) {
+        // Se encontrar match (parcial ou total)
+        if (
+          therapeuticGenre.toLowerCase().includes(userGenre.toLowerCase()) ||
+          userGenre.toLowerCase().includes(therapeuticGenre.toLowerCase())
+        ) {
+          balanced.genreWeights.set(therapeuticGenre, weight * 1.5); // Boost 50%
+          console.log(
+            `   ✨ Boost para ${therapeuticGenre} (preferência: ${userGenre})`
+          );
+        }
+      }
+
+      // Adicionar a preferência diretamente se não estiver na lista terapêutica
+      if (
+        !Array.from(balanced.genreWeights.keys()).some((g) =>
+          g.toLowerCase().includes(userGenre.toLowerCase())
+        )
+      ) {
+        balanced.genreWeights.set(userGenre, 0.5); // Peso médio
+        console.log(`   ➕ Adicionado ${userGenre} por preferência`);
+      }
+    });
+
+    return balanced;
   }
 
   // Resto dos métodos mantidos do sistema anterior com melhorias
@@ -907,7 +952,12 @@ class ImprovedFuzzyMusicRecommendationEngine {
     return 1 - this.calculateEmotionalDistance(music, emotionalState);
   }
 
-  generateDetailedExplanation(ruleActivations, strategy, playlist) {
+  generateDetailedExplanation(
+    ruleActivations,
+    strategy,
+    playlist,
+    userPreferences = []
+  ) {
     const activeRules = Array.from(ruleActivations.entries())
       .filter(([_, activation]) => activation > 0.05)
       .sort((a, b) => b[1] - a[1]);
@@ -925,28 +975,24 @@ class ImprovedFuzzyMusicRecommendationEngine {
       explanation =
         `Identifiquei que ${primaryRule?.description.toLowerCase()} ` +
         `(confiança: ${(primaryActivation * 100).toFixed(0)}%). `;
-
-      if (activeRules.length > 1) {
-        const secondaryRule = this.rules.find(
-          (rule) => rule.id === activeRules[1][0]
-        );
-        explanation += `Também considerei que ${secondaryRule?.description.toLowerCase()}. `;
-      }
     }
 
-    // Adicionar informação sobre a estratégia musical
+    // NOVO: Mencionar personalização se houver
+    if (userPreferences.length > 0) {
+      explanation +=
+        `Considerando suas preferências por ${userPreferences.join(", ")}, ` +
+        `adaptei as recomendações para balancear terapia com seu gosto musical. `;
+    }
+
     const topGenres = Array.from(strategy.genreWeights.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map((entry) => entry[0]);
 
     if (topGenres.length > 0) {
-      explanation += `Por isso, priorizei gêneros como ${topGenres.join(
-        ", "
-      )} `;
+      explanation += `Priorizei gêneros como ${topGenres.join(", ")} `;
     }
 
-    // Adicionar informação sobre características musicais
     const valenceDesc =
       strategy.valenceTarget < 0.3
         ? "baixa positividade"
@@ -960,14 +1006,7 @@ class ImprovedFuzzyMusicRecommendationEngine {
         ? "alta energia"
         : "energia moderada";
 
-    explanation += `com ${valenceDesc} e ${energyDesc}. `;
-
-    // Adicionar informação sobre o processo de busca
-    if (this.searchMetrics && this.searchMetrics.levelsUsed.length > 1) {
-      explanation +=
-        `Para garantir uma playlist completa, utilizei ${this.searchMetrics.levelsUsed.length} ` +
-        `estratégias de busca diferentes, sempre priorizando relevância emocional.`;
-    }
+    explanation += `com ${valenceDesc} e ${energyDesc}.`;
 
     return explanation;
   }
@@ -1026,7 +1065,8 @@ async function generateFuzzyMusicRecommendation(request) {
     const recommendation = await engine.generateRecommendations(
       request.currentEmotion,
       request.userId,
-      request.playlistSize || 15
+      request.playlistSize || 15,
+      request.preferredGenres || []
     );
 
     const endTime = Date.now();
