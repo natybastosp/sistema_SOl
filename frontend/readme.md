@@ -1,213 +1,78 @@
-🌞 SOL - Sistema de Musicoterapia Assistida por IA
-SOL é um sistema inovador de musicoterapia personalizada, desenvolvido para proporcionar experiências musicais baseadas no estado emocional do usuário. Utilizando inteligência artificial, o SOL oferece playlists terapêuticas adaptadas às necessidades emocionais individuais, em uma interface moderna, responsiva e acolhedora.
+:
 
-✨ Funcionalidades Principais
-🔐 Tela de Login
-Interface acolhedora com identidade visual do SOL
+🌞 SOL - Sistema de Musicoterapia com IA
+SOL é um sistema de musicoterapia assistida por inteligência artificial, que oferece playlists personalizadas com base no estado emocional do usuário. Através de uma interface intuitiva e responsiva, promove bem-estar e autoconhecimento.
 
-Campo para nome do usuário
+✨ Funcionalidades
+🔐 Login: Entrada do nome com design acolhedor e responsivo
 
-Validação de entrada intuitiva
+🎼 Preferências Musicais: Seleção de múltiplos gêneros (Rock, MPB, Jazz etc.)
 
-Design responsivo com gradientes vibrantes
+🧠 Avaliação Emocional: Sliders para emoções (Tristeza, Ansiedade, Alegria, Raiva, Calma)
 
-🎼 Preferências Musicais
-Seleção de múltiplos gêneros:
+🎵 Player de Música: Playlist adaptada à emoção dominante + feedback 👍/👎
 
-Rock, Pop, MPB, Sertanejo, Eletrônica, Jazz, Clássica, Reggae
+📊 Dashboard: Histórico, estatísticas e progresso terapêutico
 
-Ícones musicais representativos
+🎨 Design & UX
+Gradientes terapêuticos por tela
 
-Persistência das preferências do usuário
+Ícones modernos (Lucide React)
 
-Interface de seleção múltipla intuitiva
+Responsivo (mobile-first) e acessível (WCAG)
 
-🧠 Avaliação Emocional
-Sliders interativos para emoções:
+Transições suaves e microinterações
 
-Tristeza (0–10)
+🧠 Lógica do Sistema
+Estado global com React Context + hooks
 
-Ansiedade (nível de estresse)
+Recomendação musical com base emocional
 
-Alegria (bem-estar positivo)
+Feedback contínuo para personalização
 
-Raiva (intensidade emocional)
-
-Calma (nível de tranquilidade)
-
-Cores representativas em tempo real
-
-Interface acessível e responsiva
-
-🎵 Player de Música
-Playlist personalizada com base na emoção dominante
-
-Controles modernos: play/pause, próxima
-
-Feedback inteligente por música: 👍 / 👎
-
-Visualização da faixa atual
-
-Gradientes dinâmicos que refletem o estado emocional
-
-📊 Dashboard Analítico
-Histórico completo de sessões
-
-Estatísticas de melhora emocional
-
-Gráficos de gêneros preferidos
-
-Métricas de progresso terapêutico
-
-Acesso rápido a uma nova sessão
-
-🎨 Design e Experiência do Usuário
-Design Visual
-Gradientes únicos e terapêuticos para cada tela
-
-Paleta de cores que transmite calma e bem-estar
-
-Ícones da biblioteca Lucide React
-
-Tipografia moderna com hierarquia clara
-
-Interatividade
-Animações suaves e elegantes
-
-Transições fluídas entre páginas
-
-Feedback visual imediato e microinterações sutis
-
-Responsividade
-Layout adaptativo: mobile-first
-
-Breakpoints otimizados para:
-
-Desktop (1024px+)
-
-Tablet (768px–1023px)
-
-Mobile (320px–767px)
-
-Totalmente touch-friendly e acessível (WCAG)
-
-🔧 Tecnologias Utilizadas
-🧱 Core
-React 18+
-
-TypeScript
-
-Tailwind CSS
-
-📚 Bibliotecas Auxiliares
-Lucide React (ícones)
-
-React Hooks (estado/efeitos)
-
-CSS Modules (escopo de estilo)
-
-⚙️ Ferramentas
-Vite (build e dev server)
-
-ESLint (linting)
-
-Prettier (formatação)
-
-🧠 Arquitetura e Lógica
-Gerenciamento de Estado
-Estado global com React Context + Hooks customizados
-
-Persistência local das preferências
-
-Cache inteligente para desempenho otimizado
-
-Algoritmo de Recomendação
-Análise do estado emocional para detectar emoção dominante
-
-Geração automática e adaptativa de playlists
-
-Sistema de feedback contínuo com aprendizado
-
-Personalização baseada no histórico do usuário
-
-🔄 Fluxo de Dados
-nginx
-Copiar
-Editar
-Login → Preferências → Avaliação Emocional → Playlist → Feedback → Dashboard
 🚀 Como Executar
-✅ Pré-requisitos
-Node.js v16+
+Pré-requisitos
+Node.js 16+, npm ou yarn
 
-npm ou yarn
-
-📥 Instalação
+Instalação
 bash
 Copiar
 Editar
-# Clone o repositório
 git clone https://github.com/seu-usuario/sol-music-system.git
-
-# Acesse o diretório do frontend
 cd frontend
-
-# Instale as dependências
-npm install
-# ou
-yarn install
-🧪 Execução em Desenvolvimento
+npm install  # ou yarn install
+Rodar em modo dev
 bash
 Copiar
 Editar
-npm run dev
-# ou
-yarn dev
-📦 Build para Produção
-bash
-Copiar
-Editar
-npm run build
-# ou
-yarn build
-🔄 Fluxo de Uso
-Login 🔐 – Usuário insere o nome
+npm run dev  # ou yarn dev
+🛠 Tecnologias
+React 18+, TypeScript, Tailwind CSS
 
-Preferências 🎼 – Escolha dos gêneros favoritos
-
-Avaliação Emocional 🧠 – Sliders determinam o estado emocional
-
-Playlist Personalizada 🎵 – Execução da trilha ideal
-
-Dashboard 📊 – Visualização de histórico e progresso
+Lucide React, React Hooks, Vite, ESLint, Prettier
 
 📱 Responsividade
-Desenvolvido com mobile-first e suporte a:
+Desktop (1024px+)
 
-✅ Desktop – Layout completo com sidebar
+Tablet (768–1023px)
 
-✅ Tablet – Navegação compacta
+Mobile (320–767px)
 
-✅ Mobile – Interface otimizada ao toque
+🎯 Futuras Melhorias
+Integração com APIs de música
 
-🎯 Próximas Funcionalidades
-🔗 Integração com APIs de streaming
+Modo offline
 
-🔔 Sistema de notificações push
+Notificações push
 
-📄 Relatórios em PDF
+Relatórios em PDF
 
-📶 Modo offline para playlists
-
-⌚ Integração com wearables
-
-🤝 Contribuindo
-Contribuições são bem-vindas!
-Confira o guia de contribuição no repositório antes de enviar pull requests.
+Integração com wearables
 
 📄 Licença
-Distribuído sob a Licença MIT. Veja o arquivo LICENSE para mais detalhes.
+Licenciado sob a MIT. Veja LICENSE.
 
 👥 Equipe
-Desenvolvido com ❤️ para promover bem-estar emocional por meio da musicoterapia assistida por IA.
+Feito com ❤️ para transformar emoções em harmonia.
+SOL – Musicoterapia com tecnologia e sensibilidade. 🌅🎵
 
-SOL – Transformando emoções em harmonia 🌅🎵
