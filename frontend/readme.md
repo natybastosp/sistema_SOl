@@ -1,78 +1,104 @@
-:
+# 🌞 SOL - Sistema de Musicoterapia com IA
 
-🌞 SOL - Sistema de Musicoterapia com IA
 SOL é um sistema de musicoterapia assistida por inteligência artificial, que oferece playlists personalizadas com base no estado emocional do usuário. Através de uma interface intuitiva e responsiva, promove bem-estar e autoconhecimento.
 
-✨ Funcionalidades
-🔐 Login: Entrada do nome com design acolhedor e responsivo
+## ✨ Funcionalidades
 
-🎼 Preferências Musicais: Seleção de múltiplos gêneros (Rock, MPB, Jazz etc.)
+- 🔐 **Login**: Entrada do nome com design acolhedor e responsivo
+- 🎼 **Preferências Musicais**: Seleção de múltiplos gêneros (Rock, MPB, Jazz etc.)
+- 🧠 **Avaliação Emocional**: Sliders para emoções (Tristeza, Ansiedade, Alegria, Raiva, Calma)
+- 🎵 **Player de Música**: Playlist adaptada à emoção dominante + feedback 👍/👎
+- 📊 **Dashboard**: Histórico, estatísticas e progresso terapêutico
 
-🧠 Avaliação Emocional: Sliders para emoções (Tristeza, Ansiedade, Alegria, Raiva, Calma)
+## 🎨 Design & UX
 
-🎵 Player de Música: Playlist adaptada à emoção dominante + feedback 👍/👎
+- Gradientes terapêuticos por tela
+- Ícones modernos (Lucide React)
+- Responsivo (mobile-first) e acessível (WCAG)
+- Transições suaves e microinterações
 
-📊 Dashboard: Histórico, estatísticas e progresso terapêutico
+## 📁 Estrutura de Diretórios
 
-🎨 Design & UX
-Gradientes terapêuticos por tela
+```
+src/
+├── App.js
+├── index.js
+├── assets/
+│   └── logo.png
+├── components/
+│   ├── Header.jsx
+│   └── SunLogo.jsx
+├── constants/
+│   ├── genres.js
+│   └── emotions.js
+├── pages/
+│   ├── LoginPage.jsx
+│   ├── PreferencesPage.jsx
+│   ├── EmotionalAssessmentPage.jsx
+│   ├── PlaylistPage.jsx
+│   └── DashboardPage.jsx
+├── styles/
+│   └── index.css
+└── utils/
+    └── sampleTracks.js
+```
 
-Ícones modernos (Lucide React)
+## 🧠 Lógica do Sistema
 
-Responsivo (mobile-first) e acessível (WCAG)
+- Estado global com React Context + hooks
+- Recomendação musical com base emocional
+- Feedback contínuo para personalização
 
-Transições suaves e microinterações
+## 🚀 Como Executar
 
-🧠 Lógica do Sistema
-Estado global com React Context + hooks
+### Pré-requisitos
 
-Recomendação musical com base emocional
+- Node.js 16+
+- npm ou yarn
 
-Feedback contínuo para personalização
+### Instalação
 
-🚀 Como Executar
-Pré-requisitos
-Node.js 16+, npm ou yarn
-
-Instalação
-bash
-Copiar
-Editar
+```bash
 git clone https://github.com/seu-usuario/sol-music-system.git
 cd frontend
 npm install  # ou yarn install
-Rodar em modo dev
-bash
-Copiar
-Editar
+```
+
+### Rodar em modo desenvolvimento
+
+```bash
 npm run dev  # ou yarn dev
-🛠 Tecnologias
-React 18+, TypeScript, Tailwind CSS
+```
 
-Lucide React, React Hooks, Vite, ESLint, Prettier
+## 🛠 Tecnologias
 
-📱 Responsividade
-Desktop (1024px+)
+- **Frontend**: React 18+, TypeScript, Tailwind CSS
+- **UI/UX**: Lucide React, React Hooks
+- **Build**: Vite
+- **Code Quality**: ESLint, Prettier
 
-Tablet (768–1023px)
+## 📱 Responsividade
 
-Mobile (320–767px)
+- **Desktop**: 1024px+
+- **Tablet**: 768–1023px
+- **Mobile**: 320–767px
 
-🎯 Futuras Melhorias
-Integração com APIs de música
+## 🎯 Futuras Melhorias
 
-Modo offline
+- [ ] Integração com APIs de música (Spotify, Apple Music)
+- [ ] Modo offline
+- [ ] Notificações push
+- [ ] Relatórios em PDF
+- [ ] Integração com wearables
 
-Notificações push
+## 📄 Licença
 
-Relatórios em PDF
+Licenciado sob a MIT. Veja [LICENSE](LICENSE).
 
-Integração com wearables
+## 👥 Equipe
 
-📄 Licença
-Licenciado sob a MIT. Veja LICENSE.
-
-👥 Equipe
 Feito com ❤️ para transformar emoções em harmonia.
-SOL – Musicoterapia com tecnologia e sensibilidade. 🌅🎵
 
+---
+
+**SOL** – Musicoterapia com tecnologia e sensibilidade. 🌅🎵
