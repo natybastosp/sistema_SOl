@@ -140,7 +140,8 @@ async function runFuzzyTests() {
         recommendation.data.playlist.length > 0
       ) {
         console.log("🎵 AMOSTRA DA PLAYLIST:");
-        recommendation.data.playlist.slice(0, 3).forEach((music, index) => {
+        //console.log("data", recommendation.data.playlist);
+        recommendation.data.playlist.forEach((music, index) => {
           console.log(`   ${index + 1}. "${music.name}" - ${music.artist}`);
           console.log(
             `      Gênero: ${music.genre} | Score: ${(
@@ -149,11 +150,7 @@ async function runFuzzyTests() {
           );
         });
 
-        if (recommendation.data.playlist.length > 3) {
-          console.log(
-            `   ... e mais ${recommendation.data.playlist.length - 3} músicas`
-          );
-        }
+        console.log(`   Total: ${recommendation.data.playlist.length} músicas`);
       } else {
         console.log("⚠️  Nenhuma música encontrada para este estado emocional");
       }
