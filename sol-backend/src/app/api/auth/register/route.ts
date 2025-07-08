@@ -1,11 +1,10 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
-  hashPassword,
+  verifyPassword,
   generateToken,
   removePasswordFromUser,
   isValidEmail,
-  isValidPassword,
   createErrorResponse,
   createSuccessResponse,
 } from "@/lib/auth";
@@ -14,11 +13,11 @@ export async function POST(request: NextRequest) {
   try {
     // Extrair dados do corpo da requisição
     const body = await request.json();
-    const { name, email, password, musicPreferences } = body;
+    const { email, password } = body;
 
     // Validações básicas
-    if (!name || !email || !password) {
-      return createErrorResponse("Nome, email e senha são obrigatórios");
+    if (!email || !password) {
+      return createErrorResponse("Email e senha são obrigatórios");
     }
 
     // Validar formato do email
@@ -26,66 +25,39 @@ export async function POST(request: NextRequest) {
       return createErrorResponse("Formato de email inválido");
     }
 
-    // Validar força da senha
-    const passwordValidation = isValidPassword(password);
-    if (!passwordValidation.valid) {
-      return createErrorResponse(passwordValidation.message!);
-    }
-
-    // Validar nome
-    if (name.trim().length < 2) {
-      return createErrorResponse("Nome deve ter pelo menos 2 caracteres");
-    }
-
-    if (name.length > 100) {
-      return createErrorResponse("Nome muito longo (máximo 100 caracteres)");
-    }
-
-    // Validar preferências musicais (opcional)
-    let validatedPreferences: string[] = [];
-    if (musicPreferences) {
-      if (Array.isArray(musicPreferences)) {
-        validatedPreferences = musicPreferences
-          .filter((pref) => typeof pref === "string" && pref.trim().length > 0)
-          .map((pref) => pref.trim())
-          .slice(0, 10); // Máximo 10 preferências
-      }
-    }
-
-    // Verificar se email já existe
-    const existingUser = await prisma.user.findUnique({
+    // Buscar usuário no banco
+    const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
-    if (existingUser) {
-      return createErrorResponse("Email já está em uso", 409);
+    if (!user) {
+      return createErrorResponse("Credenciais inválidas", 401);
     }
 
-    // Hash da senha
-    const hashedPassword = await hashPassword(password);
+    // Verificar senha
+    const passwordMatch = await verifyPassword(password, user.password);
+    if (!passwordMatch) {
+      return createErrorResponse("Credenciais inválidas", 401);
+    }
 
-    // Criar usuário no banco
-    const newUser = await prisma.user.create({
-      data: {
-        name: name.trim(),
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        musicPreferences: validatedPreferences,
-      },
-    });
-
-    // Remover senha do objeto retornado
-    const userWithoutPassword = removePasswordFromUser(newUser);
+    // Remover senha do objeto
+    const userWithoutPassword = removePasswordFromUser(user);
 
     // Gerar token JWT
     const token = generateToken({
-      userId: newUser.id,
-      email: newUser.email,
-      name: newUser.name,
+      userId: user.id,
+      email: user.email,
+      name: user.name,
     });
 
-    // Logs para debug (removível em produção)
-    console.log(`✅ Novo usuário registrado: ${newUser.email}`);
+    // Atualizar timestamp de último login (opcional)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { updatedAt: new Date() },
+    });
+
+    // Logs para debug
+    console.log(`✅ Login realizado: ${user.email}`);
 
     // Retornar sucesso com token e dados do usuário
     return createSuccessResponse(
@@ -94,16 +66,10 @@ export async function POST(request: NextRequest) {
         token,
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
       },
-      "Usuário registrado com sucesso"
+      "Login realizado com sucesso"
     );
   } catch (error) {
-    console.error("Erro ao registrar usuário:", error);
-
-    // Verificar se é erro de constraint do banco
-    if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return createErrorResponse("Email já está em uso", 409);
-    }
-
+    console.error("Erro ao fazer login:", error);
     return createErrorResponse("Erro interno do servidor", 500);
   }
 }
@@ -112,18 +78,20 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return createSuccessResponse(
     {
-      endpoint: "/api/auth/register",
+      endpoint: "/api/auth/login",
       method: "POST",
-      description: "Registrar novo usuário",
-      requiredFields: ["name", "email", "password"],
-      optionalFields: ["musicPreferences (array)"],
+      description: "Autenticar usuário existente",
+      requiredFields: ["email", "password"],
       example: {
-        name: "João Silva",
-        email: "joao@exemplo.com",
-        password: "minhasenha123",
-        musicPreferences: ["Rock", "Pop", "MPB"],
+        email: "natyo@exemplo.com",
+        password: "123456",
+      },
+      response: {
+        user: "Dados do usuário (sem senha)",
+        token: "JWT token para autenticação",
+        expiresIn: "Tempo de expiração do token",
       },
     },
-    "Informações do endpoint de registro"
+    "Informações do endpoint de login"
   );
 }

@@ -18,6 +18,7 @@
     "db:genres:quick": "node scripts/quick-genres.js",
     "db:missing-spotify": "node scripts/check-missing-spotify.js",
     "spotify:example": "node scripts/spotify-search-example.js",
+    "test:auth": "node scripts/test-auth-apis.js",
     "data:analyze": "node scripts/analyze-data.js",
     "data:analyze:ts": "tsx scripts/analyze-data.ts",
     "docker:up": "docker-compose up -d",
@@ -25,10 +26,12 @@
     "docker:logs": "docker-compose logs -f",
     "docker:clean": "docker-compose down --remove-orphans && docker container prune -f && docker volume prune -f",
     "docker:simple": "docker-compose -f docker-compose-simple.yml up -d",
-    "setup": "npm run docker:up && npm run db:generate && npm run db:push && npm run db:seed"
+    "setup": "npm run docker:up && npm run db:generate && npm run db:push && npm run db:seed",
+    "dev:full": "npm run docker:up && npm run db:generate && npm run db:push && npm run dev"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",
+    "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "csv-parser": "^3.2.0",
     "fs-extra": "^11.3.0",
