@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15
+    container_name: sol_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: sol_user
+      POSTGRES_PASSWORD: sol_password
+      POSTGRES_DB: sol_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - sol_network
+
+  # pgAdmin para gerenciar o banco (opcional, mas útil)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: sol_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sol.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    networks:
+      - sol_network
+
+volumes:
+  postgres_data:
+
+networks:
+  sol_network:
+    driver: bridge
