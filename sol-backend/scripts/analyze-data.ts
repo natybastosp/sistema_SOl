@@ -1,5 +1,5 @@
 import * as fs from "fs-extra";
-import * as csv from "csv-parser";
+import csv from "csv-parser";
 import * as path from "path";
 
 // Função para ler e analisar CSV
