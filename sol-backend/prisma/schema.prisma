@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo do Usuário
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  password      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Preferências musicais do usuário
+  musicPreferences String[] // Array de gêneros preferidos
+  
+  // Relacionamentos
+  emotionalStates EmotionalState[]
+  playlists       Playlist[]
+  feedbacks       Feedback[]
+  
+  @@map("users")
+}
+
+// Modelo do Estado Emocional
+model EmotionalState {
+  id        String   @id @default(cuid())
+  userId    String
+  
+  // Emoções em escala 0-10
+  sadness   Float
+  joy       Float
+  anger     Float
+  fear      Float
+  surprise  Float
+  
+  createdAt DateTime @default(now())
+  
+  // Relacionamentos
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlists Playlist[]
+  
+  @@map("emotional_states")
+}
+
+// Modelo da Música
+model Music {
+  id           String @id @default(cuid())
+  spotifyId    String @unique
+  name         String
+  artist       String
+  album        String?
+  duration     Int? // em milissegundos
+  genre        String
+  
+  // Características emocionais da música (análise prévia)
+  sadnessScore   Float
+  joyScore       Float
+  angerScore     Float
+  fearScore      Float
+  surpriseScore  Float
+  
+  // Características de áudio do Spotify
+  danceability   Float?
+  energy         Float?
+  valence        Float?
+  acousticness   Float?
+  instrumentalness Float?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relacionamentos
+  playlistMusics PlaylistMusic[]
+  
+  @@map("musics")
+}
+
+// Modelo da Playlist
+model Playlist {
+  id                String   @id @default(cuid())
+  userId            String
+  emotionalStateId  String
+  name              String
+  description       String?
+  
+  createdAt         DateTime @default(now())
+  
+  // Relacionamentos
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emotionalState    EmotionalState @relation(fields: [emotionalStateId], references: [id], onDelete: Cascade)
+  playlistMusics    PlaylistMusic[]
+  feedbacks         Feedback[]
+  
+  @@map("playlists")
+}
+
+// Tabela de relacionamento Playlist-Music
+model PlaylistMusic {
+  id         String @id @default(cuid())
+  playlistId String
+  musicId    String
+  position   Int // posição da música na playlist
+  
+  // Relacionamentos
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  music      Music    @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  
+  @@unique([playlistId, musicId])
+  @@map("playlist_musics")
+}
+
+// Modelo de Feedback
+model Feedback {
+  id         String @id @default(cuid())
+  userId     String
+  playlistId String
+  
+  // Avaliação da playlist (1-5 estrelas)
+  rating     Int
+  
+  // Estado emocional após ouvir a playlist
+  postSadness   Float?
+  postJoy       Float?
+  postAnger     Float?
+  postFear      Float?
+  postSurprise  Float?
+  
+  // Comentário opcional
+  comment    String?
+  
+  createdAt  DateTime @default(now())
+  
+  // Relacionamentos
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  
+  @@map("feedbacks")
+}
