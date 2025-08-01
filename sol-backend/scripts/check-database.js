@@ -69,26 +69,56 @@ async function checkDatabase() {
     }
 
     if (userCount > 0) {
-      // Mostrar usuários
+      // Mostrar usuários (sem _count que estava causando erro)
       console.log("\n👥 Usuários cadastrados:");
       const users = await prisma.user.findMany({
         select: {
           name: true,
           email: true,
           musicPreferences: true,
-          _count: {
-            emotionalStates: true,
+          createdAt: true,
+        },
+      });
+
+      // Buscar contagem de estados emocionais separadamente
+      for (const user of users) {
+        const emotionalStatesCount = await prisma.emotionalState.count({
+          where: { userId: user.id },
+        });
+
+        console.log(`  ${user.name} (${user.email})`);
+        console.log(`    Preferências: ${user.musicPreferences.join(", ")}`);
+        console.log(`    Estados emocionais: ${emotionalStatesCount}`);
+        console.log(
+          `    Criado em: ${user.createdAt.toLocaleDateString("pt-BR")}`
+        );
+      }
+    } else {
+      console.log("\n👥 Nenhum usuário cadastrado ainda");
+    }
+
+    // Mostrar último estado emocional se existir
+    if (emotionalStateCount > 0) {
+      console.log("\n😊 Último estado emocional registrado:");
+      const lastEmotion = await prisma.emotionalState.findFirst({
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: {
+            select: { name: true },
           },
         },
       });
 
-      users.forEach((user) => {
-        console.log(`  ${user.name} (${user.email})`);
-        console.log(`    Preferências: ${user.musicPreferences.join(", ")}`);
-        console.log(`    Estados emocionais: ${user._count.emotionalStates}`);
-      });
-    } else {
-      console.log("\n👥 Nenhum usuário cadastrado ainda");
+      if (lastEmotion) {
+        console.log(`  Usuário: ${lastEmotion.user.name}`);
+        console.log(
+          `  Tristeza: ${lastEmotion.sadness} | Alegria: ${lastEmotion.joy}`
+        );
+        console.log(
+          `  Raiva: ${lastEmotion.anger} | Medo: ${lastEmotion.fear} | Surpresa: ${lastEmotion.surprise}`
+        );
+        console.log(`  Data: ${lastEmotion.createdAt.toLocaleString("pt-BR")}`);
+      }
     }
 
     console.log("\n✅ Verificação do banco concluída!");

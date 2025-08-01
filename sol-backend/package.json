@@ -19,6 +19,7 @@
     "db:missing-spotify": "node scripts/check-missing-spotify.js",
     "spotify:example": "node scripts/spotify-search-example.js",
     "test:auth": "node scripts/test-auth-apis.js",
+    "test:simple": "node scripts/simple-test.js",
     "data:analyze": "node scripts/analyze-data.js",
     "data:analyze:ts": "tsx scripts/analyze-data.ts",
     "docker:up": "docker-compose up -d",
