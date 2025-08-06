@@ -83,7 +83,7 @@ export async function GET() {
       description: "Autenticar usuário existente",
       requiredFields: ["email", "password"],
       example: {
-        email: "natyo@exemplo.com",
+        email: "naty@exemplo.com",
         password: "123456",
       },
       response: {
