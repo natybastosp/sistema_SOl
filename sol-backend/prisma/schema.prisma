@@ -54,7 +54,7 @@ model EmotionalState {
 // Modelo da Música
 model Music {
   id           String @id @default(cuid())
-  spotifyId    String @unique
+  spotifyId    String? @unique
   name         String
   artist       String
   album        String?
