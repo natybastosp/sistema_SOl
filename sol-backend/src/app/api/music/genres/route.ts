@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { optionalAuth } from "@/lib/middleware/auth";
 import { createSuccessResponse, createErrorResponse } from "@/lib/auth";
+import { optionalAuth } from "@/lib/middleware/auth";
 
 export async function GET(request: NextRequest) {
   try {

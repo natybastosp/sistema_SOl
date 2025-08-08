@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spotifyService } from "@/lib/spotify";
 import { verifyToken } from "@/lib/auth";
+import { requireAuth } from "@/lib/middleware/auth";
 
 /**
  * API para buscar músicas no Spotify com análise emocional
@@ -13,8 +14,8 @@ import { verifyToken } from "@/lib/auth";
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticação (proteger a API)
-    const authResult = await verifyToken(request);
-    if (!authResult.valid) {
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) {
       return NextResponse.json(
         {
           success: false,

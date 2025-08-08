@@ -168,5 +168,58 @@ export async function requireAuthForSensitiveData(
   return authResult;
 }
 
+/**
+ * Middleware opcional - não retorna erro se não autenticado
+ */
+export async function optionalAuth(
+  request: NextRequest
+): Promise<{ user: any | null }> {
+  try {
+    const authHeader = request.headers.get("authorization");
+    const token = extractTokenFromHeader(authHeader);
+
+    if (!token) {
+      return { user: null };
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return { user: null };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        musicPreferences: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return { user: user || null };
+  } catch (error) {
+    console.error("Erro no middleware de autenticação opcional:", error);
+    return { user: null };
+  }
+}
+
+/**
+ * Validar se o usuário tem permissão para acessar recurso
+ */
+export function hasPermission(
+  user: any,
+  resource: string,
+  action: string
+): boolean {
+  // Por enquanto, todos os usuários autenticados têm acesso a tudo
+  if (resource === "own_data") {
+    return true;
+  }
+  return true;
+}
+
 // Manter suas funções existentes para compatibilidade
-export { optionalAuth, hasPermission };
+//export { optionalAuth, hasPermission };

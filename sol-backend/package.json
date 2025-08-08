@@ -10,7 +10,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "node prisma/seed.js",
+    "db:seed": "tsx prisma/seed.ts",
     "db:seed:ts": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset && npm run db:seed",
     "db:check": "node scripts/check-database.js",
