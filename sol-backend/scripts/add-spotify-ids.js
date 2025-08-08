@@ -23,49 +23,11 @@ async function authenticateSpotify() {
   }
 }
 
-// Calcular similaridade entre strings
-function calculateSimilarity(str1, str2) {
-  const longer = str1.length > str2.length ? str1 : str2;
-  const shorter = str1.length > str2.length ? str2 : str1;
-
-  if (longer.length === 0) return 1.0;
-
-  const editDistance = (a, b) => {
-    const matrix = [];
-    for (let i = 0; i <= b.length; i++) {
-      matrix[i] = [i];
-    }
-    for (let j = 0; j <= a.length; j++) {
-      matrix[0][j] = j;
-    }
-    for (let i = 1; i <= b.length; i++) {
-      for (let j = 1; j <= a.length; j++) {
-        if (b.charAt(i - 1) === a.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
-          );
-        }
-      }
-    }
-    return matrix[b.length][a.length];
-  };
-
-  return (longer.length - editDistance(longer, shorter)) / longer.length;
-}
-
 // Buscar música no Spotify
 async function searchSpotifyTrack(name, artist) {
   try {
-    // Limpar nome do artista (remover barras e caracteres especiais)
-    const cleanArtist = artist.replace(/[\/\\]/g, "").trim();
-    const cleanName = name.replace(/[^\w\s\u00C0-\u00FF]/g, " ").trim();
-
-    // Tentar busca exata primeiro
-    const query = `track:"${cleanName}" artist:"${cleanArtist}"`;
+    // Limpar e formatar query
+    const query = `track:"${name}" artist:"${artist}"`;
 
     const result = await spotifyApi.searchTracks(query, { limit: 1 });
 
@@ -81,47 +43,16 @@ async function searchSpotifyTrack(name, artist) {
     }
 
     // Tentar busca mais flexível se não encontrar
-    const flexQuery = `${cleanName} ${cleanArtist}`;
-    const flexResult = await spotifyApi.searchTracks(flexQuery, { limit: 3 });
+    const flexQuery = `${name} ${artist}`;
+    const flexResult = await spotifyApi.searchTracks(flexQuery, { limit: 1 });
 
     if (flexResult.body.tracks.items.length > 0) {
-      // Verificar se algum resultado é similar
-      for (const track of flexResult.body.tracks.items) {
-        const trackName = track.name.toLowerCase();
-        const searchName = cleanName.toLowerCase();
-        const trackArtist = track.artists[0]?.name.toLowerCase() || "";
-        const searchArtist = cleanArtist.toLowerCase();
-
-        // Verificação mais flexível
-        if (
-          trackName.includes(searchName) ||
-          searchName.includes(trackName) ||
-          trackArtist.includes(searchArtist) ||
-          searchArtist.includes(trackArtist)
-        ) {
-          return {
-            spotifyId: track.id,
-            album: track.album.name,
-            duration: track.duration_ms,
-            popularity: track.popularity,
-          };
-        }
-      }
-    }
-
-    // Última tentativa: buscar só pelo nome da música
-    const nameOnlyResult = await spotifyApi.searchTracks(cleanName, {
-      limit: 3,
-    });
-
-    if (nameOnlyResult.body.tracks.items.length > 0) {
-      const track = nameOnlyResult.body.tracks.items[0];
+      const track = flexResult.body.tracks.items[0];
+      // Verificar se é realmente a música certa
       const trackName = track.name.toLowerCase();
-      const searchName = cleanName.toLowerCase();
+      const searchName = name.toLowerCase();
 
-      // Verificar similaridade do nome
-      const similarity = calculateSimilarity(trackName, searchName);
-      if (similarity > 0.7) {
+      if (trackName.includes(searchName) || searchName.includes(trackName)) {
         return {
           spotifyId: track.id,
           album: track.album.name,
@@ -178,19 +109,9 @@ async function updateMissingSpotifyIds() {
     return;
   }
 
-  // Lista de artistas que sabemos que não estão no Spotify
-  const skipArtists = ["/lucas-fellix/", "/samir-matos/", "/ivo-goncalves/"];
-
-  // Buscar músicas sem Spotify ID, excluindo artistas problemáticos
+  // Buscar músicas sem Spotify ID
   const musicasSemId = await prisma.music.findMany({
-    where: {
-      spotifyId: null,
-      NOT: {
-        artist: {
-          in: skipArtists,
-        },
-      },
-    },
+    where: { spotifyId: null },
     select: {
       id: true,
       name: true,
@@ -201,7 +122,6 @@ async function updateMissingSpotifyIds() {
   });
 
   console.log(`📊 Encontradas ${musicasSemId.length} músicas sem Spotify ID\n`);
-  console.log(`⏭️  Pulando artistas conhecidos: ${skipArtists.join(", ")}\n`);
 
   let found = 0;
   let notFound = 0;
