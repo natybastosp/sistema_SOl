@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import LoginPage from "./pages/LoginPage";
 import PreferencesPage from "./pages/PreferencesPage";
-import EmotionalAssessmentPage from "./pages/EmotionalAssessmentPage";
-import PlaylistPage from "./pages/PlaylistPage";
-import DashboardPage from "./pages/DashboardPage";
+//import EmotionalAssessmentPage from "./pages/EmotionalAssessmentPage";
+//import PlaylistPage from "./pages/PlaylistPage";
+//import DashboardPage from "./pages/DashboardPage";
 import useAuth from "./hooks/useAuth";
 
 /**
