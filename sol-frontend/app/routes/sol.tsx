@@ -1,5 +1,3 @@
-// Substitua todo o conteúdo do seu app/routes/home.tsx por este código:
-
 import React, { useState } from "react";
 import {
   Play,
@@ -49,7 +47,7 @@ interface EmotionalHistoryEntry {
   satisfaction: number;
 }
 
-export default function Home() {
+const SolMusicSystem = () => {
   const [currentPage, setCurrentPage] = useState("login");
   const [userData, setUserData] = useState<UserData>({
     name: "",
@@ -755,4 +753,6 @@ export default function Home() {
   };
 
   return <div className="App">{renderCurrentPage()}</div>;
-}
+};
+
+export default SolMusicSystem;
