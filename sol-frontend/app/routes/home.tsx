@@ -415,17 +415,5 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className="App">
-      {renderCurrentPage()}
-
-      {/* TODO: Adicionar navegação global/breadcrumb em versões futuras */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="fixed bottom-4 right-4 bg-gray-800 text-white p-2 rounded text-xs">
-          Página: {currentPage} | Auth:{" "}
-          {authState.isAuthenticated ? "Sim" : "Não"}
-        </div>
-      )}
-    </div>
-  );
+  return <div className="App">{renderCurrentPage()}</div>;
 }
