@@ -38,7 +38,7 @@ export default function EmotionalAssessmentPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col">
       <Header pageTitle="IA" />
 
       <div className="flex-1 flex items-center justify-center p-8">

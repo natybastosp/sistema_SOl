@@ -1,20 +1,17 @@
-// ARQUIVO CORRIGIDO: app/routes/home.tsx
 import React, { useState, useEffect } from "react";
-
-// CORREÇÃO 1: Importar MetaFunction do tipo correto para React Router v7
 import type { Route } from "../+types/home";
 
-// Importando componentes existentes - mantidos para compatibilidade
 import LoginPage from "~/components/sol/pages/LoginPage";
 import PreferencesPages from "~/components/sol/pages/PreferencePages";
 import EmotionalAssessmentPage from "~/components/sol/pages/EmotionalAssessmentPage";
 import PlaylistPage from "~/components/sol/pages/PlaylistPage";
 import DashboardPage from "~/components/sol/pages/DashboardPage";
 
-// CORREÇÃO 2: Importar os novos componentes criados
 import EntryCheckPage from "~/components/sol/pages/EntryCheckPage";
 import QuickIAPage from "~/components/sol/pages/QuickIAPage";
 import RegistrationPage from "~/components/sol/pages/RegistrationPage";
+
+import { DevUtils } from "~/utils/devUtils";
 
 // Importando tipos e constantes expandidos
 import type {
@@ -31,7 +28,6 @@ import { SAMPLE_TRACKS, PAGES, DEFAULT_SETTINGS } from "~/constants/sol";
 // Importando o novo serviço de autenticação
 import { AuthService } from "~/services/authService";
 
-// CORREÇÃO 3: Usar o tipo correto de MetaFunction para React Router v7
 export const meta: Route.MetaFunction = () => {
   return [
     { title: "SOL - Sistema de Recomendação Musical Terapêutica" },
@@ -69,14 +65,12 @@ export default function Home() {
 
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // 📱 ESTADOS DE NAVEGAÇÃO - Sistema inteligente de roteamento
   const [currentPage, setCurrentPage] = useState<string>(PAGES.ENTRY_CHECK);
   const [navigationState, setNavigationState] = useState<NavigationState>({
     currentPath: [],
     canGoBack: false,
   });
 
-  // 👤 ESTADOS DO USUÁRIO - Expandidos para funcionalidade rica
   const [userData, setUserData] = useState<UserData>({
     name: "",
     preferences: [],
@@ -87,13 +81,11 @@ export default function Home() {
   const [userSettings, setUserSettings] =
     useState<UserSettings>(DEFAULT_SETTINGS);
 
-  // 🎵 ESTADOS MUSICAIS - Mantidos da versão anterior
   const [currentPlaylist, setCurrentPlaylist] = useState<Track[]>([]);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [feedback, setFeedback] = useState<Record<number, string>>({});
 
-  // 📊 ESTADOS DE SESSÃO TERAPÊUTICA - Novos para tracking avançado
   const [emotionalHistory, setEmotionalHistory] = useState<
     EmotionalHistoryEntry[]
   >([]);
@@ -101,7 +93,6 @@ export default function Home() {
     TherapySession | undefined
   >();
 
-  // 🔄 ESTADOS DE INTERFACE - Para UX melhorada
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [password, setPassword] = useState(""); // Mantido para compatibilidade
@@ -115,10 +106,25 @@ export default function Home() {
    * 3. Decide qual experiência inicial oferecer
    * 4. Prepara o ambiente personalizado
    */
+
   useEffect(() => {
     const initializeApp = async () => {
       setIsInitializing(true);
       try {
+        // 🛠️ Carrega utilitários de desenvolvimento
+        if (process.env.NODE_ENV === "development") {
+          DevUtils.addBrowserShortcuts();
+
+          // Auto-setup para desenvolvimento (opcional)
+          const hasUsers = await AuthService.getOfflineUsers();
+          if (Object.keys(hasUsers).length === 0) {
+            console.log(
+              "🚀 Primeira execução detectada - criando dados demo..."
+            );
+            await DevUtils.createDemoUsers();
+          }
+        }
+
         const result = await AuthService.checkAuthentication();
 
         setAuthState(result.authState);
@@ -129,6 +135,19 @@ export default function Home() {
           const savedSettings = localStorage.getItem("sol-user-settings");
           if (savedSettings) {
             setUserSettings(JSON.parse(savedSettings));
+          }
+
+          const savedHistory = localStorage.getItem("sol-emotional-history");
+          if (savedHistory) {
+            setEmotionalHistory(JSON.parse(savedHistory));
+          } else if (process.env.NODE_ENV === "development") {
+            // Gera histórico fake para desenvolvimento
+            const mockHistory = DevUtils.generateMockEmotionalHistory();
+            setEmotionalHistory(mockHistory);
+            localStorage.setItem(
+              "sol-emotional-history",
+              JSON.stringify(mockHistory)
+            );
           }
         }
 
@@ -151,6 +170,15 @@ export default function Home() {
 
     initializeApp();
   }, []);
+
+  useEffect(() => {
+    if (emotionalHistory.length > 0) {
+      localStorage.setItem(
+        "sol-emotional-history",
+        JSON.stringify(emotionalHistory)
+      );
+    }
+  }, [emotionalHistory]);
 
   /**
    * 🧭 NAVEGAÇÃO INTELIGENTE
@@ -274,7 +302,6 @@ export default function Home() {
     navigateToPage(PAGES.DASHBOARD);
   };
 
-  // CORREÇÃO 4: Renderização principal sem conflitos de contexto
   const renderCurrentPage = () => {
     switch (currentPage) {
       // ✅ NOVOS COMPONENTES - Agora funcionais

@@ -31,7 +31,7 @@ export default function PlaylistPage({
   const currentSong = currentPlaylist[currentTrack];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-200 flex flex-col">
       <Header pageTitle="IA com playlist" />
 
       <div className="flex-1 flex p-8">

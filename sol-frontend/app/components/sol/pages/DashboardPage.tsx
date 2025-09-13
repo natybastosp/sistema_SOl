@@ -137,7 +137,7 @@ export default function DashboardPage({
    * 🎨 Renderização do centro de comando personalizado
    */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col">
       <Header pageTitle="Meu Centro de Bem-Estar" />
 
       <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
