@@ -21,6 +21,7 @@ export interface DefuzzificationResult {
 
 /**
  * Método de defuzzificação por centroide (centro de área)
+ * Principal método usado no sistema
  */
 export function defuzzifyCentroid(
   activations: Record<string, number>,
@@ -73,7 +74,6 @@ export function defuzzifyCentroid(
 
       if (func.type === 'triangular' && func.points.length === 3) {
         peak = func.points[1]; // Pico da triangular
-        // Aproximação da área sob a curva clippada
         area = calculateTriangularClippedArea(func.points as [number, number, number], activation);
       } else if (func.type === 'trapezoidal' && func.points.length === 4) {
         peak = (func.points[1] + func.points[2]) / 2; // Centro do plateau
@@ -101,6 +101,7 @@ export function defuzzifyCentroid(
 
 /**
  * Método de defuzzificação por média ponderada
+ * Alternativa mais simples para casos específicos
  */
 export function defuzzifyWeightedAverage(
   activations: Record<string, number>,
@@ -145,46 +146,25 @@ export function defuzzifyWeightedAverage(
 }
 
 /**
- * Método de defuzzificação por máximo
+ * Interpreta valor defuzzificado em categoria de intenção
+ * Mapeia valor [0,1] para as 5 intenções do sistema
  */
-export function defuzzifyMaximum(
-  activations: Record<string, number>,
-  membershipFunctions: MembershipFunction[]
-): DefuzzificationResult {
-  let maxActivation = 0;
-  let maxFunction: MembershipFunction | null = null;
-  let maxValue = 0.5;
+export function interpretIntention(value: number): string {
+  const interpretations = [
+    { threshold: 0.25, label: 'Calmante' },
+    { threshold: 0.45, label: 'Reflexiva' },
+    { threshold: 0.65, label: 'Neutra' },
+    { threshold: 0.85, label: 'Estimulante' },
+    { threshold: 1.0, label: 'Feliz' }
+  ];
 
-  // Encontra função com maior ativação
-  for (const func of membershipFunctions) {
-    const activation = activations[func.name] || 0;
-    
-    if (activation > maxActivation) {
-      maxActivation = activation;
-      maxFunction = func;
+  for (const interpretation of interpretations) {
+    if (value <= interpretation.threshold) {
+      return interpretation.label;
     }
   }
 
-  if (maxFunction) {
-    if (maxFunction.type === 'triangular' && maxFunction.points.length === 3) {
-      maxValue = maxFunction.points[1]; // Pico
-    } else if (maxFunction.type === 'trapezoidal' && maxFunction.points.length === 4) {
-      maxValue = (maxFunction.points[1] + maxFunction.points[2]) / 2; // Centro do plateau
-    }
-  }
-
-  const activatedRegions = maxFunction ? [{
-    name: maxFunction.name,
-    peak: maxValue,
-    area: maxActivation
-  }] : [];
-
-  return {
-    value: Math.max(0, Math.min(1, maxValue)),
-    method: 'maximum',
-    confidence: maxActivation,
-    activatedRegions
-  };
+  return 'Feliz'; // Fallback
 }
 
 /**
@@ -238,7 +218,6 @@ function calculateDefuzzificationConfidence(
   if (activatedRegions.length === 0) return 0;
 
   // Confiança baseada na força das ativações
-  const totalActivation = Object.values(activations).reduce((sum, val) => sum + val, 0);
   const maxActivation = Math.max(...Object.values(activations));
   
   // Confiança baseada na distribuição das ativações
@@ -262,125 +241,4 @@ function calculateVariance(values: number[]): number {
   const squaredDiffs = values.map(val => Math.pow(val - mean, 2));
   
   return squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length;
-}
-
-/**
- * Interpreta valor defuzzificado em categoria de intenção
- */
-export function interpretIntention(value: number): string {
-  const interpretations = [
-    { threshold: 0.25, label: 'Calmante' },
-    { threshold: 0.45, label: 'Reflexiva' },
-    { threshold: 0.65, label: 'Neutra' },
-    { threshold: 0.85, label: 'Estimulante' },
-    { threshold: 1.0, label: 'Feliz' }
-  ];
-
-  for (const interpretation of interpretations) {
-    if (value <= interpretation.threshold) {
-      return interpretation.label;
-    }
-  }
-
-  return 'Feliz'; // Fallback
-}
-
-/**
- * Método de defuzzificação adaptativo
- * Escolhe automaticamente o melhor método baseado nas características das ativações
- */
-export function defuzzifyAdaptive(
-  activations: Record<string, number>,
-  membershipFunctions: MembershipFunction[]
-): DefuzzificationResult {
-  const activeCount = Object.values(activations).filter(v => v > 0.1).length;
-  const maxActivation = Math.max(...Object.values(activations));
-  const activationVariance = calculateVariance(Object.values(activations));
-
-  // Se há uma ativação dominante clara, usa método máximo
-  if (maxActivation > 0.8 && activationVariance > 0.1) {
-    return defuzzifyMaximum(activations, membershipFunctions);
-  }
-  
-  // Se há poucas ativações, usa média ponderada
-  if (activeCount <= 2) {
-    return defuzzifyWeightedAverage(activations, membershipFunctions);
-  }
-  
-  // Para casos gerais, usa centroide
-  return defuzzifyCentroid(activations, membershipFunctions);
-}
-
-/**
- * Classe utilitária para análise de defuzzificação
- */
-export class DefuzzificationAnalyzer {
-  static compareMethods(
-    activations: Record<string, number>,
-    membershipFunctions: MembershipFunction[]
-  ): {
-    centroid: DefuzzificationResult;
-    weightedAverage: DefuzzificationResult;
-    maximum: DefuzzificationResult;
-    adaptive: DefuzzificationResult;
-    recommendation: string;
-  } {
-    const centroid = defuzzifyCentroid(activations, membershipFunctions);
-    const weightedAverage = defuzzifyWeightedAverage(activations, membershipFunctions);
-    const maximum = defuzzifyMaximum(activations, membershipFunctions);
-    const adaptive = defuzzifyAdaptive(activations, membershipFunctions);
-
-    // Recomenda método baseado na confiança
-    const methods = { centroid, weightedAverage, maximum, adaptive };
-    const bestMethod = Object.entries(methods).reduce((best, [name, result]) => 
-      result.confidence > best.result.confidence ? { name, result } : best,
-      { name: 'centroid', result: centroid }
-    );
-
-    return {
-      ...methods,
-      recommendation: bestMethod.name
-    };
-  }
-
-  static visualizeDefuzzification(
-    activations: Record<string, number>,
-    membershipFunctions: MembershipFunction[],
-    resolution: number = 100
-  ): Array<{
-    x: number;
-    aggregatedY: number;
-    individual: Record<string, number>;
-  }> {
-    const points: Array<{
-      x: number;
-      aggregatedY: number;
-      individual: Record<string, number>;
-    }> = [];
-
-    for (let i = 0; i <= resolution; i++) {
-      const x = i / resolution;
-      let aggregatedY = 0;
-      const individual: Record<string, number> = {};
-
-      for (const func of membershipFunctions) {
-        const activation = activations[func.name] || 0;
-        let membership = 0;
-
-        if (func.type === 'triangular' && func.points.length === 3) {
-          membership = triangularMembership(x, func.points as [number, number, number]);
-        } else if (func.type === 'trapezoidal' && func.points.length === 4) {
-          membership = trapezoidalMembership(x, func.points as [number, number, number, number]);
-        }
-
-        const clipped = Math.min(membership, activation);
-        individual[func.name] = clipped;
-        aggregatedY = Math.max(aggregatedY, clipped);
-      }
-
-      points.push({ x, aggregatedY, individual });
-    }
-
-    return points;
-  }
 }

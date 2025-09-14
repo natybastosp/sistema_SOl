@@ -14,7 +14,6 @@ import {
   combineRuleActivations,
   getEmotionalCriteriaForIntention,
   evaluateMusicalEmotionalFit,
-  CONTEXTUAL_RULES,
   type RuleActivation,
   type EmotionalCriteria
 } from './rules';
@@ -28,11 +27,6 @@ import {
 export interface FuzzyInput {
   estadoEmocional: number; // 0-10
   generoPreferido?: string;
-  contexto?: {
-    hora?: number; // 0-23
-    diaSemana?: number; // 0-6 (0=domingo)
-    ambiente?: 'casa' | 'trabalho' | 'exercicio' | 'transporte';
-  };
 }
 
 export interface FuzzyOutput {
@@ -60,7 +54,7 @@ export interface PlaylistRecommendation {
  */
 export class FuzzyMusicEngine {
   private readonly generosDisponiveis = [
-    'Funk', 'Sertanejo', 'MPB', 'Rock', 'Pop', 'Forró', 'Axé', 'Bossa Nova'
+    'Rock', 'Funk', 'MPB', 'Sertanejo'
   ];
 
   /**
@@ -74,19 +68,16 @@ export class FuzzyMusicEngine {
     const ativacoesRegras = applyFuzzyRules(grausPertinencia, undefined, input.generoPreferido);
 
     // 3. Combinação das ativações
-    let ativacoesCombinadas = combineRuleActivations(ativacoesRegras);
+    const ativacoesCombinadas = combineRuleActivations(ativacoesRegras);
 
-    // 4. Ajustes contextuais
-    ativacoesCombinadas = this.applyContextualAdjustments(ativacoesCombinadas, input.contexto);
-
-    // 5. Defuzzificação
+    // 4. Defuzzificação
     const resultadoDefuzz = defuzzifyCentroid(ativacoesCombinadas, INTENCAO_MEMBERSHIP_FUNCTIONS);
 
-    // 6. Interpretação final
+    // 5. Interpretação final
     const intencaoPlaylist = interpretIntention(resultadoDefuzz.value);
     const criteriosEmocionais = getEmotionalCriteriaForIntention(intencaoPlaylist.toLowerCase());
 
-    // 7. Cálculo de confiança
+    // 6. Cálculo de confiança
     const grauConfianca = this.calculateConfidenceLevel(grausPertinencia, ativacoesRegras);
 
     const fuzzyOutput: FuzzyOutput = {
@@ -100,7 +91,7 @@ export class FuzzyMusicEngine {
       }
     };
 
-    // 8. Recomendação final
+    // 7. Recomendação final
     return {
       input,
       output: fuzzyOutput,
@@ -186,52 +177,6 @@ export class FuzzyMusicEngine {
   }
 
   /**
-   * Aplica ajustes contextuais
-   */
-  private applyContextualAdjustments(
-    activations: Record<string, number>,
-    context?: FuzzyInput['contexto']
-  ): Record<string, number> {
-    if (!context) return activations;
-
-    const adjustedActivations = { ...activations };
-    
-    // Determina condições contextuais
-    const conditions: string[] = [];
-    
-    if (context.hora !== undefined) {
-      if (context.hora >= 6 && context.hora < 12) conditions.push('manha');
-      else if (context.hora >= 18 || context.hora < 6) conditions.push('hora_noite');
-    }
-    
-    if (context.diaSemana !== undefined && (context.diaSemana === 0 || context.diaSemana === 6)) {
-      conditions.push('fim_semana');
-    }
-
-    // Aplica regras contextuais
-    for (const rule of CONTEXTUAL_RULES) {
-      if (conditions.includes(rule.condition)) {
-        const variable = rule.adjustment.variable;
-        const currentValue = adjustedActivations[variable] || 0;
-        
-        switch (rule.adjustment.operation) {
-          case 'multiply':
-            adjustedActivations[variable] = Math.min(1, currentValue * rule.adjustment.value);
-            break;
-          case 'add':
-            adjustedActivations[variable] = Math.min(1, currentValue + rule.adjustment.value);
-            break;
-          case 'set':
-            adjustedActivations[variable] = Math.min(1, rule.adjustment.value);
-            break;
-        }
-      }
-    }
-
-    return adjustedActivations;
-  }
-
-  /**
    * Calcula nível de confiança da recomendação
    */
   private calculateConfidenceLevel(
@@ -271,7 +216,7 @@ export class FuzzyMusicEngine {
     if (genero && this.generosDisponiveis.includes(genero)) {
       return `${baseDesc} no gênero ${genero}`;
     } else {
-      return `${baseDesc} com diversos gêneros brasileiros`;
+      return `${baseDesc} com Rock, Funk, MPB e Sertanejo`;
     }
   }
 
@@ -291,17 +236,6 @@ export class FuzzyMusicEngine {
       errors.push(`Gênero deve ser um dos: ${this.generosDisponiveis.join(', ')}`);
     }
 
-    // Valida contexto
-    if (input.contexto) {
-      if (input.contexto.hora !== undefined && (input.contexto.hora < 0 || input.contexto.hora > 23)) {
-        errors.push('Hora deve estar entre 0 e 23');
-      }
-      
-      if (input.contexto.diaSemana !== undefined && (input.contexto.diaSemana < 0 || input.contexto.diaSemana > 6)) {
-        errors.push('Dia da semana deve estar entre 0 (domingo) e 6 (sábado)');
-      }
-    }
-
     return {
       valid: errors.length === 0,
       errors
@@ -318,7 +252,7 @@ export class FuzzyMusicEngine {
     playlistIntentions: string[];
   } {
     return {
-      totalRules: CONTEXTUAL_RULES.length + 5, // regras base + contextuais
+      totalRules: 5, // apenas regras base
       availableGenres: this.generosDisponiveis,
       emotionalStates: EMOCIONAL_MEMBERSHIP_FUNCTIONS.map(f => f.name),
       playlistIntentions: INTENCAO_MEMBERSHIP_FUNCTIONS.map(f => f.name)
@@ -332,28 +266,25 @@ export class FuzzyMusicEngine {
     step1_fuzzification: Record<string, number>;
     step2_ruleApplication: RuleActivation[];
     step3_combinedActivations: Record<string, number>;
-    step4_contextualAdjustments: Record<string, number>;
-    step5_defuzzification: DefuzzificationResult;
-    step6_finalIntention: string;
-    step7_confidence: number;
+    step4_defuzzification: DefuzzificationResult;
+    step5_finalIntention: string;
+    step6_confidence: number;
   } {
     // Executa cada passo mantendo o estado intermediário
     const step1 = this.fuzzifyEmotionalState(input.estadoEmocional);
     const step2 = applyFuzzyRules(step1, undefined, input.generoPreferido);
     const step3 = combineRuleActivations(step2);
-    const step4 = this.applyContextualAdjustments(step3, input.contexto);
-    const step5 = defuzzifyCentroid(step4, INTENCAO_MEMBERSHIP_FUNCTIONS);
-    const step6 = interpretIntention(step5.value);
-    const step7 = this.calculateConfidenceLevel(step1, step2);
+    const step4 = defuzzifyCentroid(step3, INTENCAO_MEMBERSHIP_FUNCTIONS);
+    const step5 = interpretIntention(step4.value);
+    const step6 = this.calculateConfidenceLevel(step1, step2);
 
     return {
       step1_fuzzification: step1,
       step2_ruleApplication: step2,
       step3_combinedActivations: step3,
-      step4_contextualAdjustments: step4,
-      step5_defuzzification: step5,
-      step6_finalIntention: step6,
-      step7_confidence: step7
+      step4_defuzzification: step4,
+      step5_finalIntention: step5,
+      step6_confidence: step6
     };
   }
 }

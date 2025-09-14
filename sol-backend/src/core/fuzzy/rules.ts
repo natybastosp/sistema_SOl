@@ -26,7 +26,7 @@ export interface RuleActivation {
 }
 
 /**
- * Regras principais do sistema fuzzy
+ * Regras principais do sistema fuzzy (5 regras base)
  */
 export const FUZZY_RULES: FuzzyRule[] = [
   {
@@ -98,6 +98,7 @@ export const FUZZY_RULES: FuzzyRule[] = [
 
 /**
  * Regras específicas para gêneros musicais brasileiros
+ * CORRIGIDO: Apenas 4 regras - uma por gênero
  */
 export const GENRE_SPECIFIC_RULES: FuzzyRule[] = [
   {
@@ -138,7 +139,21 @@ export const GENRE_SPECIFIC_RULES: FuzzyRule[] = [
       value: 'calmante'
     },
     weight: 1.1
+  },
+  {
+    id: 'G4',
+    description: 'Rock com estado ANSIOSO intensifica intenção ESTIMULANTE',
+    antecedent: {
+      variable: 'estado_emocional',
+      value: 'ansioso'
+    },
+    consequent: {
+      variable: 'intencao_playlist',
+      value: 'estimulante'
+    },
+    weight: 1.0
   }
+  // REMOVIDO: G5 (desnecessária)
 ];
 
 /**
@@ -190,12 +205,14 @@ export function applyFuzzyRules(
 
 /**
  * Obtém regras específicas para um gênero
+ * CORRIGIDO: Rock tem apenas G4
  */
 export function getGenreSpecificRules(genre: string): FuzzyRule[] {
   const genreMap: Record<string, string[]> = {
     'MPB': ['G1'],
     'Funk': ['G2'],
-    'Sertanejo': ['G3']
+    'Sertanejo': ['G3'],
+    'Rock': ['G4'] // CORRIGIDO: Apenas G4, sem G5
   };
   
   const ruleIds = genreMap[genre] || [];
@@ -321,42 +338,3 @@ export function evaluateMusicalEmotionalFit(
   
   return totalCriteria > 0 ? score / totalCriteria : 0;
 }
-
-/**
- * Regras para ajuste dinâmico baseado no contexto
- */
-export interface ContextualRule {
-  condition: string;
-  adjustment: {
-    variable: string;
-    operation: 'multiply' | 'add' | 'set';
-    value: number;
-  };
-}
-
-export const CONTEXTUAL_RULES: ContextualRule[] = [
-  {
-    condition: 'hora_noite', // 18h-6h
-    adjustment: {
-      variable: 'calmante',
-      operation: 'multiply',
-      value: 1.2
-    }
-  },
-  {
-    condition: 'fim_semana',
-    adjustment: {
-      variable: 'estimulante',
-      operation: 'multiply',
-      value: 1.1
-    }
-  },
-  {
-    condition: 'manha', // 6h-12h
-    adjustment: {
-      variable: 'feliz',
-      operation: 'multiply',
-      value: 1.15
-    }
-  }
-];
