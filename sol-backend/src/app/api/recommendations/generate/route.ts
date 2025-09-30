@@ -1,20 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FuzzyMusicEngine } from "@/core/fuzzy/engine";
 import { PrismaClient } from "@prisma/client";
+import {
+  authenticateRequest,
+  unauthorizedResponse,
+} from "@/lib/auth-middleware";
 
 const prisma = new PrismaClient();
 
 /**
  * POST /api/recommendations/generate
  * Gera playlist personalizada baseada em análise fuzzy + banco de dados
+ * 🔐 PROTEGIDO - Requer autenticação
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Extrair dados do body
+    // 1. VERIFICAR AUTENTICAÇÃO
+    const authResult = await authenticateRequest(request);
+
+    if (!authResult.authenticated) {
+      return unauthorizedResponse(authResult.error, authResult.status);
+    }
+
+    const user = authResult.user;
+    console.log(`🔐 Usuário autenticado: ${user.email} - Gerando playlist...`);
+
+    // 2. Extrair dados do body
     const body = await request.json();
     const { estadoEmocional, generoPreferido, limit = 10 } = body;
 
-    // 2. Validação
+    // 3. Validação
     if (estadoEmocional === undefined || estadoEmocional === null) {
       return NextResponse.json(
         { error: 'Campo "estadoEmocional" é obrigatório (0-10)' },
@@ -29,25 +44,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Processar com fuzzy engine
+    // 4. Processar com fuzzy engine
     const fuzzyEngine = new FuzzyMusicEngine();
     const resultado = fuzzyEngine.processRecommendation({
       estadoEmocional: Number(estadoEmocional),
       generoPreferido: generoPreferido || undefined,
     });
 
-    // 4. Extrair dados da análise (estrutura correta)
+    // 5. Extrair dados da análise (estrutura correta)
     const { output, filtrosMusica, scoreConfianca, descricao } = resultado;
     const { intencaoPlaylist, grauConfianca, detalhes } = output;
     const criteriosEmocionais = detalhes.criteriosEmocionais;
 
     console.log("🎯 Análise Fuzzy:", {
+      usuario: user.email,
       intencao: intencaoPlaylist,
       confianca: grauConfianca,
       criterios: criteriosEmocionais,
     });
 
-    // 5. Montar query do banco baseada nos critérios fuzzy
+    // 6. Montar query do banco baseada nos critérios fuzzy
     const whereClause: any = {};
 
     // Filtrar por gênero se especificado
@@ -104,7 +120,7 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // 6. Definir ordenação baseada na intenção
+    // 7. Definir ordenação baseada na intenção
     let orderBy: any = [];
 
     switch (intencaoPlaylist.toLowerCase()) {
@@ -138,9 +154,7 @@ export async function POST(request: NextRequest) {
         orderBy = [{ valence: "desc" }, { energy: "desc" }];
     }
 
-    console.log("🔎 Query WHERE:", JSON.stringify(whereClause, null, 2));
-
-    // 7. Buscar músicas no banco
+    // 8. Buscar músicas no banco
     const musicas = await prisma.music.findMany({
       where: whereClause,
       take: Number(limit),
@@ -166,9 +180,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log(`✅ Encontradas ${musicas.length} músicas`);
+    console.log(`✅ Encontradas ${musicas.length} músicas para ${user.email}`);
 
-    // 8. Calcular estatísticas da playlist
+    // 9. Calcular estatísticas da playlist
     const duracaoTotal = musicas.reduce((acc, m) => acc + (m.duration || 0), 0);
     const duracaoMinutos = Math.round(duracaoTotal / 60000);
 
@@ -199,9 +213,14 @@ export async function POST(request: NextRequest) {
             alegriaMedia: "0.00",
           };
 
-    // 9. Retornar resposta completa
+    // 10. Retornar resposta completa
     return NextResponse.json({
       success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
       analise: {
         estadoEmocional,
         generoPreferido: generoPreferido || "Todos os gêneros",
