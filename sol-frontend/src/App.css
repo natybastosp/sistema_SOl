@@ -1,36 +1,79 @@
+/* ============================================
+   IMPORTS E CONFIGURAÇÕES BASE
+   ============================================ */
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Define variante customizada para modo escuro */
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================
+   TEMA: VARIÁVEIS DE RAIO DE BORDA
+   ============================================ */
 @theme inline {
+  /* Raios de borda derivados da variável base --radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* ============================================
+     CORES: COMPONENTES BASE
+     ============================================ */
+  /* Background e Foreground principais */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Card - Componentes de cartão */
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+
+  /* Popover - Elementos flutuantes */
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+
+  /* ============================================
+     CORES: ELEMENTOS INTERATIVOS
+     ============================================ */
+  /* Primary - Ações principais */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+
+  /* Secondary - Ações secundárias */
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
+  /* Muted - Elementos desenfatizados */
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
+  /* Accent - Destaques e ênfases */
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  /* Destructive - Ações destrutivas/perigo */
   --color-destructive: var(--destructive);
+
+  /* ============================================
+     CORES: ELEMENTOS DE INTERFACE
+     ============================================ */
+  /* Bordas, inputs e rings de foco */
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* ============================================
+     CORES: GRÁFICOS E VISUALIZAÇÕES
+     ============================================ */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* ============================================
+     CORES: SIDEBAR/NAVEGAÇÃO
+     ============================================ */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -41,31 +84,55 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ============================================
+   TEMA CLARO (:root)
+   ============================================ */
 :root {
+  /* Raio de borda base */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+
+  /* Cores base - Branco puro e preto profundo */
+  --background: oklch(1 0 0);           /* Branco puro */
+  --foreground: oklch(0.145 0 0);       /* Preto profundo */
+
+  /* Cards - Mesmos valores do background/foreground */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
+
+  /* Popovers - Mesmos valores do background/foreground */
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
+
+  /* Primary - Tons escuros para elementos principais */
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
+
+  /* Secondary e Muted - Cinza muito claro */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
+
+  /* Accent - Cinza muito claro */
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
+
+  /* Destructive - Tom avermelhado para ações de perigo */
   --destructive: oklch(0.577 0.245 27.325);
+
+  /* Bordas e inputs - Cinza claro */
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Cores de gráficos - Paleta variada e vibrante */
+  --chart-1: oklch(0.646 0.222 41.116);   /* Laranja/Amarelo */
+  --chart-2: oklch(0.6 0.118 184.704);    /* Azul claro */
+  --chart-3: oklch(0.398 0.07 227.392);   /* Azul escuro */
+  --chart-4: oklch(0.828 0.189 84.429);   /* Verde claro */
+  --chart-5: oklch(0.769 0.188 70.08);    /* Verde/Amarelo */
+
+  /* Sidebar - Tons claros */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -76,30 +143,52 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* ============================================
+   TEMA ESCURO (.dark)
+   ============================================ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  /* Cores base invertidas - Preto profundo e branco */
+  --background: oklch(0.145 0 0);       /* Preto profundo */
+  --foreground: oklch(0.985 0 0);       /* Branco quase puro */
+
+  /* Cards - Tom ligeiramente mais claro que o background */
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
+
+  /* Popovers - Mesmo tom dos cards */
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
+
+  /* Primary - Tons claros invertidos */
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
+
+  /* Secondary e Muted - Cinza médio */
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
+
+  /* Accent - Cinza médio */
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
+
+  /* Destructive - Tom mais claro para modo escuro */
   --destructive: oklch(0.704 0.191 22.216);
+
+  /* Bordas e inputs - Com transparência para melhor integração */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+
+  /* Cores de gráficos - Paleta adaptada para modo escuro */
+  --chart-1: oklch(0.488 0.243 264.376);  /* Roxo/Azul */
+  --chart-2: oklch(0.696 0.17 162.48);    /* Verde água */
+  --chart-3: oklch(0.769 0.188 70.08);    /* Verde/Amarelo */
+  --chart-4: oklch(0.627 0.265 303.9);    /* Magenta */
+  --chart-5: oklch(0.645 0.246 16.439);   /* Laranja/Vermelho */
+
+  /* Sidebar - Tons escuros */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -110,10 +199,16 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ============================================
+   ESTILOS BASE GLOBAIS
+   ============================================ */
 @layer base {
+  /* Aplicar cores de borda e outline a todos os elementos */
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* Definir cores de background e texto para o body */
   body {
     @apply bg-background text-foreground;
   }
