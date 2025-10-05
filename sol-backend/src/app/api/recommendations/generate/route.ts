@@ -5,6 +5,7 @@ import {
   authenticateRequest,
   unauthorizedResponse,
 } from "@/lib/auth-middleware";
+import { HistoryService } from "@/services/history.service";
 
 const prisma = new PrismaClient();
 
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       generoPreferido: generoPreferido || undefined,
     });
 
-    // 5. Extrair dados da análise (estrutura correta)
+    // 5. Extrair dados da análise
     const { output, filtrosMusica, scoreConfianca, descricao } = resultado;
     const { intencaoPlaylist, grauConfianca, detalhes } = output;
     const criteriosEmocionais = detalhes.criteriosEmocionais;
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // Filtrar por SCORES EMOCIONAIS (do banco)
+    // USAR APENAS SCORES EMOCIONAIS (que sempre existem)
     if (criteriosEmocionais.maxRaiva !== undefined) {
       whereClause.angerScore = {
         lte: criteriosEmocionais.maxRaiva,
@@ -93,65 +94,32 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // Filtrar por CARACTERÍSTICAS MUSICAIS (Spotify)
-    if (criteriosEmocionais.minValencia !== undefined) {
-      whereClause.valence = {
-        gte: criteriosEmocionais.minValencia,
-      };
-    }
+    console.log("🔎 Query WHERE:", JSON.stringify(whereClause, null, 2));
 
-    if (criteriosEmocionais.maxValencia !== undefined) {
-      whereClause.valence = {
-        ...whereClause.valence,
-        lte: criteriosEmocionais.maxValencia,
-      };
-    }
-
-    if (criteriosEmocionais.maxEnergia !== undefined) {
-      whereClause.energy = {
-        lte: criteriosEmocionais.maxEnergia,
-      };
-    }
-
-    if (criteriosEmocionais.minEnergia !== undefined) {
-      whereClause.energy = {
-        ...whereClause.energy,
-        gte: criteriosEmocionais.minEnergia,
-      };
-    }
-
-    // 7. Definir ordenação baseada na intenção
+    // 7. Definir ordenação baseada em scores emocionais
     let orderBy: any = [];
 
     switch (intencaoPlaylist.toLowerCase()) {
       case "calmante":
-        orderBy = [
-          { energy: "asc" },
-          { valence: "asc" },
-          { sadnessScore: "desc" },
-        ];
+        orderBy = [{ sadnessScore: "desc" }, { joyScore: "asc" }];
         break;
 
       case "reflexiva":
       case "neutra":
-        orderBy = [{ acousticness: "desc" }, { valence: "asc" }];
+        orderBy = [{ sadnessScore: "asc" }, { joyScore: "asc" }];
         break;
 
       case "estimulante":
-        orderBy = [{ energy: "desc" }, { valence: "desc" }];
+        orderBy = [{ joyScore: "desc" }, { angerScore: "asc" }];
         break;
 
       case "feliz":
       case "alegre":
-        orderBy = [
-          { joyScore: "desc" },
-          { valence: "desc" },
-          { energy: "desc" },
-        ];
+        orderBy = [{ joyScore: "desc" }, { sadnessScore: "asc" }];
         break;
 
       default:
-        orderBy = [{ valence: "desc" }, { energy: "desc" }];
+        orderBy = [{ joyScore: "desc" }];
     }
 
     // 8. Buscar músicas no banco
@@ -189,14 +157,24 @@ export async function POST(request: NextRequest) {
     const estatisticas =
       musicas.length > 0
         ? {
-            valenciaMedia: (
-              musicas.reduce((acc, m) => acc + (m.valence || 0), 0) /
-              musicas.length
-            ).toFixed(2),
-            energiaMedia: (
-              musicas.reduce((acc, m) => acc + (m.energy || 0), 0) /
-              musicas.length
-            ).toFixed(2),
+            valenciaMedia:
+              musicas.filter((m) => m.valence !== null).length > 0
+                ? (
+                    musicas
+                      .filter((m) => m.valence !== null)
+                      .reduce((acc, m) => acc + (m.valence || 0), 0) /
+                    musicas.filter((m) => m.valence !== null).length
+                  ).toFixed(2)
+                : "N/A",
+            energiaMedia:
+              musicas.filter((m) => m.energy !== null).length > 0
+                ? (
+                    musicas
+                      .filter((m) => m.energy !== null)
+                      .reduce((acc, m) => acc + (m.energy || 0), 0) /
+                    musicas.filter((m) => m.energy !== null).length
+                  ).toFixed(2)
+                : "N/A",
             tristezaMedia: (
               musicas.reduce((acc, m) => acc + (m.sadnessScore || 0), 0) /
               musicas.length
@@ -207,13 +185,40 @@ export async function POST(request: NextRequest) {
             ).toFixed(2),
           }
         : {
-            valenciaMedia: "0.00",
-            energiaMedia: "0.00",
+            valenciaMedia: "N/A",
+            energiaMedia: "N/A",
             tristezaMedia: "0.00",
             alegriaMedia: "0.00",
           };
 
-    // 10. Retornar resposta completa
+    // 10. SALVAR NO HISTÓRICO
+    let historicoSalvo = false;
+    try {
+      console.log("💾 Tentando salvar histórico...");
+
+      await HistoryService.saveRecommendation({
+        userId: user.id,
+        estadoEmocional,
+        generoPreferido,
+        fuzzyResult: resultado,
+        playlist: {
+          total: musicas.length,
+          duracaoMinutos,
+          estatisticas,
+          musicas: musicas.map((m) => ({ id: m.id })),
+        },
+        criteriosAplicados: criteriosEmocionais,
+      });
+
+      historicoSalvo = true;
+      console.log(`✅ Histórico salvo com sucesso para ${user.email}`);
+    } catch (historyError: any) {
+      console.error("❌ Erro ao salvar histórico:", historyError);
+      console.error("Stack:", historyError.stack);
+      // Não falhar a request se o histórico não salvar
+    }
+
+    // 11. Retornar resposta completa
     return NextResponse.json({
       success: true,
       user: {
@@ -262,10 +267,12 @@ export async function POST(request: NextRequest) {
         })),
       },
       criteriosAplicados: criteriosEmocionais,
+      historicoSalvo,
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error("❌ Erro ao gerar recomendação:", error);
+    console.error("Stack completo:", error.stack);
     return NextResponse.json(
       {
         error: "Erro ao gerar playlist personalizada",
@@ -285,6 +292,7 @@ export async function GET() {
   return NextResponse.json({
     endpoint: "/api/recommendations/generate",
     method: "POST",
+    authentication: "🔐 REQUER TOKEN JWT",
     description:
       "Gera playlist personalizada com análise fuzzy + busca no banco (24.414 músicas)",
     body: {
