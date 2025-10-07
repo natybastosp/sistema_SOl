@@ -135,7 +135,7 @@ SPOTIFY_CLIENT_SECRET="your-spotify-client-secret"
 **Frontend** (`sol-frontend/.env.local`):
 
 ```env
-NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_API_URL="http://localhost:3000"
 ```
 
 ### **3. Suba os Serviços**
@@ -148,7 +148,7 @@ docker-compose up -d postgres pgadmin
 cd sol-backend
 npm install
 npx prisma migrate dev
-npm run dev  # Porta 3001
+npm run dev  # Porta 3000
 
 # Frontend
 cd sol-frontend

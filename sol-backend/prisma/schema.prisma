@@ -16,6 +16,9 @@ model User {
   email         String   @unique
   name          String
   password      String
+  
+  recommendationHistory   RecommendationHistory[]
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
@@ -80,6 +83,7 @@ model Music {
   
   // Relacionamentos
   playlistMusics PlaylistMusic[]
+  historyMusics    HistoryMusic[]
   
   @@map("musics")
 }
@@ -144,4 +148,76 @@ model Feedback {
   playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
   
   @@map("feedbacks")
+}
+
+model RecommendationHistory {
+  id                  String   @id @default(uuid())
+  userId              String
+  
+  // Input do usuário
+  estadoEmocional     Int
+  generoPreferido     String?
+  
+  // Análise Fuzzy - Resultados principais
+  intencaoPlaylist    String
+  grauConfianca       Float
+  valorIntencao       Float
+  descricao           String?
+  
+  // Graus de pertinência (estados emocionais fuzzy)
+  grauTriste          Float    @default(0)
+  grauAnsioso         Float    @default(0)
+  grauNeutro          Float    @default(0)
+  grauAlegre          Float    @default(0)
+  
+  // Critérios aplicados (armazenado como JSON para flexibilidade)
+  criteriosJson       Json
+  
+  // Informações da playlist gerada
+  totalMusicas        Int
+  duracaoMinutos      Int
+  
+  // Estatísticas da playlist
+  valenciaMedia       Float
+  energiaMedia        Float
+  tristezaMedia       Float
+  alegriaMedia        Float
+  
+  // Relacionamentos
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  musicas             HistoryMusic[]
+  
+  // Timestamps
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Índices para performance
+  @@index([userId])
+  @@index([createdAt])
+  @@index([estadoEmocional])
+  @@index([intencaoPlaylist])
+  @@index([userId, createdAt])
+  
+  @@map("recommendation_history")
+}
+
+// Tabela intermediária: Músicas no histórico
+model HistoryMusic {
+  id          String                @id @default(uuid())
+  historyId   String
+  musicId     String
+  position    Int                   // Posição na playlist (1, 2, 3...)
+  
+  // Relacionamentos
+  history     RecommendationHistory @relation(fields: [historyId], references: [id], onDelete: Cascade)
+  music       Music                 @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime              @default(now())
+  
+  // Garantir que a mesma música não apareça duas vezes no mesmo histórico
+  @@unique([historyId, musicId])
+  @@index([historyId])
+  @@index([musicId])
+  
+  @@map("history_musics")
 }
