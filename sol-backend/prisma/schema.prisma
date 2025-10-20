@@ -19,6 +19,12 @@ model User {
   
   recommendationHistory   RecommendationHistory[]
 
+  //Spotify
+  spotifyAccessToken   String?   @db.Text
+  spotifyRefreshToken  String?   @db.Text
+  spotifyTokenExpiry   DateTime?
+  spotifyConnected     Boolean   @default(false)
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
