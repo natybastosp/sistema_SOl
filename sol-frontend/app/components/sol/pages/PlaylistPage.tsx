@@ -157,13 +157,14 @@ export default function PlaylistPage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 ">
       <Header pageTitle="Playlist" />
 
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="max-w-2xl w-full">
-          {/* Info da Análise */}
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div className="flex-1 flex p-8 overflow-hidden gap-6">
+        <div className=" w-full flex gap-5">
+          {/* Player Card */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 w-full">
+            {/* Info da Análise */}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Intenção da Playlist</p>
@@ -178,10 +179,7 @@ export default function PlaylistPage({
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* Player Card */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
             {/* Contador de Músicas */}
             <div className="text-center mb-6">
               <p className="text-sm text-gray-500">
@@ -297,11 +295,11 @@ export default function PlaylistPage({
           </div>
 
           {/* Lista de Músicas */}
-          <div className="mt-6 bg-white rounded-lg shadow-sm p-4">
+          <div className=" bg-white rounded-lg shadow-sm p-4">
             <h3 className="font-semibold text-gray-800 mb-3">
               Playlist Completa
             </h3>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+            <div className="space-y-2  overflow-y-auto">
               {musics.map((music: any, index: number) => (
                 <button
                   key={music.id}

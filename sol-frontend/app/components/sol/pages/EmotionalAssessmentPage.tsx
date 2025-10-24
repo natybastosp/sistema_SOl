@@ -35,12 +35,12 @@ export default function EmotionalAssessmentPage({
   const genres = [
     "rock",
     "mpb",
-    "sertanejo",
+    /* "sertanejo", */
     "samba",
     "funk",
     "rap",
-    "funk carioca",
-    "trilha sonora",
+    /* "funk carioca",
+    "trilha sonora", */
   ];
 
   /**
