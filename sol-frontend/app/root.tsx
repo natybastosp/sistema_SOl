@@ -25,12 +25,15 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+
+        {/* ✅ Adicionando o script do Spotify Player */}
+        <script src="https://sdk.scdn.co/spotify-player.js"></script>
       </head>
       <body>
         {children}
