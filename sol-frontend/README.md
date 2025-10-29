@@ -159,7 +159,7 @@ npm run dev  # Porta 3000
 ### **4. Acesse a Aplicação**
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
+- **Backend API**: http://localhost:3000
 - **pgAdmin**: http://localhost:8080
 
 ---

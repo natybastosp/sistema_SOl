@@ -38,7 +38,7 @@ graph TB
     end
 
     subgraph "⚡ Backend (85% implementado)"
-        B[🚀 Next.js API<br/>localhost:3001]
+        B[🚀 Next.js API<br/>localhost:3000]
         B1[🔑 JWT Auth ✅]
         B2[🎼 Music API ✅]
         B3[🎧 Spotify Integration ✅]
@@ -289,7 +289,7 @@ npx prisma migrate dev
 npx prisma db seed  # Popular com músicas
 
 # Executar
-npm run dev         # Porta 3001
+npm run dev         # Porta 3000
 ```
 
 ### **4. Frontend**
@@ -314,9 +314,9 @@ node test.js        # Executar testes
 ### **6. Acessar Aplicação**
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
+- **Backend API**: http://localhost:3000
 - **pgAdmin**: http://localhost:8080
-- **API Docs**: http://localhost:3001/api (em desenvolvimento)
+- **API Docs**: http://localhost:3000/api (em desenvolvimento)
 
 ---
 

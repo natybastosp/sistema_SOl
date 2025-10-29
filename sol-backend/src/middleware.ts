@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
 
   // 3. Lista de origens permitidas
   const allowedOrigins = [
-    "http://localhost:3001", // Frontend em desenvolvimento
+    "http://localhost:3000", // Frontend em desenvolvimento
     "http://localhost:5173", // Vite
     "http://localhost:3000", // Frontend pode rodar na 3000 também
   ];
