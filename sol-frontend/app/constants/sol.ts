@@ -56,27 +56,22 @@ export const SAMPLE_TRACKS: Track[] = [
 ];
 
 export const PAGES = {
-  // 🚪 SISTEMA DE ENTRADA - Nova arquitetura
-  ENTRY_CHECK: "entry-check", // Página inicial inteligente que decide o fluxo
-  QUICK_IA: "quick-ia", // IA expressa para usuários existentes
+  // Autenticação
+  LOGIN: "login",
+  REGISTER: "register",
 
-  // 👤 SISTEMA DE CADASTRO - Reformulado
-  REGISTRATION: "registration", // Formulário completo de novo usuário
+  // Onboarding
+  PREFERENCES: "preferences",
 
-  // 🏠 CENTRO DE COMANDO - Transformado em hub
-  DASHBOARD: "dashboard", // Hub central de onde tudo acontece
+  // Análise Emocional
+  EMOTIONAL_ASSESSMENT: "emotional-assessment", // Página antiga apagar depois
+  EMOTIONAL_FLOW: "emotional-flow",
 
-  // ⚙️ SISTEMA DE CONFIGURAÇÕES - Novo
-  SETTINGS: "settings", // Configurações gerais do usuário
-  MUSIC_SETTINGS: "music-settings", // Configurações específicas de música
-
-  // 🤖 SISTEMA DE IA - Mantido mas repurposado
-  EMOTIONAL_ASSESSMENT: "emotional-assessment", // Agora é IA completa (não mais obrigatória)
-  PLAYLIST: "playlist", // Página de reprodução musical
-
-  // 🔄 PÁGINAS LEGADAS - Mantidas para compatibilidade
-  LOGIN: "login", // Ainda usado dentro do ENTRY_CHECK
-  PREFERENCES: "preferences", // Agora parte do REGISTRATION e MUSIC_SETTINGS
+  // Principais
+  DASHBOARD: "dashboard",
+  PLAYLIST: "playlist",
+  HISTORY: "history",
+  PROFILE: "profile",
 } as const;
 
 // 🎯 TIPOS DE EXPERIÊNCIA DO USUÁRIO - Novo sistema de classificação
