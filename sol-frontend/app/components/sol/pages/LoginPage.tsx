@@ -44,8 +44,8 @@ export default function LoginPage({
         // Salvar dados do usuário
         setUserData(result.userData);
 
-        // Navegar para preferências ou dashboard
-        setCurrentPage(PAGES.PREFERENCES);
+        // Navegar para dashboard (usuário já existe)
+        setCurrentPage(PAGES.DASHBOARD);
       } else {
         setError(result.error || "Erro ao fazer login");
       }
