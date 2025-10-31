@@ -40,12 +40,36 @@ export async function POST(request: NextRequest) {
       generoPreferido: validatedData.generoPreferido,
     });
     Logger.debug("🧠 Fuzzy processado", fuzzyResult);
+    Logger.debug("📋 Critérios emocionais", fuzzyResult.filtrosMusica);
 
-    // 4. Buscar músicas no banco
-    const musicas = await prisma.music.findMany({
-      where: {
+    // 4. Buscar músicas no banco com critérios fuzzy
+    // Construir filtros dinamicamente
+    const whereFilters: any = {};
+
+    // Se gênero foi especificado, incluir no filtro
+    if (validatedData.generoPreferido) {
+      whereFilters.genre = validatedData.generoPreferido;
+      Logger.debug("🎵 Filtrando por gênero", {
         genre: validatedData.generoPreferido,
-      },
+      });
+    }
+
+    // Aplicar critérios emocionais fuzzy
+    whereFilters.joyScore = {
+      gte: fuzzyResult.filtrosMusica.minAlegria || 0,
+    };
+    whereFilters.sadnessScore = {
+      lte: fuzzyResult.filtrosMusica.maxTristeza || 10,
+    };
+
+    Logger.debug("🔍 Critérios de busca aplicados", {
+      minJoy: fuzzyResult.filtrosMusica.minAlegria,
+      maxSadness: fuzzyResult.filtrosMusica.maxTristeza,
+      genre: validatedData.generoPreferido || "Qualquer um",
+    });
+
+    const musicas = await prisma.music.findMany({
+      where: whereFilters,
       take: 20,
       select: {
         id: true,
@@ -63,12 +87,39 @@ export async function POST(request: NextRequest) {
     });
 
     if (musicas.length === 0) {
-      Logger.warn("Nenhuma música encontrada para", {
-        genre: validatedData.generoPreferido,
+      Logger.warn("⚠️ Nenhuma música encontrada com esses critérios", {
+        genre: validatedData.generoPreferido || "Qualquer um",
+        minJoy: fuzzyResult.filtrosMusica.minAlegria,
+        maxSadness: fuzzyResult.filtrosMusica.maxTristeza,
       });
-      throw new ValidationError(
-        "Nenhuma música encontrada para essa combinação"
-      );
+
+      // Tentar buscar sem critérios tão rigorosos
+      Logger.info("🔄 Tentando busca mais flexível...");
+      const musicasFlexivel = await prisma.music.findMany({
+        take: 20,
+        select: {
+          id: true,
+          name: true,
+          artist: true,
+          genre: true,
+          energy: true,
+          valence: true,
+          spotifyId: true,
+          duration: true,
+          joyScore: true,
+          sadnessScore: true,
+        },
+        orderBy: { joyScore: "desc" },
+      });
+
+      if (musicasFlexivel.length === 0) {
+        throw new ValidationError(
+          "Nenhuma música encontrada no banco de dados"
+        );
+      }
+
+      Logger.warn("✅ Usando busca flexível, retornando 20 melhores músicas");
+      musicas.push(...musicasFlexivel);
     }
 
     Logger.info(`✅ Encontradas ${musicas.length} músicas`);
