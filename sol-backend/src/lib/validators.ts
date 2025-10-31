@@ -1,0 +1,78 @@
+import { z } from "zod";
+
+/**
+ * Validação de Login
+ */
+export const loginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
+
+/**
+ * Validação de Registro
+ */
+export const registerSchema = z
+  .object({
+    name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+    email: z.string().email("Email inválido"),
+    password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+    passwordConfirm: z.string(),
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    message: "Senhas não correspondem",
+    path: ["passwordConfirm"],
+  });
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+
+/**
+ * Validação de Análise Emocional
+ */
+export const emotionalAnalysisSchema = z.object({
+  estadoEmocional: z.number().min(1).max(10, "Escala de 1 a 10"),
+  generoPreferido: z.string().min(2, "Gênero muito curto"),
+  energia: z.number().min(1).max(10).optional(),
+  valencia: z.number().min(1).max(10).optional(),
+});
+
+export type EmotionalAnalysisInput = z.infer<typeof emotionalAnalysisSchema>;
+
+/**
+ * Validação de Recomendação
+ */
+export const recommendationSchema = z.object({
+  emotionalData: emotionalAnalysisSchema,
+  preferences: z
+    .object({
+      maxSongs: z.number().min(1).max(100).default(20),
+      includeSpotify: z.boolean().default(true),
+    })
+    .optional(),
+});
+
+export type RecommendationInput = z.infer<typeof recommendationSchema>;
+
+/**
+ * Validação de Feedback
+ */
+export const feedbackSchema = z.object({
+  playlistId: z.string().uuid("ID da playlist inválido"),
+  rating: z.number().min(1).max(5, "Rating entre 1 e 5"),
+  comment: z.string().max(500, "Comentário muito longo").optional(),
+  helpful: z.boolean().optional(),
+});
+
+export type FeedbackInput = z.infer<typeof feedbackSchema>;
+
+/**
+ * Validação de Query Params para Histórico
+ */
+export const historyQuerySchema = z.object({
+  limit: z.string().transform(Number).default("30"),
+  offset: z.string().transform(Number).default("0"),
+  days: z.string().transform(Number).optional(),
+});
+
+export type HistoryQuery = z.infer<typeof historyQuerySchema>;
