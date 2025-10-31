@@ -45,7 +45,7 @@ graph TB
     E[🌐 API Gateway<br/>Next.js 14 Routes]
 
     %% Backend Services
-    subgraph "⚙️ BACKEND (sol-backend) - Porta 3001"
+    subgraph "⚙️ BACKEND (sol-backend) - Porta 3000"
         F[🔐 Auth APIs<br/>✅ PRONTO]
         G[🎵 Music APIs<br/>✅ PRONTO]
         H[🎧 Spotify Integration<br/>✅ PRONTO]
@@ -416,7 +416,7 @@ npm run db:seed
 
 # Iniciar servidor de desenvolvimento
 npm run dev
-# Backend rodando em: http://localhost:3001
+# Backend rodando em: http://localhost:3000
 ```
 
 ### **4. Inicializar Frontend**
@@ -428,7 +428,7 @@ cd sol-frontend
 npm install
 
 # Configurar variáveis de ambiente
-echo "NEXT_PUBLIC_API_URL=http://localhost:3001" > .env.local
+echo "NEXT_PUBLIC_API_URL=http://localhost:3000" > .env.local
 
 # Iniciar servidor de desenvolvimento
 npm run dev
