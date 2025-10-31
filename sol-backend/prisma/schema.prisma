@@ -35,6 +35,7 @@ model User {
   emotionalStates EmotionalState[]
   playlists       Playlist[]
   feedbacks       Feedback[]
+  spotifyAuth     SpotifyAuth?
   
   @@map("users")
 }
@@ -227,3 +228,32 @@ model HistoryMusic {
   
   @@map("history_musics")
 }
+
+// Modelo para OAuth State (segurança CSRF)
+model OAuthState {
+  id        String   @id @default(cuid())
+  state     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("oauth_states")
+}
+
+// Modelo para armazenar tokens Spotify
+model SpotifyAuth {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  accessToken  String   @db.Text
+  refreshToken String?  @db.Text
+  expiresAt    DateTime
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("spotify_auth")
+}
+
+// Atualizar User model com relação SpotifyAuth
+// (adicionar ao modelo User se não estiver lá)

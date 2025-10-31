@@ -231,29 +231,313 @@ async function main() {
   console.log(`✅ Músicas processadas com sucesso: ${processedCount}`);
   console.log(`❌ Erros encontrados: ${errorCount}`);
 
-  // Criar usuário de exemplo para testes
-  console.log("\n👤 Criando usuário de exemplo...");
-  const exampleUser = await prisma.user.create({
+  // Criar 2 usuários de exemplo para testes
+  console.log("\n👤 Criando usuários de exemplo...");
+  const user1 = await prisma.user.create({
     data: {
-      email: "usuario@exemplo.com",
-      name: "Usuário Exemplo",
+      email: "usuario1@exemplo.com",
+      name: "Usuário 1",
       password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password
-      musicPreferences: ["Rock", "Pop", "MPB"],
+      musicPreferences: ["Rock", "Pop"],
     },
   });
 
-  // Criar estado emocional de exemplo
-  console.log("😊 Criando estado emocional de exemplo...");
-  const exampleEmotionalState = await prisma.emotionalState.create({
+  const user2 = await prisma.user.create({
     data: {
-      userId: exampleUser.id,
-      sadness: 3.0,
-      joy: 7.0,
-      anger: 2.0,
-      fear: 4.0,
+      email: "usuario2@exemplo.com",
+      name: "Usuário 2",
+      password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password
+      musicPreferences: ["Jazz", "Clássico"],
+    },
+  });
+
+  console.log("✅ Usuários criados");
+
+  // Criar estados emocionais para ambos usuários
+  console.log("😊 Criando estados emocionais...");
+  const emotionalState1 = await prisma.emotionalState.create({
+    data: {
+      userId: user1.id,
+      sadness: 2.0,
+      joy: 8.0,
+      anger: 1.0,
+      fear: 2.0,
       surprise: 5.0,
     },
   });
+
+  const emotionalState2 = await prisma.emotionalState.create({
+    data: {
+      userId: user1.id,
+      sadness: 6.0,
+      joy: 3.0,
+      anger: 5.0,
+      fear: 7.0,
+      surprise: 2.0,
+    },
+  });
+
+  const emotionalState3 = await prisma.emotionalState.create({
+    data: {
+      userId: user2.id,
+      sadness: 4.0,
+      joy: 6.0,
+      anger: 2.0,
+      fear: 3.0,
+      surprise: 4.0,
+    },
+  });
+
+  console.log("✅ Estados emocionais criados");
+
+  // Buscar algumas músicas para criar playlists
+  console.log("🎵 Buscando músicas para as playlists...");
+  const musicsForPlaylists = await prisma.music.findMany({
+    take: 60, // Pegar 60 músicas
+  });
+
+  if (musicsForPlaylists.length < 20) {
+    console.log("❌ Não há músicas suficientes no banco para criar playlists");
+    console.log(
+      `⚠️  Encontradas apenas ${musicsForPlaylists.length} músicas, precisa de pelo menos 20`
+    );
+  } else {
+    console.log(`✅ ${musicsForPlaylists.length} músicas encontradas`);
+
+    // Criar 3 playlists
+    console.log("\n🎵 Criando playlists...");
+
+    // Playlist 1 - Para usuário 1 - estado 1 (alegre)
+    const playlist1 = await prisma.playlist.create({
+      data: {
+        userId: user1.id,
+        emotionalStateId: emotionalState1.id,
+        name: "Playlist Alegre",
+        description: "Músicas para dias de alegria e energia",
+      },
+    });
+
+    // Adicionar 15 músicas à playlist 1
+    for (let i = 0; i < 15 && i < musicsForPlaylists.length; i++) {
+      await prisma.playlistMusic.create({
+        data: {
+          playlistId: playlist1.id,
+          musicId: musicsForPlaylists[i].id,
+          position: i + 1,
+        },
+      });
+    }
+
+    // Playlist 2 - Para usuário 1 - estado 2 (triste)
+    const playlist2 = await prisma.playlist.create({
+      data: {
+        userId: user1.id,
+        emotionalStateId: emotionalState2.id,
+        name: "Playlist Melancólica",
+        description: "Músicas para reflexão e introspecção",
+      },
+    });
+
+    // Adicionar 15 músicas à playlist 2
+    for (let i = 15; i < 30 && i < musicsForPlaylists.length; i++) {
+      await prisma.playlistMusic.create({
+        data: {
+          playlistId: playlist2.id,
+          musicId: musicsForPlaylists[i].id,
+          position: i - 14,
+        },
+      });
+    }
+
+    // Playlist 3 - Para usuário 2
+    const playlist3 = await prisma.playlist.create({
+      data: {
+        userId: user2.id,
+        emotionalStateId: emotionalState3.id,
+        name: "Playlist Balanceada",
+        description: "Músicas para um estado emocional equilibrado",
+      },
+    });
+
+    // Adicionar 15 músicas à playlist 3
+    for (let i = 30; i < 45 && i < musicsForPlaylists.length; i++) {
+      await prisma.playlistMusic.create({
+        data: {
+          playlistId: playlist3.id,
+          musicId: musicsForPlaylists[i].id,
+          position: i - 29,
+        },
+      });
+    }
+
+    console.log("✅ 3 playlists criadas com músicas");
+
+    // Criar RecommendationHistories (simulando análises fuzzy)
+    console.log("\n� Criando históricos de recomendações...");
+
+    const history1 = await prisma.recommendationHistory.create({
+      data: {
+        userId: user1.id,
+        estadoEmocional: 8,
+        generoPreferido: "Rock",
+        intencaoPlaylist: "Energético",
+        grauConfianca: 0.85,
+        valorIntencao: 0.9,
+        descricao: "Playlist gerada baseada em análise fuzzy - Estado alegre",
+        grauTriste: 0.1,
+        grauAnsioso: 0.2,
+        grauNeutro: 0.15,
+        grauAlegre: 0.85,
+        criteriosJson: {
+          energia: "alta",
+          valência: "alta",
+          gêneros: ["Rock", "Pop"],
+        },
+        totalMusicas: 15,
+        duracaoMinutos: 45,
+        valenciaMedia: 0.8,
+        energiaMedia: 0.85,
+        tristezaMedia: 0.1,
+        alegriaMedia: 0.9,
+      },
+    });
+
+    // Adicionar músicas ao histórico 1
+    for (let i = 0; i < 15 && i < musicsForPlaylists.length; i++) {
+      await prisma.historyMusic.create({
+        data: {
+          historyId: history1.id,
+          musicId: musicsForPlaylists[i].id,
+          position: i + 1,
+        },
+      });
+    }
+
+    const history2 = await prisma.recommendationHistory.create({
+      data: {
+        userId: user1.id,
+        estadoEmocional: 3,
+        generoPreferido: "Jazz",
+        intencaoPlaylist: "Melancólico",
+        grauConfianca: 0.78,
+        valorIntencao: 0.75,
+        descricao: "Playlist para reflexão e calma",
+        grauTriste: 0.8,
+        grauAnsioso: 0.3,
+        grauNeutro: 0.2,
+        grauAlegre: 0.1,
+        criteriosJson: {
+          energia: "baixa",
+          valência: "baixa",
+          gêneros: ["Jazz", "Clássico"],
+        },
+        totalMusicas: 15,
+        duracaoMinutos: 50,
+        valenciaMedia: 0.3,
+        energiaMedia: 0.4,
+        tristezaMedia: 0.85,
+        alegriaMedia: 0.15,
+      },
+    });
+
+    // Adicionar músicas ao histórico 2
+    for (let i = 15; i < 30 && i < musicsForPlaylists.length; i++) {
+      await prisma.historyMusic.create({
+        data: {
+          historyId: history2.id,
+          musicId: musicsForPlaylists[i].id,
+          position: i - 14,
+        },
+      });
+    }
+
+    const history3 = await prisma.recommendationHistory.create({
+      data: {
+        userId: user2.id,
+        estadoEmocional: 5,
+        generoPreferido: "Pop",
+        intencaoPlaylist: "Neutro",
+        grauConfianca: 0.82,
+        valorIntencao: 0.8,
+        descricao: "Playlist balanceada com bom mix",
+        grauTriste: 0.3,
+        grauAnsioso: 0.25,
+        grauNeutro: 0.45,
+        grauAlegre: 0.35,
+        criteriosJson: {
+          energia: "média",
+          valência: "média",
+          gêneros: ["Pop", "Rock"],
+        },
+        totalMusicas: 15,
+        duracaoMinutos: 48,
+        valenciaMedia: 0.6,
+        energiaMedia: 0.65,
+        tristezaMedia: 0.35,
+        alegriaMedia: 0.6,
+      },
+    });
+
+    // Adicionar músicas ao histórico 3
+    for (let i = 30; i < 45 && i < musicsForPlaylists.length; i++) {
+      await prisma.historyMusic.create({
+        data: {
+          historyId: history3.id,
+          musicId: musicsForPlaylists[i].id,
+          position: i - 29,
+        },
+      });
+    }
+
+    console.log("✅ 3 históricos de recomendações criados");
+
+    // Criar Feedbacks
+    console.log("\n⭐ Criando feedbacks...");
+
+    await prisma.feedback.create({
+      data: {
+        userId: user1.id,
+        playlistId: playlist1.id,
+        rating: 5,
+        comment: "Excelente playlist! Adorei as músicas selecionadas.",
+        postSadness: 1.0,
+        postJoy: 9.0,
+        postAnger: 0.5,
+        postFear: 0.5,
+        postSurprise: 4.0,
+      },
+    });
+
+    await prisma.feedback.create({
+      data: {
+        userId: user1.id,
+        playlistId: playlist2.id,
+        rating: 4,
+        comment: "Boa seleção para refletir, muito melancólica",
+        postSadness: 5.0,
+        postJoy: 3.0,
+        postAnger: 2.0,
+        postFear: 6.0,
+        postSurprise: 2.0,
+      },
+    });
+
+    await prisma.feedback.create({
+      data: {
+        userId: user2.id,
+        playlistId: playlist3.id,
+        rating: 5,
+        comment: "Perfeito! Mix ideal para qualquer momento",
+        postSadness: 3.0,
+        postJoy: 7.0,
+        postAnger: 1.0,
+        postFear: 2.0,
+        postSurprise: 5.0,
+      },
+    });
+
+    console.log("✅ 3 feedbacks criados");
+  }
 
   console.log("\n🎉 Seed concluído com sucesso!");
   console.log("📊 Resumo final:");
@@ -261,10 +545,24 @@ async function main() {
   const totalMusics = await prisma.music.count();
   const totalUsers = await prisma.user.count();
   const totalEmotionalStates = await prisma.emotionalState.count();
+  const totalPlaylists = await prisma.playlist.count();
+  const totalPlaylistMusics = await prisma.playlistMusic.count();
+  const totalHistories = await prisma.recommendationHistory.count();
+  const totalHistoryMusics = await prisma.historyMusic.count();
+  const totalFeedbacks = await prisma.feedback.count();
 
-  console.log(`🎵 Total de músicas no banco: ${totalMusics}`);
+  console.log(`\n🎵 Total de músicas no banco: ${totalMusics}`);
   console.log(`👥 Total de usuários: ${totalUsers}`);
   console.log(`😊 Total de estados emocionais: ${totalEmotionalStates}`);
+  console.log(`🎵 Total de playlists: ${totalPlaylists}`);
+  console.log(`📍 Total de PlaylistMusic: ${totalPlaylistMusics}`);
+  console.log(`📊 Total de históricos de recomendações: ${totalHistories}`);
+  console.log(`📍 Total de HistoryMusic: ${totalHistoryMusics}`);
+  console.log(`⭐ Total de feedbacks: ${totalFeedbacks}`);
+
+  console.log("\n📝 Credenciais de teste:");
+  console.log("  Email: usuario1@exemplo.com | Senha: password");
+  console.log("  Email: usuario2@exemplo.com | Senha: password");
 }
 
 main()
