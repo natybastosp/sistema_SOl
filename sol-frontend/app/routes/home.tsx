@@ -5,7 +5,6 @@ import PreferencesPages from "~/components/sol/pages/PreferencePages";
 import EmotionalAssessmentPage from "~/components/sol/pages/EmotionalAssessmentPage";
 import PlaylistPage from "~/components/sol/pages/PlaylistPage";
 import DashboardPage from "~/components/sol/pages/DashboardPage";
-import EmotionalFlow from "~/components/sol/pages/EmotionalFlow";
 
 // Constantes
 import { PAGES } from "~/constants/sol";
@@ -66,25 +65,12 @@ export default function Home() {
         />
       )}
 
-      {/* PÁGINA: AVALIAÇÃO EMOCIONAL (ANTIGA) */}
+      {/* PÁGINA: AVALIAÇÃO EMOCIONAL */}
 
       {currentPage === PAGES.EMOTIONAL_ASSESSMENT && (
         <EmotionalAssessmentPage
           userData={userData}
           setCurrentPage={setCurrentPage}
-        />
-      )}
-
-      {/* 🆕 PÁGINA: EMOTIONAL FLOW (NOVA!) */}
-
-      {/* 
-        ADICIONE ESTE BLOCO EXATAMENTE AQUI!
-        Esta é a nova página com análise Fuzzy integrada
-      */}
-      {currentPage === PAGES.EMOTIONAL_FLOW && (
-        <EmotionalFlow
-          userName={userData.name}
-          onBack={() => setCurrentPage(PAGES.DASHBOARD)}
         />
       )}
 

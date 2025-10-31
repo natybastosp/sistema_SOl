@@ -4,7 +4,7 @@ import Header from "../Header";
 import SunLogo from "../SunLogo";
 import type { UserData } from "~/types/sol";
 import { PAGES } from "~/constants/sol";
-import { RecommendationService } from "~/services/recommendationService";
+import { EmotionalService } from "~/services/emotionalService";
 
 interface EmotionalAssessmentPageProps {
   userData: UserData;
@@ -13,14 +13,56 @@ interface EmotionalAssessmentPageProps {
   onPlaylistGenerated?: (playlist: any) => void;
 }
 
+interface EmocaoSlider {
+  id: "sadness" | "joy" | "anger" | "fear";
+  label: string;
+  descricao: string;
+  icone: string;
+}
+
+const emocoes: EmocaoSlider[] = [
+  {
+    id: "sadness",
+    label: "Tristeza",
+    descricao: "Como você se sente em relação à tristeza?",
+    icone: "😢",
+  },
+  {
+    id: "joy",
+    label: "Alegria",
+    descricao: "Qual é seu nível de alegria neste momento?",
+    icone: "😊",
+  },
+  {
+    id: "anger",
+    label: "Raiva",
+    descricao: "Como está seu nível de raiva?",
+    icone: "😠",
+  },
+  {
+    id: "fear",
+    label: "Medo",
+    descricao: "Qual é seu nível de medo ou ansiedade?",
+    icone: "😨",
+  },
+];
+
 export default function EmotionalAssessmentPage({
   userData,
   setUserData,
   setCurrentPage,
   onPlaylistGenerated,
 }: EmotionalAssessmentPageProps) {
-  // Estado emocional (0-10)
-  const [emotionalState, setEmotionalState] = useState(5);
+  // Estados das 4 emoções
+  const [emocoes_valores, setEmocoes_valores] = useState<
+    Record<string, number>
+  >({
+    sadness: 5,
+    joy: 5,
+    anger: 5,
+    fear: 5,
+  });
+
   const [selectedGenre, setSelectedGenre] = useState<string>(
     userData.preferences?.[0] || ""
   );
@@ -32,19 +74,17 @@ export default function EmotionalAssessmentPage({
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   // Gêneros disponíveis
-  const genres = [
-    "rock",
-    "mpb",
-    /* "sertanejo", */
-    "samba",
-    "funk",
-    "rap",
-    /* "funk carioca",
-    "trilha sonora", */
-  ];
+  const genres = ["rock", "mpb", "samba", "funk", "rap"];
+
+  const handleSliderChange = (id: string, valor: number) => {
+    setEmocoes_valores((prev) => ({
+      ...prev,
+      [id]: valor,
+    }));
+  };
 
   /**
-   * 🎯 Gerar Recomendação com Sistema Fuzzy
+   * 🎯 Gerar Recomendação com Sistema Fuzzy (4 emoções)
    */
   const handleGeneratePlaylist = async () => {
     setIsGenerating(true);
@@ -52,21 +92,23 @@ export default function EmotionalAssessmentPage({
     setShowResults(false);
 
     try {
-      console.log("🎵 Gerando playlist...");
-      console.log("   Estado Emocional:", emotionalState);
+      console.log("🎵 Gerando playlist com análise fuzzy...");
+      console.log("   Emoções:", emocoes_valores);
       console.log("   Gênero Preferido:", selectedGenre || "Todos");
 
-      // Chamar API de recomendação
-      const result = await RecommendationService.generateRecommendation({
-        estadoEmocional: emotionalState,
+      // Chamar serviço de análise emocional COM TODAS AS 4 EMOÇÕES
+      const result = await EmotionalService.analyzeWithFuzzy({
+        sadness: emocoes_valores.sadness,
+        joy: emocoes_valores.joy,
+        anger: emocoes_valores.anger,
+        fear: emocoes_valores.fear,
         generoPreferido: selectedGenre || undefined,
-        limit: 10,
       });
 
       if (result.success && result.data) {
-        console.log("✅ Playlist gerada com sucesso!");
-        console.log("   Intenção:", result.data.analysis.intencaoPlaylist);
-        console.log("   Confiança:", result.data.analysis.grauConfianca);
+        console.log("✅ Análise gerada com sucesso!");
+        console.log("   Intenção:", result.data.fuzzyAnalysis.intencao);
+        console.log("   Confiança:", result.data.fuzzyAnalysis.confianca);
         console.log("   Músicas:", result.data.playlist.length);
 
         // Salvar resultado
@@ -93,28 +135,6 @@ export default function EmotionalAssessmentPage({
     }
   };
 
-  /**
-   * 🎨 Obter cor baseada no estado emocional
-   */
-  const getEmotionColor = (value: number) => {
-    if (value <= 2) return "bg-blue-500"; // Muito triste
-    if (value <= 4) return "bg-indigo-500"; // Ansioso
-    if (value <= 6) return "bg-yellow-500"; // Neutro
-    if (value <= 8) return "bg-orange-500"; // Contente
-    return "bg-green-500"; // Muito feliz
-  };
-
-  /**
-   * 🎨 Obter label do estado emocional
-   */
-  const getEmotionLabel = (value: number) => {
-    if (value <= 2) return "Muito Triste 😢";
-    if (value <= 4) return "Ansioso/Preocupado 😰";
-    if (value <= 6) return "Neutro/Equilibrado 😐";
-    if (value <= 8) return "Contente/Bem 😊";
-    return "Muito Feliz 😄";
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Header pageTitle="Análise Emocional" />
@@ -137,62 +157,60 @@ export default function EmotionalAssessmentPage({
           <div className="bg-white rounded-lg shadow-sm p-8">
             {!showResults ? (
               <>
-                {/* Slider de Estado Emocional */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-lg font-medium text-gray-700">
-                      Seu estado emocional atual
-                    </label>
-                    <span className="text-2xl font-bold text-orange-500">
-                      {emotionalState}
-                    </span>
-                  </div>
+                {/* Título */}
+                <h3 className="text-lg font-semibold mb-6 text-gray-800">
+                  📊 Avalie seu estado emocional
+                </h3>
 
-                  {/* Slider */}
-                  <div className="relative">
-                    <input
-                      type="range"
-                      min="0"
-                      max="10"
-                      value={emotionalState}
-                      onChange={(e) =>
-                        setEmotionalState(parseInt(e.target.value))
-                      }
-                      className="w-full h-3 rounded-lg appearance-none cursor-pointer"
-                      style={{
-                        background: `linear-gradient(to right, 
-                          #3b82f6 0%, 
-                          #6366f1 20%, 
-                          #eab308 40%, 
-                          #f97316 60%, 
-                          #22c55e 80%, 
-                          #22c55e 100%)`,
-                      }}
-                      disabled={isGenerating}
-                    />
-                  </div>
+                {/* 4 Sliders de Emoção */}
+                <div className="space-y-8 mb-8">
+                  {emocoes.map((emocao) => (
+                    <div key={emocao.id} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-3xl">{emocao.icone}</span>
+                          <div>
+                            <label className="text-base font-semibold text-gray-700">
+                              {emocao.label}
+                            </label>
+                            <p className="text-sm text-gray-500">
+                              {emocao.descricao}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-2xl font-bold text-blue-600 min-w-12 text-right">
+                          {emocoes_valores[emocao.id]}
+                        </span>
+                      </div>
 
-                  {/* Label do Estado */}
-                  <div className="mt-4 text-center">
-                    <div
-                      className={`inline-block px-6 py-3 rounded-full text-white font-semibold ${getEmotionColor(
-                        emotionalState
-                      )}`}
-                    >
-                      {getEmotionLabel(emotionalState)}
+                      <input
+                        type="range"
+                        min="0"
+                        max="10"
+                        value={emocoes_valores[emocao.id]}
+                        onChange={(e) =>
+                          handleSliderChange(
+                            emocao.id,
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        disabled={isGenerating}
+                      />
+
+                      <div className="flex justify-between text-xs text-gray-500 px-1">
+                        <span>Nada</span>
+                        <span>Bastante</span>
+                        <span>Máximo</span>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Descrição */}
-                  <p className="text-sm text-gray-500 mt-4 text-center">
-                    Deslize para indicar como você se sente agora
-                  </p>
+                  ))}
                 </div>
 
                 {/* Seletor de Gênero */}
                 <div className="mb-8">
                   <label className="block text-lg font-medium text-gray-700 mb-4">
-                    Gênero musical preferido (opcional)
+                    🎵 Gênero musical preferido (opcional)
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {/* Opção "Todos" */}
@@ -224,6 +242,11 @@ export default function EmotionalAssessmentPage({
                       </button>
                     ))}
                   </div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {selectedGenre
+                      ? `✓ ${selectedGenre.toUpperCase()} selecionado`
+                      : "Nenhum gênero selecionado (todos os gêneros)"}
+                  </p>
                 </div>
 
                 {/* Mensagem de Erro */}
