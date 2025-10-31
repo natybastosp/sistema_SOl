@@ -72,3 +72,6 @@ Thumbs.db
 
 # Prisma
 prisma/migrations/
+
+#docs
+/docs 
