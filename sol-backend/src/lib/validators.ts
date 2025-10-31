@@ -70,9 +70,9 @@ export type FeedbackInput = z.infer<typeof feedbackSchema>;
  * Validação de Query Params para Histórico
  */
 export const historyQuerySchema = z.object({
-  limit: z.string().transform(Number).default("30"),
-  offset: z.string().transform(Number).default("0"),
-  days: z.string().transform(Number).optional(),
+  limit: z.coerce.number().min(1).max(100).default(30),
+  offset: z.coerce.number().min(0).default(0),
+  days: z.coerce.number().min(1).default(7),
 });
 
 export type HistoryQuery = z.infer<typeof historyQuerySchema>;
