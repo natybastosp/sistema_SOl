@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const PAGES = {
   DASHBOARD: "dashboard",
-  EMOTIONAL_ASSESSMENT: "emotional_assessment"
+  EMOTIONAL_ASSESSMENT: "emotional_assessment",
 };
 
 interface PlaylistPageProps {
@@ -21,13 +21,18 @@ export default function PlaylistPage({
   setCurrentPage,
 }: PlaylistPageProps) {
   const [currentTrack, setCurrentTrack] = useState(0);
-  const [feedback, setFeedback] = useState<Record<string, "positive" | "negative">>({});
+  const [feedback, setFeedback] = useState<
+    Record<string, "positive" | "negative">
+  >({});
   const [showFinalFeedback, setShowFinalFeedback] = useState(false);
 
   const musics = playlistData?.playlist || [];
   const analysis = playlistData?.analysis || {};
 
-  const handleTrackFeedback = (musicId: string, type: "positive" | "negative") => {
+  const handleTrackFeedback = (
+    musicId: string,
+    type: "positive" | "negative"
+  ) => {
     setFeedback((prev) => ({
       ...prev,
       [musicId]: type,
@@ -50,7 +55,9 @@ export default function PlaylistPage({
   };
 
   const handleFinish = () => {
-    const positiveFeedbacks = Object.values(feedback).filter((f) => f === "positive").length;
+    const positiveFeedbacks = Object.values(feedback).filter(
+      (f) => f === "positive"
+    ).length;
     console.log("📊 Sessão finalizada:");
     console.log(`   Músicas tocadas: ${currentTrack + 1}/${musics.length}`);
     console.log(`   Feedbacks positivos: ${positiveFeedbacks}`);
@@ -77,8 +84,13 @@ export default function PlaylistPage({
   const currentMusic = musics[currentTrack];
 
   if (showFinalFeedback) {
-    const positiveFeedbacks = Object.values(feedback).filter((f) => f === "positive").length;
-    const satisfactionRate = ((positiveFeedbacks / musics.length) * 100).toFixed(0);
+    const positiveFeedbacks = Object.values(feedback).filter(
+      (f) => f === "positive"
+    ).length;
+    const satisfactionRate = (
+      (positiveFeedbacks / musics.length) *
+      100
+    ).toFixed(0);
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col">
@@ -88,19 +100,33 @@ export default function PlaylistPage({
             <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="text-4xl">🎉</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Sessão Concluída!</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Sessão Concluída!
+            </h2>
             <div className="space-y-4 mb-8">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-700 font-medium mb-1">Músicas Ouvidas</p>
-                <p className="text-2xl font-bold text-blue-900">{currentTrack + 1} de {musics.length}</p>
+                <p className="text-sm text-blue-700 font-medium mb-1">
+                  Músicas Ouvidas
+                </p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {currentTrack + 1} de {musics.length}
+                </p>
               </div>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-700 font-medium mb-1">Taxa de Satisfação</p>
-                <p className="text-2xl font-bold text-green-900">{satisfactionRate}%</p>
+                <p className="text-sm text-green-700 font-medium mb-1">
+                  Taxa de Satisfação
+                </p>
+                <p className="text-2xl font-bold text-green-900">
+                  {satisfactionRate}%
+                </p>
               </div>
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-sm text-orange-700 font-medium mb-1">Intenção da Playlist</p>
-                <p className="text-lg font-bold text-orange-900 capitalize">{analysis.intencaoPlaylist}</p>
+                <p className="text-sm text-orange-700 font-medium mb-1">
+                  Intenção da Playlist
+                </p>
+                <p className="text-lg font-bold text-orange-900 capitalize">
+                  {analysis.intencaoPlaylist}
+                </p>
               </div>
             </div>
             <button
@@ -124,16 +150,22 @@ export default function PlaylistPage({
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-sm text-gray-600">Intenção da Playlist</p>
-                <p className="text-lg font-bold text-orange-600 capitalize">{analysis.intencaoPlaylist}</p>
+                <p className="text-lg font-bold text-orange-600 capitalize">
+                  {analysis.intencaoPlaylist}
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Confiança da IA</p>
-                <p className="text-lg font-bold text-blue-600">{(analysis.grauConfianca * 100).toFixed(0)}%</p>
+                <p className="text-lg font-bold text-blue-600">
+                  {(analysis.grauConfianca * 100).toFixed(0)}%
+                </p>
               </div>
             </div>
 
             <div className="text-center mb-6">
-              <p className="text-sm text-gray-500">Música {currentTrack + 1} de {musics.length}</p>
+              <p className="text-sm text-gray-500">
+                Música {currentTrack + 1} de {musics.length}
+              </p>
             </div>
 
             <div className="w-64 h-64 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl mx-auto mb-8 flex items-center justify-center">
@@ -141,40 +173,81 @@ export default function PlaylistPage({
             </div>
 
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">{currentMusic.nome}</h2>
-              <p className="text-lg text-gray-600 mb-1">{currentMusic.artista.replace(/\//g, "")}</p>
-              <p className="text-sm text-orange-500 font-medium uppercase">{currentMusic.genero}</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                {currentMusic.nome || currentMusic.name || "Música"}
+              </h2>
+              <p className="text-lg text-gray-600 mb-1">
+                {(
+                  currentMusic.artista ||
+                  currentMusic.artist ||
+                  "Artista desconhecido"
+                ).replace?.(/\//g, "") || "Artista desconhecido"}
+              </p>
+              <p className="text-sm text-orange-500 font-medium uppercase">
+                {currentMusic.genero ||
+                  currentMusic.genre ||
+                  "Gênero desconhecido"}
+              </p>
             </div>
 
             <div className="grid grid-cols-5 gap-2 mb-8">
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Alegria</p>
                 <div className="bg-yellow-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-yellow-700">{(currentMusic.scoresEmocionais.alegria * 100).toFixed(0)}%</p>
+                  <p className="text-sm font-bold text-yellow-700">
+                    {currentMusic.scoresEmocionais
+                      ? (currentMusic.scoresEmocionais.alegria * 100).toFixed(0)
+                      : "—"}
+                    %
+                  </p>
                 </div>
               </div>
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Tristeza</p>
                 <div className="bg-blue-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-blue-700">{(currentMusic.scoresEmocionais.tristeza * 100).toFixed(0)}%</p>
+                  <p className="text-sm font-bold text-blue-700">
+                    {currentMusic.scoresEmocionais
+                      ? (currentMusic.scoresEmocionais.tristeza * 100).toFixed(
+                          0
+                        )
+                      : "—"}
+                    %
+                  </p>
                 </div>
               </div>
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Raiva</p>
                 <div className="bg-red-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-red-700">{(currentMusic.scoresEmocionais.raiva * 100).toFixed(0)}%</p>
+                  <p className="text-sm font-bold text-red-700">
+                    {currentMusic.scoresEmocionais
+                      ? (currentMusic.scoresEmocionais.raiva * 100).toFixed(0)
+                      : "—"}
+                    %
+                  </p>
                 </div>
               </div>
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Medo</p>
                 <div className="bg-purple-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-purple-700">{(currentMusic.scoresEmocionais.medo * 100).toFixed(0)}%</p>
+                  <p className="text-sm font-bold text-purple-700">
+                    {currentMusic.scoresEmocionais
+                      ? (currentMusic.scoresEmocionais.medo * 100).toFixed(0)
+                      : "—"}
+                    %
+                  </p>
                 </div>
               </div>
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Surpresa</p>
                 <div className="bg-green-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-green-700">{(currentMusic.scoresEmocionais.surpresa * 100).toFixed(0)}%</p>
+                  <p className="text-sm font-bold text-green-700">
+                    {currentMusic.scoresEmocionais
+                      ? (currentMusic.scoresEmocionais.surpresa * 100).toFixed(
+                          0
+                        )
+                      : "—"}
+                    %
+                  </p>
                 </div>
               </div>
             </div>
@@ -185,14 +258,22 @@ export default function PlaylistPage({
                 disabled={currentTrack === 0}
                 className="w-12 h-12 flex items-center justify-center bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                 </svg>
               </button>
 
               <button className="w-16 h-16 flex items-center justify-center bg-orange-500 rounded-full text-white hover:bg-orange-600 transition-all shadow-lg">
-                <svg className="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
+                <svg
+                  className="w-7 h-7 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
 
@@ -200,8 +281,12 @@ export default function PlaylistPage({
                 onClick={nextTrack}
                 className="w-12 h-12 flex items-center justify-center bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-all"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M16 18h2V6h-2zm-11-7l8.5-6v12z"/>
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M16 18h2V6h-2zm-11-7l8.5-6v12z" />
                 </svg>
               </button>
             </div>
@@ -231,7 +316,9 @@ export default function PlaylistPage({
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-4 w-80">
-            <h3 className="font-semibold text-gray-800 mb-3">Playlist Completa</h3>
+            <h3 className="font-semibold text-gray-800 mb-3">
+              Playlist Completa
+            </h3>
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {musics.map((music: any, index: number) => (
                 <button
@@ -243,8 +330,17 @@ export default function PlaylistPage({
                       : "bg-gray-50 hover:bg-gray-100"
                   }`}
                 >
-                  <p className="font-medium text-sm text-gray-800">{index + 1}. {music.nome}</p>
-                  <p className="text-xs text-gray-600">{music.artista.replace(/\//g, "")} • {music.genero}</p>
+                  <p className="font-medium text-sm text-gray-800">
+                    {index + 1}. {music.nome || music.name || "Música"}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {(
+                      music.artista ||
+                      music.artist ||
+                      "Artista desconhecido"
+                    ).replace?.(/\//g, "") || "Artista desconhecido"}{" "}
+                    • {music.genero || music.genre || "Gênero"}
+                  </p>
                 </button>
               ))}
             </div>

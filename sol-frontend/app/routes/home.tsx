@@ -79,7 +79,10 @@ export default function Home() {
       {/* PÁGINA: PLAYLIST */}
 
       {currentPage === PAGES.PLAYLIST && (
-        <PlaylistPage playlistData={playlistData} setCurrentPage={setCurrentPage} />
+        <PlaylistPage
+          playlistData={playlistData}
+          setCurrentPage={setCurrentPage}
+        />
       )}
 
       {/* PÁGINA: DASHBOARD */}
