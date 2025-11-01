@@ -14,7 +14,7 @@ interface EmotionalAssessmentPageProps {
 }
 
 interface EmocaoSlider {
-  id: "sadness" | "joy" | "anger" | "fear";
+  id: "sadness" | "joy" | "anger" | "fear" | "surprise";
   label: string;
   descricao: string;
   icone: string;
@@ -45,6 +45,12 @@ const emocoes: EmocaoSlider[] = [
     descricao: "Qual é seu nível de medo ou ansiedade?",
     icone: "😨",
   },
+  {
+    id: "surprise",
+    label: "Surpresa",
+    descricao: "Qual é seu nível de surpresa ou espanto?",
+    icone: "😮",
+  },
 ];
 
 export default function EmotionalAssessmentPage({
@@ -61,6 +67,7 @@ export default function EmotionalAssessmentPage({
     joy: 5,
     anger: 5,
     fear: 5,
+    surprise: 5,
   });
 
   const [selectedGenre, setSelectedGenre] = useState<string>(
@@ -96,12 +103,13 @@ export default function EmotionalAssessmentPage({
       console.log("   Emoções:", emocoes_valores);
       console.log("   Gênero Preferido:", selectedGenre || "Todos");
 
-      // Chamar serviço de análise emocional COM TODAS AS 4 EMOÇÕES
+      // Chamar serviço de análise emocional COM TODAS AS 5 EMOÇÕES
       const result = await EmotionalService.analyzeWithFuzzy({
         sadness: emocoes_valores.sadness,
         joy: emocoes_valores.joy,
         anger: emocoes_valores.anger,
         fear: emocoes_valores.fear,
+        surprise: emocoes_valores.surprise,
         generoPreferido: selectedGenre || undefined,
       });
 
@@ -110,6 +118,10 @@ export default function EmotionalAssessmentPage({
         console.log("   Intenção:", result.data.fuzzyAnalysis.intencao);
         console.log("   Confiança:", result.data.fuzzyAnalysis.confianca);
         console.log("   Músicas:", result.data.playlist.length);
+        console.log(
+          "   Musicas a tocar:",
+          result.data.playlist.map((m: any) => m.name).join(", ")
+        );
 
         // Salvar resultado
         setAnalysisResult(result.data);
@@ -293,7 +305,7 @@ export default function EmotionalAssessmentPage({
                         Intenção da Playlist
                       </p>
                       <p className="text-xl font-bold text-orange-900 capitalize">
-                        {analysisResult.analysis.intencaoPlaylist}
+                        {analysisResult.fuzzyAnalysis.intencao}
                       </p>
                     </div>
 
@@ -302,7 +314,7 @@ export default function EmotionalAssessmentPage({
                         Confiança da IA
                       </p>
                       <p className="text-xl font-bold text-blue-900">
-                        {(analysisResult.analysis.grauConfianca * 100).toFixed(
+                        {(analysisResult.fuzzyAnalysis.confianca * 100).toFixed(
                           1
                         )}
                         %
@@ -319,7 +331,7 @@ export default function EmotionalAssessmentPage({
                     </div>
 
                     <p className="text-gray-600 text-sm italic">
-                      {analysisResult.analysis.descricao}
+                      {analysisResult.fuzzyAnalysis.descricao}
                     </p>
                   </div>
                 )}

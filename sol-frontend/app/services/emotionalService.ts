@@ -5,6 +5,7 @@ export interface EmotionalInput {
   joy?: number; // 0-10
   anger?: number; // 0-10
   fear?: number; // 0-10
+  surprise?: number; // 0-10
   estadoEmocional?: number; // 0-10 (deprecated - para compatibilidade)
   generoPreferido?: string;
 }
@@ -80,12 +81,13 @@ export class EmotionalService {
     error?: string;
   }> {
     try {
-      // Se as 4 emoções não forem passadas, usar estadoEmocional para compatibilidade
+      // Se as 5 emoções não forem passadas, usar estadoEmocional para compatibilidade
       const sadness = input.sadness ?? input.estadoEmocional ?? 5;
       const joy =
         input.joy ?? (input.estadoEmocional ? 10 - input.estadoEmocional : 5);
       const anger = input.anger ?? 0;
       const fear = input.fear ?? 0;
+      const surprise = input.surprise ?? 0;
 
       // Validação
       if (
@@ -96,7 +98,9 @@ export class EmotionalService {
         anger < 0 ||
         anger > 10 ||
         fear < 0 ||
-        fear > 10
+        fear > 10 ||
+        surprise < 0 ||
+        surprise > 10
       ) {
         return {
           success: false,
@@ -109,6 +113,7 @@ export class EmotionalService {
         joy,
         anger,
         fear,
+        surprise,
         generoPreferido: input.generoPreferido,
       });
 
@@ -133,7 +138,7 @@ export class EmotionalService {
           joy,
           anger,
           fear,
-          surprise: 0,
+          surprise,
           generoPreferido: input.generoPreferido,
         }),
       });

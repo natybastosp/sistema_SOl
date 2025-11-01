@@ -44,6 +44,7 @@ export default function Home() {
       artists: [],
     },
   });
+  const [playlistData, setPlaylistData] = useState<any>(null);
 
   // RENDER
 
@@ -71,13 +72,14 @@ export default function Home() {
         <EmotionalAssessmentPage
           userData={userData}
           setCurrentPage={setCurrentPage}
+          onPlaylistGenerated={setPlaylistData}
         />
       )}
 
       {/* PÁGINA: PLAYLIST */}
 
       {currentPage === PAGES.PLAYLIST && (
-        <PlaylistPage userData={userData} setCurrentPage={setCurrentPage} />
+        <PlaylistPage playlistData={playlistData} setCurrentPage={setCurrentPage} />
       )}
 
       {/* PÁGINA: DASHBOARD */}
