@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Header from "../Header";
 
 const PAGES = {
   DASHBOARD: "dashboard",
@@ -8,17 +9,13 @@ const PAGES = {
 interface PlaylistPageProps {
   playlistData: any;
   setCurrentPage: (page: string) => void;
+  userData?: { name: string };
 }
-
-const Header = ({ pageTitle }: { pageTitle: string }) => (
-  <div className="bg-gradient-to-r from-sol-primary to-sol-dark shadow-md p-4 mb-6">
-    <h1 className="text-2xl font-bold text-white">{pageTitle}</h1>
-  </div>
-);
 
 export default function PlaylistPage({
   playlistData,
   setCurrentPage,
+  userData,
 }: PlaylistPageProps) {
   const [currentTrack, setCurrentTrack] = useState(0);
   const [feedback, setFeedback] = useState<
@@ -96,7 +93,14 @@ export default function PlaylistPage({
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary flex flex-col">
-        <Header pageTitle="Feedback" />
+        <Header
+          pageTitle="Feedback"
+          showBackButton={true}
+          showLogoutButton={true}
+          onBack={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
+          onLogout={() => setCurrentPage(PAGES.DASHBOARD)}
+          userName={userData?.name}
+        />
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center border-2 border-sol-primary">
             <div className="w-20 h-20 bg-emotion-joy rounded-full flex items-center justify-center mx-auto mb-6">
@@ -145,7 +149,14 @@ export default function PlaylistPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary">
-      <Header pageTitle="Playlist" />
+      <Header
+        pageTitle="Playlist"
+        showBackButton={true}
+        showLogoutButton={true}
+        onBack={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
+        onLogout={() => setCurrentPage(PAGES.DASHBOARD)}
+        userName={userData?.name}
+      />
       <div className="flex p-8 gap-6">
         <div className="w-full flex gap-5">
           <div className="bg-white rounded-3xl shadow-2xl p-8 flex-1 border-2 border-sol-primary">

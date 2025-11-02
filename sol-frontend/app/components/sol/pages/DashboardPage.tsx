@@ -16,9 +16,18 @@ export default function DashboardPage({
   userData,
   setCurrentPage,
 }: DashboardPageProps) {
+  const handleLogout = () => {
+    setCurrentPage(PAGES.LOGIN);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary">
-      <Header pageTitle="Dashboard" />
+      <Header
+        pageTitle="Dashboard"
+        userName={userData.name}
+        showLogoutButton={true}
+        onLogout={handleLogout}
+      />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Boas-vindas */}

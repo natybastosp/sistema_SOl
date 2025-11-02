@@ -82,6 +82,7 @@ export default function Home() {
         <PlaylistPage
           playlistData={playlistData}
           setCurrentPage={setCurrentPage}
+          userData={userData}
         />
       )}
 

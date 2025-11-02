@@ -149,7 +149,14 @@ export default function EmotionalAssessmentPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary flex flex-col">
-      <Header pageTitle="Análise Emocional" />
+      <Header
+        pageTitle="Análise Emocional"
+        showBackButton={true}
+        showLogoutButton={true}
+        onBack={() => setCurrentPage(PAGES.DASHBOARD)}
+        onLogout={() => setCurrentPage(PAGES.LOGIN)}
+        userName={userData?.name}
+      />
 
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="max-w-2xl w-full">
