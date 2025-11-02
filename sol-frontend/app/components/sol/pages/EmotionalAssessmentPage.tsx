@@ -334,7 +334,7 @@ export default function EmotionalAssessmentPage({
                   <Button
                     onClick={handleGeneratePlaylist}
                     disabled={isGenerating}
-                    className="bg-sol-primary text-white px-12 py-4 rounded-lg font-semibold text-lg hover:bg-sol-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-sol-dark"
+                    className="bg-sol-primary text-black px-12 py-4 rounded-lg font-semibold text-lg hover:bg-sol-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-sol-dark"
                   >
                     {isGenerating ? (
                       <span className="flex items-center justify-center gap-3">
