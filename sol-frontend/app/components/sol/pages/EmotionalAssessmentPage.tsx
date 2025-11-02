@@ -148,7 +148,7 @@ export default function EmotionalAssessmentPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary flex flex-col">
       <Header pageTitle="Análise Emocional" />
 
       <div className="flex-1 flex items-center justify-center p-8">
@@ -156,72 +156,133 @@ export default function EmotionalAssessmentPage({
           {/* Logo e Título */}
           <div className="text-center mb-8">
             <SunLogo size="large" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <h2 className="text-2xl font-bold text-sol-darker mb-4">
               Como você está se sentindo?
             </h2>
-            <p className="text-gray-600">
+            <p className="text-sol-dark">
               Vou usar inteligência artificial para criar uma playlist perfeita
               para você
             </p>
           </div>
 
           {/* Card Principal */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="bg-white rounded-lg shadow-lg p-8 border-2 border-sol-primary">
             {!showResults ? (
               <>
                 {/* Título */}
-                <h3 className="text-lg font-semibold mb-6 text-gray-800">
+                <h3 className="text-lg font-semibold mb-6 text-sol-darker">
                   📊 Avalie seu estado emocional
                 </h3>
 
-                {/* 4 Sliders de Emoção */}
+                {/* 5 Sliders de Emoção com Cores Fortes */}
                 <div className="space-y-8 mb-8">
-                  {emocoes.map((emocao) => (
-                    <div key={emocao.id} className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-3xl">{emocao.icone}</span>
-                          <div>
-                            <label className="text-base font-semibold text-gray-700">
-                              {emocao.label}
-                            </label>
-                            <p className="text-sm text-gray-500">
-                              {emocao.descricao}
-                            </p>
+                  {emocoes.map((emocao) => {
+                    const emotionColors: Record<
+                      string,
+                      { bg: string; accent: string; border: string }
+                    > = {
+                      sadness: {
+                        bg: "bg-emotion-sadness/10",
+                        accent: "accent-emotion-sadness",
+                        border: "border-emotion-sadness",
+                      },
+                      joy: {
+                        bg: "bg-emotion-joy/10",
+                        accent: "accent-emotion-joy",
+                        border: "border-emotion-joy",
+                      },
+                      anger: {
+                        bg: "bg-emotion-anger/10",
+                        accent: "accent-emotion-anger",
+                        border: "border-emotion-anger",
+                      },
+                      fear: {
+                        bg: "bg-emotion-fear/10",
+                        accent: "accent-emotion-fear",
+                        border: "border-emotion-fear",
+                      },
+                      surprise: {
+                        bg: "bg-emotion-surprise/10",
+                        accent: "accent-emotion-surprise",
+                        border: "border-emotion-surprise",
+                      },
+                    };
+                    const emotionColor = emotionColors[emocao.id];
+                    const percentage = (emocoes_valores[emocao.id] / 10) * 100;
+
+                    return (
+                      <div
+                        key={emocao.id}
+                        className={`${emotionColor.bg} border-2 ${emotionColor.border} rounded-xl p-4 transition-all duration-200`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-4xl">{emocao.icone}</span>
+                            <div>
+                              <label className="text-base font-bold text-sol-darker block">
+                                {emocao.label}
+                              </label>
+                              <p className="text-xs text-gray-600">
+                                {emocao.descricao}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <span className="text-3xl font-bold ${emotionColor.accent.replace('accent-', 'text-')}">
+                              {emocoes_valores[emocao.id]}
+                            </span>
+                            <p className="text-xs text-gray-500">/10</p>
                           </div>
                         </div>
-                        <span className="text-2xl font-bold text-blue-600 min-w-12 text-right">
-                          {emocoes_valores[emocao.id]}
-                        </span>
-                      </div>
 
-                      <input
-                        type="range"
-                        min="0"
-                        max="10"
-                        value={emocoes_valores[emocao.id]}
-                        onChange={(e) =>
-                          handleSliderChange(
-                            emocao.id,
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                        disabled={isGenerating}
-                      />
+                        {/* Barra de progresso visual */}
+                        <input
+                          type="range"
+                          min="0"
+                          max="10"
+                          value={emocoes_valores[emocao.id]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              emocao.id,
+                              parseInt(e.target.value)
+                            )
+                          }
+                          className={`w-full h-3 bg-gray-300 rounded-lg appearance-none cursor-pointer ${emotionColor.accent} transition-all duration-200`}
+                          disabled={isGenerating}
+                          style={{
+                            background: `linear-gradient(to right, ${
+                              {
+                                sadness: "#4A90E2",
+                                joy: "#FFD700",
+                                anger: "#FF4444",
+                                fear: "#9C27B0",
+                                surprise: "#00BCD4",
+                              }[emocao.id]
+                            } 0%, ${
+                              {
+                                sadness: "#4A90E2",
+                                joy: "#FFD700",
+                                anger: "#FF4444",
+                                fear: "#9C27B0",
+                                surprise: "#00BCD4",
+                              }[emocao.id]
+                            } ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`,
+                          }}
+                        />
 
-                      <div className="flex justify-between text-xs text-gray-500 px-1">
-                        <span>Nada</span>
-                        <span>Bastante</span>
-                        <span>Máximo</span>
+                        <div className="flex justify-between text-xs text-gray-600 px-1 mt-2">
+                          <span>😐 Nada</span>
+                          <span>😊 Bastante</span>
+                          <span>😍 Máximo</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Seletor de Gênero */}
                 <div className="mb-8">
-                  <label className="block text-lg font-medium text-gray-700 mb-4">
+                  <label className="block text-lg font-medium text-sol-darker mb-4">
                     🎵 Gênero musical preferido (opcional)
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -231,8 +292,8 @@ export default function EmotionalAssessmentPage({
                       disabled={isGenerating}
                       className={`px-4 py-3 rounded-lg font-medium transition-all ${
                         selectedGenre === ""
-                          ? "bg-orange-400 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          ? "bg-sol-primary text-black shadow-md border-2 border-sol-dark"
+                          : "bg-sol-light text-sol-dark hover:bg-sol-pale border border-sol-pale"
                       }`}
                     >
                       Todos
@@ -246,15 +307,15 @@ export default function EmotionalAssessmentPage({
                         disabled={isGenerating}
                         className={`px-4 py-3 rounded-lg font-medium transition-all capitalize ${
                           selectedGenre === genre
-                            ? "bg-orange-400 text-white shadow-md"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            ? "bg-sol-primary text-black shadow-md border-2 border-sol-dark"
+                            : "bg-sol-light text-sol-dark hover:bg-sol-pale border border-sol-pale"
                         }`}
                       >
                         {genre}
                       </button>
                     ))}
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-sol-dark mt-2">
                     {selectedGenre
                       ? `✓ ${selectedGenre.toUpperCase()} selecionado`
                       : "Nenhum gênero selecionado (todos os gêneros)"}
@@ -263,7 +324,7 @@ export default function EmotionalAssessmentPage({
 
                 {/* Mensagem de Erro */}
                 {error && (
-                  <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  <div className="mb-6 bg-emotion-anger/20 border-2 border-emotion-anger text-emotion-anger px-4 py-3 rounded-lg text-sm font-medium">
                     {error}
                   </div>
                 )}
@@ -273,7 +334,7 @@ export default function EmotionalAssessmentPage({
                   <Button
                     onClick={handleGeneratePlaylist}
                     disabled={isGenerating}
-                    className="bg-orange-400 text-white px-12 py-4 rounded-lg font-semibold text-lg hover:bg-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-sol-primary text-white px-12 py-4 rounded-lg font-semibold text-lg hover:bg-sol-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-sol-dark"
                   >
                     {isGenerating ? (
                       <span className="flex items-center justify-center gap-3">
@@ -290,30 +351,30 @@ export default function EmotionalAssessmentPage({
               /* Resultados da Análise */
               <div className="text-center">
                 <div className="mb-6">
-                  <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-20 h-20 bg-emotion-joy rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-4xl">✅</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                  <h3 className="text-2xl font-bold text-sol-darker mb-2">
                     Playlist Gerada com Sucesso!
                   </h3>
                 </div>
 
                 {analysisResult && (
                   <div className="space-y-4 mb-6">
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                      <p className="text-sm text-orange-700 font-medium mb-1">
+                    <div className="bg-sol-pale/50 border-2 border-sol-primary rounded-lg p-4">
+                      <p className="text-sm text-sol-dark font-medium mb-1">
                         Intenção da Playlist
                       </p>
-                      <p className="text-xl font-bold text-orange-900 capitalize">
+                      <p className="text-xl font-bold text-sol-darker capitalize">
                         {analysisResult.fuzzyAnalysis.intencao}
                       </p>
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-blue-700 font-medium mb-1">
+                    <div className="bg-emotion-calm/20 border-2 border-emotion-calm rounded-lg p-4">
+                      <p className="text-sm text-emotion-calm font-medium mb-1">
                         Confiança da IA
                       </p>
-                      <p className="text-xl font-bold text-blue-900">
+                      <p className="text-xl font-bold text-emotion-calm">
                         {(analysisResult.fuzzyAnalysis.confianca * 100).toFixed(
                           1
                         )}
@@ -321,22 +382,22 @@ export default function EmotionalAssessmentPage({
                       </p>
                     </div>
 
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm text-green-700 font-medium mb-1">
+                    <div className="bg-emotion-joy/20 border-2 border-emotion-joy rounded-lg p-4">
+                      <p className="text-sm text-emotion-joy font-medium mb-1">
                         Músicas Selecionadas
                       </p>
-                      <p className="text-xl font-bold text-green-900">
+                      <p className="text-xl font-bold text-emotion-joy">
                         {analysisResult.playlist.length} músicas
                       </p>
                     </div>
 
-                    <p className="text-gray-600 text-sm italic">
+                    <p className="text-gray-700 text-sm italic">
                       {analysisResult.fuzzyAnalysis.descricao}
                     </p>
                   </div>
                 )}
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-600 text-sm">
                   Redirecionando para a playlist...
                 </p>
               </div>
