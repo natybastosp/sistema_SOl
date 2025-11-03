@@ -176,7 +176,11 @@ export default function PlaylistPage({
                     🤖 Confiança da IA
                   </p>
                   <p className="text-xl font-bold text-sol-dark mt-1">
-                    {(analysis.grauConfianca * 100).toFixed(0)}%
+                    {analysis.grauConfianca &&
+                    typeof analysis.grauConfianca === "number"
+                      ? (analysis.grauConfianca * 100).toFixed(0)
+                      : "—"}
+                    %
                   </p>
                 </div>
                 <div className="h-12 w-px bg-sol-primary/20"></div>
@@ -211,147 +215,6 @@ export default function PlaylistPage({
                   currentMusic.genre ||
                   "Gênero desconhecido"}
               </p>
-            </div>
-
-            <div className="grid grid-cols-5 gap-3 mb-8">
-              {/* Alegria */}
-              <div className="text-center">
-                <div className="bg-emotion-joy/10 rounded-lg py-3 px-2 border-2 border-emotion-joy h-32 flex flex-col justify-between">
-                  <p className="text-xs font-bold text-emotion-joy mb-2">
-                    😊 Alegria
-                  </p>
-                  <div className="flex-1 bg-gray-200 rounded-md relative overflow-hidden">
-                    <div
-                      className="bg-gradient-to-t from-emotion-joy to-emotion-joy w-full transition-all duration-300"
-                      style={{
-                        height: `${
-                          currentMusic.scoresEmocionais
-                            ? currentMusic.scoresEmocionais.alegria * 100
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <p className="text-lg font-bold text-emotion-joy mt-2">
-                    {currentMusic.scoresEmocionais
-                      ? (currentMusic.scoresEmocionais.alegria * 100).toFixed(0)
-                      : "—"}
-                    %
-                  </p>
-                </div>
-              </div>
-
-              {/* Tristeza */}
-              <div className="text-center">
-                <div className="bg-emotion-sadness/10 rounded-lg py-3 px-2 border-2 border-emotion-sadness h-32 flex flex-col justify-between">
-                  <p className="text-xs font-bold text-emotion-sadness mb-2">
-                    😢 Tristeza
-                  </p>
-                  <div className="flex-1 bg-gray-200 rounded-md relative overflow-hidden">
-                    <div
-                      className="bg-gradient-to-t from-emotion-sadness to-emotion-sadness w-full transition-all duration-300"
-                      style={{
-                        height: `${
-                          currentMusic.scoresEmocionais
-                            ? currentMusic.scoresEmocionais.tristeza * 100
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <p className="text-lg font-bold text-emotion-sadness mt-2">
-                    {currentMusic.scoresEmocionais
-                      ? (currentMusic.scoresEmocionais.tristeza * 100).toFixed(
-                          0
-                        )
-                      : "—"}
-                    %
-                  </p>
-                </div>
-              </div>
-
-              {/* Raiva */}
-              <div className="text-center">
-                <div className="bg-emotion-anger/10 rounded-lg py-3 px-2 border-2 border-emotion-anger h-32 flex flex-col justify-between">
-                  <p className="text-xs font-bold text-emotion-anger mb-2">
-                    😠 Raiva
-                  </p>
-                  <div className="flex-1 bg-gray-200 rounded-md relative overflow-hidden">
-                    <div
-                      className="bg-gradient-to-t from-emotion-anger to-emotion-anger w-full transition-all duration-300"
-                      style={{
-                        height: `${
-                          currentMusic.scoresEmocionais
-                            ? currentMusic.scoresEmocionais.raiva * 100
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <p className="text-lg font-bold text-emotion-anger mt-2">
-                    {currentMusic.scoresEmocionais
-                      ? (currentMusic.scoresEmocionais.raiva * 100).toFixed(0)
-                      : "—"}
-                    %
-                  </p>
-                </div>
-              </div>
-
-              {/* Medo */}
-              <div className="text-center">
-                <div className="bg-emotion-fear/10 rounded-lg py-3 px-2 border-2 border-emotion-fear h-32 flex flex-col justify-between">
-                  <p className="text-xs font-bold text-emotion-fear mb-2">
-                    😨 Medo
-                  </p>
-                  <div className="flex-1 bg-gray-200 rounded-md relative overflow-hidden">
-                    <div
-                      className="bg-gradient-to-t from-emotion-fear to-emotion-fear w-full transition-all duration-300"
-                      style={{
-                        height: `${
-                          currentMusic.scoresEmocionais
-                            ? currentMusic.scoresEmocionais.medo * 100
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <p className="text-lg font-bold text-emotion-fear mt-2">
-                    {currentMusic.scoresEmocionais
-                      ? (currentMusic.scoresEmocionais.medo * 100).toFixed(0)
-                      : "—"}
-                    %
-                  </p>
-                </div>
-              </div>
-
-              {/* Surpresa */}
-              <div className="text-center">
-                <div className="bg-emotion-surprise/10 rounded-lg py-3 px-2 border-2 border-emotion-surprise h-32 flex flex-col justify-between">
-                  <p className="text-xs font-bold text-emotion-surprise mb-2">
-                    😮 Surpresa
-                  </p>
-                  <div className="flex-1 bg-gray-200 rounded-md relative overflow-hidden">
-                    <div
-                      className="bg-gradient-to-t from-emotion-surprise to-emotion-surprise w-full transition-all duration-300"
-                      style={{
-                        height: `${
-                          currentMusic.scoresEmocionais
-                            ? currentMusic.scoresEmocionais.surpresa * 100
-                            : 0
-                        }%`,
-                      }}
-                    />
-                  </div>
-                  <p className="text-lg font-bold text-emotion-surprise mt-2">
-                    {currentMusic.scoresEmocionais
-                      ? (currentMusic.scoresEmocionais.surpresa * 100).toFixed(
-                          0
-                        )
-                      : "—"}
-                    %
-                  </p>
-                </div>
-              </div>
             </div>
 
             <div className="flex items-center justify-center gap-4 mb-8">
