@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../Header";
 
 const PAGES = {
@@ -61,6 +61,16 @@ export default function PlaylistPage({
     console.log(`   Feedbacks negativos: ${musics.length - positiveFeedbacks}`);
     setCurrentPage(PAGES.DASHBOARD);
   };
+
+  // Redirecionamento automático após 3 segundos quando showFinalFeedback é true
+  useEffect(() => {
+    if (showFinalFeedback) {
+      const timer = setTimeout(() => {
+        handleFinish();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showFinalFeedback]);
 
   if (!musics || musics.length === 0) {
     return (
@@ -137,10 +147,13 @@ export default function PlaylistPage({
             </div>
             <button
               onClick={handleFinish}
-              className="w-full bg-sol-primary text-white py-3 rounded-lg font-semibold hover:bg-sol-dark transition-all"
+              className="w-full bg-sol-primary text-white py-3 rounded-lg font-semibold hover:bg-sol-dark transition-all mb-3"
             >
               Ver Dashboard
             </button>
+            <p className="text-xs text-gray-500">
+              ⏱️ Redirecionando automaticamente em 3 segundos...
+            </p>
           </div>
         </div>
       </div>
