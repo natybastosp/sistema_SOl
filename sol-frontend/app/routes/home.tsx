@@ -5,6 +5,9 @@ import PreferencesPages from "~/components/sol/pages/PreferencePages";
 import EmotionalAssessmentPage from "~/components/sol/pages/EmotionalAssessmentPage";
 import PlaylistPage from "~/components/sol/pages/PlaylistPage";
 import DashboardPage from "~/components/sol/pages/DashboardPage";
+import HistoryPage from "~/components/sol/pages/HistoryPage";
+import ProfilePage from "~/components/sol/pages/ProfilePage";
+import PlaylistListPage from "~/components/sol/pages/PlaylistListPage";
 
 // Constantes
 import { PAGES } from "~/constants/sol";
@@ -90,6 +93,32 @@ export default function Home() {
 
       {currentPage === PAGES.DASHBOARD && (
         <DashboardPage userData={userData} setCurrentPage={setCurrentPage} />
+      )}
+
+      {/* PÁGINA: HISTÓRICO */}
+
+      {currentPage === PAGES.HISTORY && (
+        <HistoryPage userData={userData} setCurrentPage={setCurrentPage} />
+      )}
+
+      {/* PÁGINA: PERFIL */}
+
+      {currentPage === PAGES.PROFILE && (
+        <ProfilePage
+          userData={userData}
+          setCurrentPage={setCurrentPage}
+          setUserData={setUserData}
+        />
+      )}
+
+      {/* PÁGINA: PLAYLISTS SALVAS */}
+
+      {currentPage === PAGES.PLAYLIST_LIST && (
+        <PlaylistListPage
+          userData={userData}
+          setCurrentPage={setCurrentPage}
+          setPlaylistData={setPlaylistData}
+        />
       )}
     </div>
   );

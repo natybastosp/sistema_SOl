@@ -101,7 +101,7 @@ export default function DashboardPage({
                 Acesse suas playlists favoritas salvas.
               </p>
               <Button
-                onClick={() => setCurrentPage(PAGES.PLAYLIST)}
+                onClick={() => setCurrentPage(PAGES.PLAYLIST_LIST)}
                 className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all"
                 variant="outline"
               >

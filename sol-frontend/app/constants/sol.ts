@@ -70,6 +70,7 @@ export const PAGES = {
   // Principais
   DASHBOARD: "dashboard",
   PLAYLIST: "playlist",
+  PLAYLIST_LIST: "playlist-list",
   HISTORY: "history",
   PROFILE: "profile",
 } as const;
