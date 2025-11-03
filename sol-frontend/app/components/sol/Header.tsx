@@ -16,7 +16,7 @@ export default function Header({
   userName = "Usuário",
 }: HeaderProps) {
   return (
-    <div className="bg-gradient-to-r from-sol-primary to-sol-dark shadow-lg p-4 border-b-4 border-sol-darker">
+    <div className="bg-gradient-to-r from-sol-primary to-sol-dark shadow-lg p-4 ">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo e Título */}
         <div className="flex items-center gap-4">

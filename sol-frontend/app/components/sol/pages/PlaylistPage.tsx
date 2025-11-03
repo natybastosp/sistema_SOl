@@ -195,7 +195,7 @@ export default function PlaylistPage({
               </div>
             </div>
 
-            <div className="w-64 h-64 bg-gradient-to-br from-sol-primary to-sol-dark rounded-xl mx-auto mb-8 flex items-center justify-center">
+            <div className="w-64 h-64 bg-gradient-to-br from-[#FAFDF6] via-[#FDD26B] to-[#FFA500] rounded-xl mx-auto mb-8 flex items-center justify-center">
               <span className="text-8xl">🎵</span>
             </div>
 
@@ -221,7 +221,7 @@ export default function PlaylistPage({
               <button
                 onClick={previousTrack}
                 disabled={currentTrack === 0}
-                className="w-14 h-14 flex items-center justify-center bg-sol-pale/80 text-sol-primary rounded-full hover:bg-sol-pale disabled:opacity-40 disabled:cursor-not-allowed transition-all border-2 border-sol-primary shadow-md hover:shadow-lg"
+                className="w-20 h-20 flex items-center justify-center  rounded-full text-black hover:text-[#6f1a07] "
               >
                 <svg
                   className="w-6 h-6"
@@ -232,7 +232,7 @@ export default function PlaylistPage({
                 </svg>
               </button>
 
-              <button className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-sol-primary to-sol-dark rounded-full text-white hover:shadow-2xl transition-all shadow-lg hover:scale-110 transform">
+              <button className="w-20 h-20 flex items-center justify-center  rounded-full text-black hover:text-[#6f1a07] ">
                 <svg
                   className="w-8 h-8 ml-1"
                   fill="currentColor"
@@ -244,14 +244,14 @@ export default function PlaylistPage({
 
               <button
                 onClick={nextTrack}
-                className="w-14 h-14 flex items-center justify-center bg-sol-pale/80 text-sol-primary rounded-full hover:bg-sol-pale transition-all border-2 border-sol-primary shadow-md hover:shadow-lg"
+                className="w-20 h-20 flex items-center justify-center  rounded-full text-black hover:text-[#6f1a07] transition-all transform rotate-180"
               >
                 <svg
                   className="w-6 h-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M16 18h2V6h-2zm-11-7l8.5-6v12z" />
+                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                 </svg>
               </button>
             </div>
