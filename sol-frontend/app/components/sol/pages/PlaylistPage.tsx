@@ -1,33 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Header from "../Header";
 
 const PAGES = {
   DASHBOARD: "dashboard",
-  EMOTIONAL_ASSESSMENT: "emotional_assessment"
+  EMOTIONAL_ASSESSMENT: "emotional_assessment",
 };
 
 interface PlaylistPageProps {
   playlistData: any;
   setCurrentPage: (page: string) => void;
+  userData?: { name: string };
 }
-
-const Header = ({ pageTitle }: { pageTitle: string }) => (
-  <div className="bg-white shadow-sm p-4 mb-6">
-    <h1 className="text-2xl font-bold text-gray-800">{pageTitle}</h1>
-  </div>
-);
 
 export default function PlaylistPage({
   playlistData,
   setCurrentPage,
+  userData,
 }: PlaylistPageProps) {
   const [currentTrack, setCurrentTrack] = useState(0);
-  const [feedback, setFeedback] = useState<Record<string, "positive" | "negative">>({});
+  const [feedback, setFeedback] = useState<
+    Record<string, "positive" | "negative">
+  >({});
   const [showFinalFeedback, setShowFinalFeedback] = useState(false);
 
   const musics = playlistData?.playlist || [];
   const analysis = playlistData?.analysis || {};
 
-  const handleTrackFeedback = (musicId: string, type: "positive" | "negative") => {
+  const handleTrackFeedback = (
+    musicId: string,
+    type: "positive" | "negative"
+  ) => {
     setFeedback((prev) => ({
       ...prev,
       [musicId]: type,
@@ -50,7 +52,9 @@ export default function PlaylistPage({
   };
 
   const handleFinish = () => {
-    const positiveFeedbacks = Object.values(feedback).filter((f) => f === "positive").length;
+    const positiveFeedbacks = Object.values(feedback).filter(
+      (f) => f === "positive"
+    ).length;
     console.log("📊 Sessão finalizada:");
     console.log(`   Músicas tocadas: ${currentTrack + 1}/${musics.length}`);
     console.log(`   Feedbacks positivos: ${positiveFeedbacks}`);
@@ -58,14 +62,26 @@ export default function PlaylistPage({
     setCurrentPage(PAGES.DASHBOARD);
   };
 
+  // Redirecionamento automático após 3 segundos quando showFinalFeedback é true
+  useEffect(() => {
+    if (showFinalFeedback) {
+      const timer = setTimeout(() => {
+        handleFinish();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showFinalFeedback]);
+
   if (!musics || musics.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Nenhuma música encontrada</p>
+          <p className="text-sol-darker mb-4 text-lg">
+            Nenhuma música encontrada
+          </p>
           <button
             onClick={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
-            className="bg-orange-400 text-white px-6 py-2 rounded-lg hover:bg-orange-500"
+            className="bg-sol-primary text-white px-6 py-2 rounded-lg hover:bg-sol-dark font-semibold"
           >
             Gerar Nova Playlist
           </button>
@@ -77,38 +93,67 @@ export default function PlaylistPage({
   const currentMusic = musics[currentTrack];
 
   if (showFinalFeedback) {
-    const positiveFeedbacks = Object.values(feedback).filter((f) => f === "positive").length;
-    const satisfactionRate = ((positiveFeedbacks / musics.length) * 100).toFixed(0);
+    const positiveFeedbacks = Object.values(feedback).filter(
+      (f) => f === "positive"
+    ).length;
+    const satisfactionRate = (
+      (positiveFeedbacks / musics.length) *
+      100
+    ).toFixed(0);
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col">
-        <Header pageTitle="Feedback" />
+      <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary flex flex-col">
+        <Header
+          pageTitle="Feedback"
+          showBackButton={true}
+          showLogoutButton={true}
+          onBack={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
+          onLogout={() => setCurrentPage(PAGES.DASHBOARD)}
+          userName={userData?.name}
+        />
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center border-2 border-sol-primary">
+            <div className="w-20 h-20 bg-emotion-joy rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="text-4xl">🎉</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Sessão Concluída!</h2>
+            <h2 className="text-2xl font-bold text-sol-darker mb-4">
+              Sessão Concluída!
+            </h2>
             <div className="space-y-4 mb-8">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-700 font-medium mb-1">Músicas Ouvidas</p>
-                <p className="text-2xl font-bold text-blue-900">{currentTrack + 1} de {musics.length}</p>
+              <div className="bg-emotion-joy/20 border border-emotion-joy rounded-lg p-4">
+                <p className="text-sm text-emotion-joy font-medium mb-1">
+                  Músicas Ouvidas
+                </p>
+                <p className="text-2xl font-bold text-emotion-joy">
+                  {currentTrack + 1} de {musics.length}
+                </p>
               </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-700 font-medium mb-1">Taxa de Satisfação</p>
-                <p className="text-2xl font-bold text-green-900">{satisfactionRate}%</p>
+              <div className="bg-emotion-calm/20 border border-emotion-calm rounded-lg p-4">
+                <p className="text-sm text-emotion-calm font-medium mb-1">
+                  Taxa de Satisfação
+                </p>
+                <p className="text-2xl font-bold text-emotion-calm">
+                  {satisfactionRate}%
+                </p>
               </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-sm text-orange-700 font-medium mb-1">Intenção da Playlist</p>
-                <p className="text-lg font-bold text-orange-900 capitalize">{analysis.intencaoPlaylist}</p>
+              <div className="bg-sol-pale/40 border border-sol-primary rounded-lg p-4">
+                <p className="text-sm text-sol-dark font-medium mb-1">
+                  Intenção da Playlist
+                </p>
+                <p className="text-lg font-bold text-sol-darker capitalize">
+                  {analysis.intencaoPlaylist}
+                </p>
               </div>
             </div>
             <button
               onClick={handleFinish}
-              className="w-full bg-orange-400 text-white py-3 rounded-lg font-semibold hover:bg-orange-500"
+              className="w-full bg-sol-primary text-white py-3 rounded-lg font-semibold hover:bg-sol-dark transition-all mb-3"
             >
               Ver Dashboard
             </button>
+            <p className="text-xs text-gray-500">
+              ⏱️ Redirecionando automaticamente em 3 segundos...
+            </p>
           </div>
         </div>
       </div>
@@ -116,113 +161,131 @@ export default function PlaylistPage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
-      <Header pageTitle="Playlist" />
+    <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary">
+      <Header
+        pageTitle="Playlist"
+        showBackButton={true}
+        showLogoutButton={true}
+        onBack={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
+        onLogout={() => setCurrentPage(PAGES.DASHBOARD)}
+        userName={userData?.name}
+      />
       <div className="flex p-8 gap-6">
         <div className="w-full flex gap-5">
-          <div className="bg-white rounded-2xl shadow-lg p-8 flex-1">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <p className="text-sm text-gray-600">Intenção da Playlist</p>
-                <p className="text-lg font-bold text-orange-600 capitalize">{analysis.intencaoPlaylist}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Confiança da IA</p>
-                <p className="text-lg font-bold text-blue-600">{(analysis.grauConfianca * 100).toFixed(0)}%</p>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 flex-1 border-2 border-sol-primary">
+            {/* Header Info */}
+            <div className="bg-gradient-to-r from-sol-pale/50 to-sol-light rounded-2xl p-4 mb-6 border border-sol-pale">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-600 font-medium">
+                    🎯 Intenção
+                  </p>
+                  <p className="text-xl font-bold text-sol-primary capitalize mt-1">
+                    {analysis.intencaoPlaylist}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-600 font-medium">
+                    🤖 Confiança da IA
+                  </p>
+                  <p className="text-xl font-bold text-sol-dark mt-1">
+                    {analysis.grauConfianca &&
+                    typeof analysis.grauConfianca === "number"
+                      ? (analysis.grauConfianca * 100).toFixed(0)
+                      : "—"}
+                    %
+                  </p>
+                </div>
+                <div className="h-12 w-px bg-sol-primary/20"></div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-600 font-medium">
+                    📍 Posição
+                  </p>
+                  <p className="text-xl font-bold text-sol-darker mt-1">
+                    {currentTrack + 1}/{musics.length}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="text-center mb-6">
-              <p className="text-sm text-gray-500">Música {currentTrack + 1} de {musics.length}</p>
-            </div>
-
-            <div className="w-64 h-64 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl mx-auto mb-8 flex items-center justify-center">
+            <div className="w-64 h-64 bg-gradient-to-br from-[#FAFDF6] via-[#FDD26B] to-[#FFA500] rounded-xl mx-auto mb-8 flex items-center justify-center">
               <span className="text-8xl">🎵</span>
             </div>
 
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">{currentMusic.nome}</h2>
-              <p className="text-lg text-gray-600 mb-1">{currentMusic.artista.replace(/\//g, "")}</p>
-              <p className="text-sm text-orange-500 font-medium uppercase">{currentMusic.genero}</p>
-            </div>
-
-            <div className="grid grid-cols-5 gap-2 mb-8">
-              <div className="text-center">
-                <p className="text-xs text-gray-500 mb-1">Alegria</p>
-                <div className="bg-yellow-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-yellow-700">{(currentMusic.scoresEmocionais.alegria * 100).toFixed(0)}%</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-500 mb-1">Tristeza</p>
-                <div className="bg-blue-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-blue-700">{(currentMusic.scoresEmocionais.tristeza * 100).toFixed(0)}%</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-500 mb-1">Raiva</p>
-                <div className="bg-red-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-red-700">{(currentMusic.scoresEmocionais.raiva * 100).toFixed(0)}%</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-500 mb-1">Medo</p>
-                <div className="bg-purple-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-purple-700">{(currentMusic.scoresEmocionais.medo * 100).toFixed(0)}%</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-500 mb-1">Surpresa</p>
-                <div className="bg-green-100 rounded-lg py-2">
-                  <p className="text-sm font-bold text-green-700">{(currentMusic.scoresEmocionais.surpresa * 100).toFixed(0)}%</p>
-                </div>
-              </div>
+              <h2 className="text-2xl font-bold text-sol-darker mb-2">
+                {currentMusic.nome || currentMusic.name || "Música"}
+              </h2>
+              <p className="text-lg text-gray-700 mb-1">
+                {(
+                  currentMusic.artista ||
+                  currentMusic.artist ||
+                  "Artista desconhecido"
+                ).replace?.(/\//g, "") || "Artista desconhecido"}
+              </p>
+              <p className="text-sm text-sol-primary font-medium uppercase">
+                {currentMusic.genero ||
+                  currentMusic.genre ||
+                  "Gênero desconhecido"}
+              </p>
             </div>
 
             <div className="flex items-center justify-center gap-4 mb-8">
               <button
                 onClick={previousTrack}
                 disabled={currentTrack === 0}
-                className="w-12 h-12 flex items-center justify-center bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="w-20 h-20 flex items-center justify-center  rounded-full text-black hover:text-[#6f1a07] "
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                 </svg>
               </button>
 
-              <button className="w-16 h-16 flex items-center justify-center bg-orange-500 rounded-full text-white hover:bg-orange-600 transition-all shadow-lg">
-                <svg className="w-7 h-7 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
+              <button className="w-20 h-20 flex items-center justify-center  rounded-full text-black hover:text-[#6f1a07] ">
+                <svg
+                  className="w-8 h-8 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
 
               <button
                 onClick={nextTrack}
-                className="w-12 h-12 flex items-center justify-center bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-all"
+                className="w-20 h-20 flex items-center justify-center  rounded-full text-black hover:text-[#6f1a07] transition-all transform rotate-180"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M16 18h2V6h-2zm-11-7l8.5-6v12z"/>
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                 </svg>
               </button>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 mt-6">
               <button
                 onClick={() => handleTrackFeedback(currentMusic.id, "negative")}
-                className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+                className={`flex-1 py-4 rounded-xl font-bold transition-all transform hover:scale-105 ${
                   feedback[currentMusic.id] === "negative"
-                    ? "bg-red-500 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-emotion-anger text-white border-2 border-emotion-anger shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 border-2 border-transparent"
                 }`}
               >
                 👎 Não Gostei
               </button>
               <button
                 onClick={() => handleTrackFeedback(currentMusic.id, "positive")}
-                className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+                className={`flex-1 py-4 rounded-xl font-bold transition-all transform hover:scale-105 ${
                   feedback[currentMusic.id] === "positive"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-emotion-joy text-white border-2 border-emotion-joy shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 border-2 border-transparent"
                 }`}
               >
                 👍 Gostei
@@ -230,8 +293,10 @@ export default function PlaylistPage({
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-4 w-80">
-            <h3 className="font-semibold text-gray-800 mb-3">Playlist Completa</h3>
+          <div className="bg-white rounded-lg shadow-lg p-4 w-80 border border-sol-primary">
+            <h3 className="font-semibold text-sol-darker mb-3 text-lg">
+              Playlist Completa
+            </h3>
             <div className="space-y-2 max-h-[600px] overflow-y-auto">
               {musics.map((music: any, index: number) => (
                 <button
@@ -239,12 +304,21 @@ export default function PlaylistPage({
                   onClick={() => setCurrentTrack(index)}
                   className={`w-full text-left p-3 rounded-lg transition-all ${
                     index === currentTrack
-                      ? "bg-orange-100 border-2 border-orange-400"
-                      : "bg-gray-50 hover:bg-gray-100"
+                      ? "bg-sol-pale border-2 border-sol-primary"
+                      : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
                   }`}
                 >
-                  <p className="font-medium text-sm text-gray-800">{index + 1}. {music.nome}</p>
-                  <p className="text-xs text-gray-600">{music.artista.replace(/\//g, "")} • {music.genero}</p>
+                  <p className="font-medium text-sm text-sol-darker">
+                    {index + 1}. {music.nome || music.name || "Música"}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {(
+                      music.artista ||
+                      music.artist ||
+                      "Artista desconhecido"
+                    ).replace?.(/\//g, "") || "Artista desconhecido"}{" "}
+                    • {music.genero || music.genre || "Gênero"}
+                  </p>
                 </button>
               ))}
             </div>

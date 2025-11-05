@@ -120,10 +120,17 @@ export async function POST(request: NextRequest) {
     Logger.debug("🎵 Gêneros recomendados:", recommendedGenres);
 
     // 6. Buscar músicas do banco de dados
-    const topTracks = await prisma.music.findMany({
+    let genreFilter = emotionalInput.generoPreferido
+      ? [emotionalInput.generoPreferido, ...recommendedGenres]
+      : recommendedGenres;
+
+    Logger.debug("🔍 Filtrando por gêneros:", genreFilter);
+
+    let topTracks = await prisma.music.findMany({
       where: {
         genre: {
-          in: recommendedGenres,
+          in: genreFilter,
+          mode: "insensitive",
         },
       },
       select: {
@@ -131,16 +138,40 @@ export async function POST(request: NextRequest) {
         name: true,
         artist: true,
         genre: true,
+        spotifyId: true,
       },
-      take: 5,
+      take: 5, // Máximo 5 faixas por playlist
       orderBy: {
-        createdAt: "desc",
+        createdAt: "desc", // Ordena por data de criação
       },
     });
 
-    Logger.info(`✅ ${topTracks.length} faixas encontradas`);
+    Logger.info(
+      `✅ ${topTracks.length} faixas encontradas com gêneros preferidos`
+    );
 
-    // 7. Salvar análise emocional no histórico
+    // 7. Se não encontrou músicas, buscar de TODOS os gêneros
+    if (topTracks.length === 0) {
+      Logger.warn(
+        "⚠️ Nenhuma música encontrada nos gêneros preferidos, buscando em todos..."
+      );
+      topTracks = await prisma.music.findMany({
+        select: {
+          id: true,
+          name: true,
+          artist: true,
+          genre: true,
+          spotifyId: true,
+        },
+        take: 5, // Máximo 5 faixas
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      Logger.info(`✅ ${topTracks.length} faixas encontradas (busca geral)`);
+    }
+
+    // 8. Salvar análise emocional no histórico
     await prisma.emotionalState.create({
       data: {
         userId: user.id,

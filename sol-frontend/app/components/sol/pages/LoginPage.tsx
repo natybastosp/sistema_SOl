@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import Header from "../Header";
 import SunLogo from "../SunLogo";
 import { PAGES } from "~/constants/sol";
 import { AuthService } from "~/services/authService";
@@ -104,9 +103,7 @@ export default function LoginPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col">
-      <Header pageTitle={isRegisterMode ? "registro" : "login"} />
-
+    <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary flex flex-col">
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="max-w-md w-full">
           {/* Logo e Título */}
@@ -234,22 +231,22 @@ export default function LoginPage({
             </div>
 
             {/* Indicador de Conexão */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            {/*   <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span>Conectado ao backend</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Dica de Teste */}
-          {process.env.NODE_ENV === "development" && (
+          {/*   {process.env.NODE_ENV === "development" && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
               <p className="font-semibold mb-1">💡 Modo Desenvolvedor</p>
               <p>Use qualquer email/senha para testar.</p>
               <p className="mt-1">Exemplo: teste@sol.com / senha123</p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

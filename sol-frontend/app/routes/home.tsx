@@ -5,7 +5,9 @@ import PreferencesPages from "~/components/sol/pages/PreferencePages";
 import EmotionalAssessmentPage from "~/components/sol/pages/EmotionalAssessmentPage";
 import PlaylistPage from "~/components/sol/pages/PlaylistPage";
 import DashboardPage from "~/components/sol/pages/DashboardPage";
-import EmotionalFlow from "~/components/sol/pages/EmotionalFlow";
+import HistoryPage from "~/components/sol/pages/HistoryPage";
+import ProfilePage from "~/components/sol/pages/ProfilePage";
+import PlaylistListPage from "~/components/sol/pages/PlaylistListPage";
 
 // Constantes
 import { PAGES } from "~/constants/sol";
@@ -45,6 +47,7 @@ export default function Home() {
       artists: [],
     },
   });
+  const [playlistData, setPlaylistData] = useState<any>(null);
 
   // RENDER
 
@@ -66,38 +69,56 @@ export default function Home() {
         />
       )}
 
-      {/* PÁGINA: AVALIAÇÃO EMOCIONAL (ANTIGA) */}
+      {/* PÁGINA: AVALIAÇÃO EMOCIONAL */}
 
       {currentPage === PAGES.EMOTIONAL_ASSESSMENT && (
         <EmotionalAssessmentPage
           userData={userData}
           setCurrentPage={setCurrentPage}
-        />
-      )}
-
-      {/* 🆕 PÁGINA: EMOTIONAL FLOW (NOVA!) */}
-
-      {/* 
-        ADICIONE ESTE BLOCO EXATAMENTE AQUI!
-        Esta é a nova página com análise Fuzzy integrada
-      */}
-      {currentPage === PAGES.EMOTIONAL_FLOW && (
-        <EmotionalFlow
-          userName={userData.name}
-          onBack={() => setCurrentPage(PAGES.DASHBOARD)}
+          onPlaylistGenerated={setPlaylistData}
         />
       )}
 
       {/* PÁGINA: PLAYLIST */}
 
       {currentPage === PAGES.PLAYLIST && (
-        <PlaylistPage userData={userData} setCurrentPage={setCurrentPage} />
+        <PlaylistPage
+          playlistData={playlistData}
+          setCurrentPage={setCurrentPage}
+          userData={userData}
+        />
       )}
 
       {/* PÁGINA: DASHBOARD */}
 
       {currentPage === PAGES.DASHBOARD && (
         <DashboardPage userData={userData} setCurrentPage={setCurrentPage} />
+      )}
+
+      {/* PÁGINA: HISTÓRICO */}
+
+      {currentPage === PAGES.HISTORY && (
+        <HistoryPage userData={userData} setCurrentPage={setCurrentPage} />
+      )}
+
+      {/* PÁGINA: PERFIL */}
+
+      {currentPage === PAGES.PROFILE && (
+        <ProfilePage
+          userData={userData}
+          setCurrentPage={setCurrentPage}
+          setUserData={setUserData}
+        />
+      )}
+
+      {/* PÁGINA: PLAYLISTS SALVAS */}
+
+      {currentPage === PAGES.PLAYLIST_LIST && (
+        <PlaylistListPage
+          userData={userData}
+          setCurrentPage={setCurrentPage}
+          setPlaylistData={setPlaylistData}
+        />
       )}
     </div>
   );

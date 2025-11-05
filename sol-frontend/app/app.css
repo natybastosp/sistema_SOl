@@ -85,19 +85,31 @@
 }
 
 /* ============================================
-   TEMA CLARO (:root)
+   TEMA CLARO (:root) - PALETA SOL
    ============================================ */
 :root {
   /* Raio de borda base */
   --radius: 0.625rem;
 
-  /* Cores base - Branco puro e preto profundo */
-  --background: oklch(1 0 0);           /* Branco puro */
-  --foreground: oklch(0.145 0 0);       /* Preto profundo */
+  /* Cores base - Paleta SOL (Laranja/Marrom) */
+  --background: #fafdf6; /* Fundo muito claro */
+  --foreground: #1f1f1f; /* Texto escuro */
 
-  /* Cards - Mesmos valores do background/foreground */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  /* Cards - Branco com sutil toque do tema */
+  --card: #ffffff;
+  --card-foreground: #1f1f1f;
+
+  /* Primary - Laranja vibrante */
+  --primary: #ffa500;
+  --primary-foreground: #ffffff;
+
+  /* Secondary - Laranja escuro */
+  --secondary: #b76004;
+  --secondary-foreground: #ffffff;
+
+  /* Accent - Marrom profundo */
+  --accent: #6f1a07;
+  --accent-foreground: #ffffff;
 
   /* Popovers - Mesmos valores do background/foreground */
   --popover: oklch(1 0 0);
@@ -126,11 +138,11 @@
   --ring: oklch(0.708 0 0);
 
   /* Cores de gráficos - Paleta variada e vibrante */
-  --chart-1: oklch(0.646 0.222 41.116);   /* Laranja/Amarelo */
-  --chart-2: oklch(0.6 0.118 184.704);    /* Azul claro */
-  --chart-3: oklch(0.398 0.07 227.392);   /* Azul escuro */
-  --chart-4: oklch(0.828 0.189 84.429);   /* Verde claro */
-  --chart-5: oklch(0.769 0.188 70.08);    /* Verde/Amarelo */
+  --chart-1: oklch(0.646 0.222 41.116); /* Laranja/Amarelo */
+  --chart-2: oklch(0.6 0.118 184.704); /* Azul claro */
+  --chart-3: oklch(0.398 0.07 227.392); /* Azul escuro */
+  --chart-4: oklch(0.828 0.189 84.429); /* Verde claro */
+  --chart-5: oklch(0.769 0.188 70.08); /* Verde/Amarelo */
 
   /* Sidebar - Tons claros */
   --sidebar: oklch(0.985 0 0);
@@ -148,8 +160,8 @@
    ============================================ */
 .dark {
   /* Cores base invertidas - Preto profundo e branco */
-  --background: oklch(0.145 0 0);       /* Preto profundo */
-  --foreground: oklch(0.985 0 0);       /* Branco quase puro */
+  --background: oklch(0.145 0 0); /* Preto profundo */
+  --foreground: oklch(0.985 0 0); /* Branco quase puro */
 
   /* Cards - Tom ligeiramente mais claro que o background */
   --card: oklch(0.205 0 0);
@@ -182,11 +194,11 @@
   --ring: oklch(0.556 0 0);
 
   /* Cores de gráficos - Paleta adaptada para modo escuro */
-  --chart-1: oklch(0.488 0.243 264.376);  /* Roxo/Azul */
-  --chart-2: oklch(0.696 0.17 162.48);    /* Verde água */
-  --chart-3: oklch(0.769 0.188 70.08);    /* Verde/Amarelo */
-  --chart-4: oklch(0.627 0.265 303.9);    /* Magenta */
-  --chart-5: oklch(0.645 0.246 16.439);   /* Laranja/Vermelho */
+  --chart-1: oklch(0.488 0.243 264.376); /* Roxo/Azul */
+  --chart-2: oklch(0.696 0.17 162.48); /* Verde água */
+  --chart-3: oklch(0.769 0.188 70.08); /* Verde/Amarelo */
+  --chart-4: oklch(0.627 0.265 303.9); /* Magenta */
+  --chart-5: oklch(0.645 0.246 16.439); /* Laranja/Vermelho */
 
   /* Sidebar - Tons escuros */
   --sidebar: oklch(0.205 0 0);

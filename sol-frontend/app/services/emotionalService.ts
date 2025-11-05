@@ -1,7 +1,12 @@
 import { AuthService } from "./authService";
 
 export interface EmotionalInput {
-  estadoEmocional: number; // 0-10
+  sadness?: number; // 0-10
+  joy?: number; // 0-10
+  anger?: number; // 0-10
+  fear?: number; // 0-10
+  surprise?: number; // 0-10
+  estadoEmocional?: number; // 0-10 (deprecated - para compatibilidade)
   generoPreferido?: string;
 }
 
@@ -76,15 +81,41 @@ export class EmotionalService {
     error?: string;
   }> {
     try {
+      // Se as 5 emoções não forem passadas, usar estadoEmocional para compatibilidade
+      const sadness = input.sadness ?? input.estadoEmocional ?? 5;
+      const joy =
+        input.joy ?? (input.estadoEmocional ? 10 - input.estadoEmocional : 5);
+      const anger = input.anger ?? 0;
+      const fear = input.fear ?? 0;
+      const surprise = input.surprise ?? 0;
+
       // Validação
-      if (input.estadoEmocional < 0 || input.estadoEmocional > 10) {
+      if (
+        sadness < 0 ||
+        sadness > 10 ||
+        joy < 0 ||
+        joy > 10 ||
+        anger < 0 ||
+        anger > 10 ||
+        fear < 0 ||
+        fear > 10 ||
+        surprise < 0 ||
+        surprise > 10
+      ) {
         return {
           success: false,
-          error: "Estado emocional deve estar entre 0 e 10",
+          error: "Todas as emoções devem estar entre 0 e 10",
         };
       }
 
-      console.log("🧠 Iniciando análise...", input);
+      console.log("🧠 Iniciando análise...", {
+        sadness,
+        joy,
+        anger,
+        fear,
+        surprise,
+        generoPreferido: input.generoPreferido,
+      });
 
       // Token
       const token = AuthService.getToken();
@@ -96,14 +127,18 @@ export class EmotionalService {
       }
 
       // API Call
-      const response = await fetch(`${this.API_BASE}/emotions/analyze`, {
+      const response = await fetch(`${this.API_BASE}/ai/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          estadoEmocional: input.estadoEmocional,
+          sadness,
+          joy,
+          anger,
+          fear,
+          surprise,
           generoPreferido: input.generoPreferido,
         }),
       });
@@ -118,22 +153,72 @@ export class EmotionalService {
 
       const result = await response.json();
 
-      if (!result.success || !result.recommendation) {
+      if (!result.success || !result.data) {
         return {
           success: false,
-          error: result.error || "Erro na análise",
+          error: result.message || "Erro na análise",
         };
       }
 
+      // Mapear resposta do backend para o formato esperado pelo frontend
+      const fuzzyData = result.data.fuzzy_output;
+      const emotionalData = result.data.emotional_state;
+
+      const recommendation: EmotionalRecommendation = {
+        id: `analysis_${Date.now()}`,
+        fuzzyAnalysis: {
+          intencao: fuzzyData.recommendation || "Neutro",
+          confianca: fuzzyData.confidence || 0.5,
+          descricao: result.message || "Análise realizada",
+          valorIntencao: fuzzyData.intensity || 0.5,
+          graus: {
+            triste: emotionalData.sadness || 0,
+            ansioso: emotionalData.fear || 0,
+            neutro: 5,
+            alegre: emotionalData.joy || 0,
+          },
+        },
+        playlist:
+          fuzzyData.top_tracks?.map((track: string, idx: number) => ({
+            id: `track_${idx}`,
+            spotifyId: "",
+            name: track.split(" - ")[0] || track,
+            artist: track.split(" - ")[1] || "Artista",
+            duration: 180000,
+            genre: fuzzyData.genres?.[0] || "Rock",
+            position: idx + 1,
+            scores: {
+              sadness: emotionalData.sadness || 0,
+              joy: emotionalData.joy || 0,
+              anger: emotionalData.anger || 0,
+              fear: emotionalData.fear || 0,
+              surprise: emotionalData.surprise || 0,
+            },
+            audioFeatures: {
+              energy: fuzzyData.intensity || 0.5,
+              valence: fuzzyData.intensity || 0.5,
+              danceability: 0.5,
+              acousticness: 0.3,
+            },
+          })) || [],
+        stats: {
+          totalMusicas: fuzzyData.top_tracks?.length || 0,
+          duracaoMinutos: (fuzzyData.top_tracks?.length || 0) * 3,
+          valenciaMedia: fuzzyData.intensity || 0.5,
+          energiaMedia: fuzzyData.intensity || 0.5,
+          tristezaMedia: emotionalData.sadness || 0,
+          alegriaMedia: emotionalData.joy || 0,
+        },
+        timestamp: new Date().toISOString(),
+      };
+
       console.log("✅ Análise completa!");
-      console.log(
-        `   Intenção: ${result.recommendation.fuzzyAnalysis.intencao}`
-      );
-      console.log(`   Músicas: ${result.recommendation.playlist.length}`);
+      console.log(`   Intenção: ${recommendation.fuzzyAnalysis.intencao}`);
+      console.log(`   Músicas: ${recommendation.playlist.length}`);
 
       return {
         success: true,
-        data: result.recommendation,
+        data: recommendation,
       };
     } catch (error: any) {
       console.error("❌ Erro:", error);

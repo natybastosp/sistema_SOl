@@ -87,9 +87,14 @@ export class RecommendationService {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            estadoEmocional: input.estadoEmocional,
-            generoPreferido: input.generoPreferido,
-            limit: input.limit || 10,
+            emotionalData: {
+              estadoEmocional: input.estadoEmocional,
+              generoPreferido: input.generoPreferido || "rock",
+            },
+            preferences: {
+              maxSongs: input.limit || 10,
+              includeSpotify: true,
+            },
           }),
         }
       );

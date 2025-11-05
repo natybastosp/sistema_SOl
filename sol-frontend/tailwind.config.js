@@ -4,18 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Cores personalizadas para o tema SOL
-        "sol-orange": {
-          50: "#fff7ed",
-          100: "#ffedd5",
-          200: "#fed7aa",
-          300: "#fdba74",
-          400: "#fb923c",
-          500: "#f97316",
-          600: "#ea580c",
-          700: "#c2410c",
-          800: "#9a3412",
-          900: "#7c2d12",
+        // Cores personalizadas - Paleta SOL (Laranja/Marrom)
+        sol: {
+          light: "#FAFDF6", // Fundo muito claro
+          pale: "#FDD26B", // Tom pálido
+          primary: "#FFA500", // Laranja vibrante (PRINCIPAL)
+          dark: "#B76004", // Laranja escuro
+          darker: "#6F1A07", // Marrom escuro
+        },
+        // Paleta de Emoções
+        emotion: {
+          joy: "#FFD700", // Alegria
+          sadness: "#4A90E2", // Tristeza
+          anger: "#FF4444", // Raiva
+          fear: "#9C27B0", // Medo
+          surprise: "#00BCD4", // Surpresa
+          calm: "#66BB6A", // Calma
         },
       },
       animation: {
