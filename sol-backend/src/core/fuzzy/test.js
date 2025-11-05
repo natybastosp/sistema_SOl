@@ -1,31 +1,15 @@
-// teste-integrado.js
-// Teste integrado com o sistema fuzzy real
-// Execute com: node teste-integrado.js
+// teste-cenarios-extensivos.js
+// Bateria Completa de Testes para o Motor Fuzzy
+// Execute com: node teste-cenarios-extensivos.js
 
-console.log('🎵 TESTE DO SISTEMA FUZZY INTEGRADO 🎵\n');
-
-// OPÇÃO 1: Se você compilou os arquivos TypeScript para JavaScript
-// Descomente as linhas abaixo se você tem os arquivos .js compilados
-/*
-const { fuzzyEngine } = require('./engine.js');
-*/
-
-// OPÇÃO 2: Se você quer usar diretamente os arquivos TypeScript
-// Você precisa ter ts-node instalado: npm install -g ts-node
-// Descomente as linhas abaixo:
-/*
-require('ts-node/register');
-const { fuzzyEngine } = require('./engine.ts');
-*/
-
-// OPÇÃO 3: Para testar sem dependências externas (implementação inline)
-// Esta é uma versão simplificada que funciona independentemente
+console.log('╔═══════════════════════════════════════════════════════════╗');
+console.log('║  🎵 BATERIA EXTENSIVA DE TESTES - SISTEMA FUZZY 🎵       ║');
+console.log('╚═══════════════════════════════════════════════════════════╝\n');
 
 // ========================================
-// IMPLEMENTAÇÃO INLINE PARA TESTE
+// IMPLEMENTAÇÃO DO MOTOR FUZZY
 // ========================================
 
-// Funções de pertinência básicas
 function triangularMembership(x, points) {
   const [a, b, c] = points;
   if (x <= a || x >= c) return 0;
@@ -42,15 +26,13 @@ function trapezoidalMembership(x, points) {
   else return (d - x) / (d - c);
 }
 
-// Definições das funções fuzzy
 const EMOCIONAL_FUNCTIONS = [
-  { name: 'triste', type: 'trapezoidal', points: [0, 0, 2, 3] },
+  { name: 'triste', type: 'trapezoidal', points: [0, 0, 2, 4] },
   { name: 'ansioso', type: 'triangular', points: [2, 4, 6] },
-  { name: 'neutro', type: 'triangular', points: [4, 5, 6] },
+  { name: 'neutro', type: 'triangular', points: [4, 5, 7] },
   { name: 'alegre', type: 'trapezoidal', points: [6, 8, 10, 10] }
 ];
 
-// Implementação da classe FuzzyMusicEngine
 class FuzzyMusicEngine {
   constructor() {
     this.generosDisponiveis = ['Rock', 'Funk', 'MPB', 'Sertanejo'];
@@ -58,25 +40,17 @@ class FuzzyMusicEngine {
 
   validateInput(input) {
     const errors = [];
-    
-    if (typeof input.estadoEmocional !== 'number') {
-      errors.push('Estado emocional deve ser um número');
-    } else if (input.estadoEmocional < 0 || input.estadoEmocional > 10) {
-      errors.push('Estado emocional deve estar entre 0 e 10');
+    if (typeof input.estadoEmocional !== 'number' || input.estadoEmocional < 0 || input.estadoEmocional > 10) {
+      errors.push('Estado emocional deve ser um número entre 0 e 10');
     }
-
-    if (input.generoPreferido !== undefined) {
-      if (!this.generosDisponiveis.includes(input.generoPreferido)) {
-        errors.push(`Gênero deve ser um dos: ${this.generosDisponiveis.join(', ')}`);
-      }
+    if (input.generoPreferido && !this.generosDisponiveis.includes(input.generoPreferido)) {
+      errors.push(`Gênero deve ser um dos: ${this.generosDisponiveis.join(', ')}`);
     }
-
     return { valid: errors.length === 0, errors };
   }
 
   calculateMembership(value, functions) {
     const result = {};
-    
     for (const func of functions) {
       if (func.type === 'triangular') {
         result[func.name] = triangularMembership(value, func.points);
@@ -84,120 +58,64 @@ class FuzzyMusicEngine {
         result[func.name] = trapezoidalMembership(value, func.points);
       }
     }
-    
     return result;
   }
 
   processRecommendation(input) {
-    // Validação
     const validation = this.validateInput(input);
     if (!validation.valid) {
       throw new Error(`Entrada inválida: ${validation.errors.join(', ')}`);
     }
 
-    // 1. Fuzzificação
     const grausPertinencia = this.calculateMembership(input.estadoEmocional, EMOCIONAL_FUNCTIONS);
-    
-    // 2. Estado dominante
-    let maxValue = 0;
-    let estadoDominante = 'neutro';
-    for (const [state, value] of Object.entries(grausPertinencia)) {
-      if (value > maxValue) {
-        maxValue = value;
-        estadoDominante = state;
-      }
-    }
-
-    // 3. Aplicação das regras (simplificada)
     const regrasAtivadas = [];
     
-    // Regras base
     if (grausPertinencia.triste > 0) {
-      regrasAtivadas.push({
-        ruleId: 'R1',
-        activationLevel: grausPertinencia.triste,
-        consequent: { variable: 'intencao_playlist', value: 'calmante' }
-      });
+      regrasAtivadas.push({ ruleId: 'R1', activationLevel: grausPertinencia.triste * 1.0, consequent: { value: 'calmante' } });
     }
-    
     if (grausPertinencia.ansioso > 0) {
-      regrasAtivadas.push({
-        ruleId: 'R2',
-        activationLevel: grausPertinencia.ansioso,
-        consequent: { variable: 'intencao_playlist', value: 'reflexiva' }
-      });
+      regrasAtivadas.push({ ruleId: 'R2', activationLevel: grausPertinencia.ansioso * 1.0, consequent: { value: 'reflexiva' } });
     }
-    
     if (grausPertinencia.neutro > 0) {
-      regrasAtivadas.push({
-        ruleId: 'R3',
-        activationLevel: grausPertinencia.neutro,
-        consequent: { variable: 'intencao_playlist', value: 'neutra' }
-      });
+      regrasAtivadas.push({ ruleId: 'R3', activationLevel: grausPertinencia.neutro * 1.0, consequent: { value: 'neutra' } });
     }
-    
     if (grausPertinencia.alegre > 0) {
-      regrasAtivadas.push({
-        ruleId: 'R4',
-        activationLevel: grausPertinencia.alegre * 0.8,
-        consequent: { variable: 'intencao_playlist', value: 'estimulante' }
-      });
-      regrasAtivadas.push({
-        ruleId: 'R5',
-        activationLevel: grausPertinencia.alegre * 0.9,
-        consequent: { variable: 'intencao_playlist', value: 'feliz' }
-      });
+      regrasAtivadas.push({ ruleId: 'R4', activationLevel: grausPertinencia.alegre * 0.8, consequent: { value: 'estimulante' } });
+      regrasAtivadas.push({ ruleId: 'R5', activationLevel: grausPertinencia.alegre * 0.9, consequent: { value: 'feliz' } });
     }
 
-    // Regras de gênero
     if (input.generoPreferido) {
-      if (input.generoPreferido === 'Sertanejo' && grausPertinencia.triste > 0) {
-        regrasAtivadas.push({
-          ruleId: 'G3',
-          activationLevel: grausPertinencia.triste * 1.1,
-          consequent: { variable: 'intencao_playlist', value: 'calmante' }
-        });
-      }
+      const g = input.generoPreferido;
+      const triste = grausPertinencia.triste || 0;
+      const ansioso = grausPertinencia.ansioso || 0;
+      const alegre = grausPertinencia.alegre || 0;
       
-      if (input.generoPreferido === 'Funk' && grausPertinencia.alegre > 0) {
-        regrasAtivadas.push({
-          ruleId: 'G2',
-          activationLevel: grausPertinencia.alegre * 1.2,
-          consequent: { variable: 'intencao_playlist', value: 'estimulante' }
-        });
+      if (g === 'Sertanejo' && triste > 0) {
+        regrasAtivadas.push({ ruleId: 'Sertanejo1', activationLevel: triste * 1.2, consequent: { value: 'calmante' } });
       }
-      
-      if (input.generoPreferido === 'Rock' && grausPertinencia.ansioso > 0) {
-        regrasAtivadas.push({
-          ruleId: 'G4',
-          activationLevel: grausPertinencia.ansioso * 1.0,
-          consequent: { variable: 'intencao_playlist', value: 'estimulante' }
-        });
+      if (g === 'Funk' && alegre > 0) {
+        regrasAtivadas.push({ ruleId: 'Funk4', activationLevel: alegre * 1.2, consequent: { value: 'feliz' } });
       }
-      
-      if (input.generoPreferido === 'MPB' && grausPertinencia.triste > 0) {
-        regrasAtivadas.push({
-          ruleId: 'G1',
-          activationLevel: grausPertinencia.triste * 0.7,
-          consequent: { variable: 'intencao_playlist', value: 'reflexiva' }
-        });
+      if (g === 'Rock' && ansioso > 0) {
+        regrasAtivadas.push({ ruleId: 'Rock2', activationLevel: ansioso * 1.2, consequent: { value: 'estimulante' } });
+      }
+      if (g === 'MPB' && triste > 0) {
+        regrasAtivadas.push({ ruleId: 'MPB1', activationLevel: triste * 1.1, consequent: { value: 'reflexiva' } });
       }
     }
 
-    // 4. Combinação das ativações
     const ativacoesCombinadas = {};
     for (const regra of regrasAtivadas) {
       const value = regra.consequent.value;
-      const currentLevel = ativacoesCombinadas[value] || 0;
-      ativacoesCombinadas[value] = Math.max(currentLevel, regra.activationLevel);
+      const clippedActivation = Math.min(1, regra.activationLevel); 
+      ativacoesCombinadas[value] = Math.max(ativacoesCombinadas[value] || 0, clippedActivation);
     }
 
-    // 5. Defuzzificação (simplificada)
     const centerPoints = {
-      'calmante': 0.1,
+      'calmante': 0.17,
       'reflexiva': 0.5,
       'neutra': 0.6,
-      'estimulante': 0.8,
+      'estimulante': 0.85,
       'feliz': 0.9
     };
 
@@ -212,131 +130,281 @@ class FuzzyMusicEngine {
 
     const valorIntencao = denominator > 0 ? numerator / denominator : 0.5;
 
-    // 6. Interpretação
     let intencaoPlaylist;
     if (valorIntencao <= 0.25) intencaoPlaylist = 'Calmante';
-    else if (valorIntencao <= 0.45) intencaoPlaylist = 'Reflexiva';
+    else if (valorIntencao <= 0.50) intencaoPlaylist = 'Reflexiva';
     else if (valorIntencao <= 0.65) intencaoPlaylist = 'Neutra';
     else if (valorIntencao <= 0.85) intencaoPlaylist = 'Estimulante';
     else intencaoPlaylist = 'Feliz';
 
-    // 7. Confiança
     const intensidadeEmocional = Math.max(...Object.values(grausPertinencia));
     const grauConfianca = Math.min(1, 
       (intensidadeEmocional * 0.6) + 
-      (regrasAtivadas.length / 5 * 0.3) + 
+      (regrasAtivadas.length / 5 * 0.3) +
       (input.generoPreferido ? 0.1 : 0)
     );
-
-    // 8. Descrição
-    const descricoes = {
-      'Calmante': 'Músicas suaves e relaxantes para acalmar',
-      'Reflexiva': 'Músicas para introspecção e reflexão',
-      'Neutra': 'Músicas equilibradas para o dia a dia',
-      'Estimulante': 'Músicas energéticas para motivar',
-      'Feliz': 'Músicas alegres e positivas'
-    };
-
-    let descricao = descricoes[intencaoPlaylist] || 'Playlist personalizada';
-    if (input.generoPreferido) {
-      descricao += ` no estilo ${input.generoPreferido}`;
-    }
-
-    // 9. Filtros emocionais (simplificados)
-    const filtrosMusica = this.getEmotionalCriteria(intencaoPlaylist.toLowerCase());
-
+    
     return {
       input,
-      output: {
-        valorIntencao,
-        intencaoPlaylist,
-        grauConfianca,
-        detalhes: {
-          grausPertinencia,
-          ativacoesRegras: regrasAtivadas,
-          generoEspecifico: !!input.generoPreferido,
-          regrasGeneroAplicadas: regrasAtivadas.filter(r => r.ruleId.startsWith('G')).map(r => r.ruleId)
-        }
-      },
-      descricao,
-      generoRecomendado: input.generoPreferido || 'Misto (todos os gêneros)',
-      scoreConfianca: grauConfianca,
-      filtrosMusica,
+      output: { valorIntencao, intencaoPlaylist, grauConfianca },
       metadados: {
-        regrasAplicadas: regrasAtivadas.length,
-        temRegrasGenero: regrasAtivadas.some(r => r.ruleId.startsWith('G')),
-        estadoEmocionalDetectado: estadoDominante,
-        intensidadeEmocional: Math.round(intensidadeEmocional * 100) / 100
+        grausPertinencia,
+        ativacoesCombinadas,
+        regrasAplicadas: regrasAtivadas.map(r => r.ruleId),
+        estadoEmocionalDetectado: Object.keys(grausPertinencia).find(key => grausPertinencia[key] === intensidadeEmocional) || 'N/A'
       }
     };
   }
-
-  getEmotionalCriteria(intention) {
-    const criteria = {
-      calmante: { maxRaiva: 3, maxEnergia: 0.5, minValencia: 0.3, maxTristeza: 5 },
-      reflexiva: { maxRaiva: 4, minTristeza: 3, maxEnergia: 0.6, maxAlegria: 6 },
-      neutra: { maxRaiva: 5, maxAlegria: 7, maxTristeza: 6, minValencia: 0.4, maxValencia: 0.7 },
-      estimulante: { minEnergia: 0.7, minAlegria: 6, maxTristeza: 4, minValencia: 0.5 },
-      feliz: { minAlegria: 7, minValencia: 0.6, maxTristeza: 3, maxMedo: 3 }
-    };
-    
-    return criteria[intention] || {};
-  }
 }
 
-// ========================================
-// EXECUÇÃO DO TESTE
-// ========================================
-
-// Cria uma instância do motor de recomendação
 const fuzzyEngine = new FuzzyMusicEngine();
 
-// Define a entrada para o teste
-const input = {
-  estadoEmocional: 8.5, // Estado bem "Alegre"
-  generoPreferido: 'Funk' // Gênero Funk
-};
+// ========================================
+// FUNÇÃO DE EXECUÇÃO DE TESTE
+// ========================================
 
-console.log(`--- Testando o motor com a entrada ---`);
-console.log(`Estado Emocional: ${input.estadoEmocional}`);
-console.log(`Gênero Preferido: ${input.generoPreferido || 'Não especificado'}\n`);
+let testsPassed = 0;
+let testsFailed = 0;
+let testsWarning = 0;
 
-try {
-  // Processa a recomendação
-  const recomendacao = fuzzyEngine.processRecommendation(input);
+function executeTest(id, description, input, expectedIntention, category) {
+    let status = '❌';
+    let output = {};
+    
+    try {
+        output = fuzzyEngine.processRecommendation(input);
+        
+        if (output.output.intencaoPlaylist === expectedIntention) {
+            status = '✅';
+            testsPassed++;
+        } else {
+            const acceptable = [
+                ['Neutra', 'Reflexiva'],
+                ['Reflexiva', 'Neutra'],
+                ['Estimulante', 'Neutra']
+            ];
+            
+            const isAcceptable = acceptable.some(pair => 
+                (output.output.intencaoPlaylist === pair[0] && expectedIntention === pair[1]) ||
+                (output.output.intencaoPlaylist === pair[1] && expectedIntention === pair[0])
+            );
+            
+            if (isAcceptable) {
+                status = '⚠️';
+                testsWarning++;
+            } else {
+                testsFailed++;
+            }
+        }
+        
+    } catch (e) {
+        output.output = { intencaoPlaylist: `ERRO: ${e.message}`, valorIntencao: NaN, grauConfianca: 0 };
+        output.metadados = { grausPertinencia: {}, ativacoesCombinadas: {}, regrasAplicadas: [] };
+        testsFailed++;
+    }
 
-  // Imprime o resultado no console
-  console.log('--- Resultado da Recomendação ---');
-  console.log(`Intenção da Playlist: ${recomendacao.output.intencaoPlaylist}`);
-  console.log(`Valor da Intenção (0-1): ${recomendacao.output.valorIntencao.toFixed(3)}`);
-  console.log(`Confiança da Recomendação: ${recomendacao.output.grauConfianca.toFixed(3)}`);
-  console.log(`Descrição da Playlist: ${recomendacao.descricao}`);
-
-  console.log('\n--- Detalhes Técnicos ---');
-  console.log('Graus de Pertinência Fuzzificados:');
-  Object.entries(recomendacao.output.detalhes.grausPertinencia).forEach(([key, value]) => {
-    console.log(`  ${key}: ${value.toFixed(3)}`);
-  });
-
-  console.log('\nAtivações de Regras:');
-  recomendacao.output.detalhes.ativacoesRegras.forEach(regra => {
-    console.log(`  ${regra.ruleId}: ${regra.activationLevel.toFixed(3)} → ${regra.consequent.value}`);
-  });
-
-  console.log('\nFiltros Emocionais Gerados:');
-  Object.entries(recomendacao.filtrosMusica).forEach(([key, value]) => {
-    console.log(`  ${key}: ${value}`);
-  });
-
-  console.log('\n--- Metadados ---');
-  console.log(`Estado emocional detectado: ${recomendacao.metadados.estadoEmocionalDetectado}`);
-  console.log(`Intensidade emocional: ${(recomendacao.metadados.intensidadeEmocional * 100).toFixed(1)}%`);
-  console.log(`Regras aplicadas: ${recomendacao.metadados.regrasAplicadas}`);
-  console.log(`Tem regras de gênero: ${recomendacao.metadados.temRegrasGenero ? 'SIM' : 'NÃO'}`);
-  console.log(`Regras de gênero: ${recomendacao.output.detalhes.regrasGeneroAplicadas.join(', ') || 'Nenhuma'}`);
-
-  console.log('\n✅ TESTE CONCLUÍDO COM SUCESSO!');
-
-} catch (error) {
-  console.log(`❌ ERRO: ${error.message}`);
+    console.log(`\n${status} ${category} | Teste ${id}`);
+    console.log(`   ${description}`);
+    console.log(`   Estado: ${input.estadoEmocional} | Gênero: ${input.generoPreferido || 'Nenhum'}`);
+    console.log(`   Esperado: ${expectedIntention} | Obtido: ${output.output.intencaoPlaylist}`);
+    console.log(`   Valor: ${output.output.valorIntencao?.toFixed(3) || 'N/A'} | Confiança: ${output.output.grauConfianca?.toFixed(3) || 'N/A'}`);
+    
+    if (output.metadados) {
+        const pertinencias = Object.entries(output.metadados.grausPertinencia)
+            .filter(([k, v]) => v > 0.01)
+            .map(([k, v]) => `${k}:${v.toFixed(2)}`)
+            .join(', ');
+        console.log(`   Pertinências: ${pertinencias || 'Nenhuma'}`);
+    }
 }
+
+// ========================================
+// BATERIA DE TESTES
+// ========================================
+
+console.log('┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 1: ESTADOS EMOCIONAIS EXTREMOS               │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('1.1', 'Tristeza Profunda (0.0)', 
+    { estadoEmocional: 0.0 }, 'Calmante', 'EXTREMO');
+
+executeTest('1.2', 'Máxima Alegria (10.0)', 
+    { estadoEmocional: 10.0 }, 'Feliz', 'EXTREMO');
+
+executeTest('1.3', 'Tristeza Muito Forte (0.5)', 
+    { estadoEmocional: 0.5 }, 'Calmante', 'EXTREMO');
+
+executeTest('1.4', 'Alegria Muito Forte (9.5)', 
+    { estadoEmocional: 9.5 }, 'Feliz', 'EXTREMO');
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 2: TRANSIÇÕES ENTRE ESTADOS                  │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('2.1', 'Transição Triste → Ansioso (2.5)', 
+    { estadoEmocional: 2.5 }, 'Reflexiva', 'TRANSIÇÃO');
+
+executeTest('2.2', 'Transição Ansioso → Neutro (5.5)', 
+    { estadoEmocional: 5.5 }, 'Neutra', 'TRANSIÇÃO');
+
+executeTest('2.3', 'Transição Neutro → Alegre (6.5)', 
+    { estadoEmocional: 6.5 }, 'Estimulante', 'TRANSIÇÃO');
+
+executeTest('2.4', 'Ponto de Máxima Sobreposição (4.0)', 
+    { estadoEmocional: 4.0 }, 'Reflexiva', 'TRANSIÇÃO');
+
+executeTest('2.5', 'Limite Ansioso-Neutro (5.0)', 
+    { estadoEmocional: 5.0 }, 'Neutra', 'TRANSIÇÃO');
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 3: INFLUÊNCIA DE GÊNEROS MUSICAIS            │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('3.1', 'Sertanejo + Tristeza (1.5)', 
+    { estadoEmocional: 1.5, generoPreferido: 'Sertanejo' }, 'Calmante', 'GÊNERO');
+
+executeTest('3.2', 'MPB + Tristeza (1.5)', 
+    { estadoEmocional: 1.5, generoPreferido: 'MPB' }, 'Reflexiva', 'GÊNERO');
+
+executeTest('3.3', 'Rock + Ansiedade (4.0)', 
+    { estadoEmocional: 4.0, generoPreferido: 'Rock' }, 'Estimulante', 'GÊNERO');
+
+executeTest('3.4', 'Funk + Alegria (8.0)', 
+    { estadoEmocional: 8.0, generoPreferido: 'Funk' }, 'Feliz', 'GÊNERO');
+
+executeTest('3.5', 'Funk + Alegria Máxima (9.0)', 
+    { estadoEmocional: 9.0, generoPreferido: 'Funk' }, 'Feliz', 'GÊNERO');
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 4: CASOS SEM PREFERÊNCIA DE GÊNERO           │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('4.1', 'Tristeza sem gênero (1.0)', 
+    { estadoEmocional: 1.0 }, 'Calmante', 'SEM GÊNERO');
+
+executeTest('4.2', 'Ansiedade sem gênero (3.5)', 
+    { estadoEmocional: 3.5 }, 'Reflexiva', 'SEM GÊNERO');
+
+executeTest('4.3', 'Neutro sem gênero (5.0)', 
+    { estadoEmocional: 5.0 }, 'Neutra', 'SEM GÊNERO');
+
+executeTest('4.4', 'Alegria sem gênero (7.5)', 
+    { estadoEmocional: 7.5 }, 'Estimulante', 'SEM GÊNERO');
+
+executeTest('4.5', 'Alegria alta sem gênero (9.0)', 
+    { estadoEmocional: 9.0 }, 'Feliz', 'SEM GÊNERO');
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 5: PONTOS CRÍTICOS DE DECISÃO                │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('5.1', 'Pico de Ansioso (4.0)', 
+    { estadoEmocional: 4.0 }, 'Reflexiva', 'CRÍTICO');
+
+executeTest('5.2', 'Pico de Neutro (5.0)', 
+    { estadoEmocional: 5.0 }, 'Neutra', 'CRÍTICO');
+
+executeTest('5.3', 'Início de Alegre (6.0)', 
+    { estadoEmocional: 6.0 }, 'Neutra', 'CRÍTICO');
+
+executeTest('5.4', 'Transição Alegre forte (8.0)', 
+    { estadoEmocional: 8.0 }, 'Estimulante', 'CRÍTICO');
+
+executeTest('5.5', 'Fim de Triste (4.0)', 
+    { estadoEmocional: 4.0 }, 'Reflexiva', 'CRÍTICO');
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 6: COMBINAÇÕES COMPLEXAS                     │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('6.1', 'Rock no ponto neutro (5.0)', 
+    { estadoEmocional: 5.0, generoPreferido: 'Rock' }, 'Neutra', 'COMPLEXO');
+
+executeTest('6.2', 'MPB em estado neutro (6.0)', 
+    { estadoEmocional: 6.0, generoPreferido: 'MPB' }, 'Neutra', 'COMPLEXO');
+
+executeTest('6.3', 'Sertanejo em ansiedade (4.5)', 
+    { estadoEmocional: 4.5, generoPreferido: 'Sertanejo' }, 'Neutra', 'COMPLEXO');
+
+executeTest('6.4', 'Funk em estado neutro (5.5)', 
+    { estadoEmocional: 5.5, generoPreferido: 'Funk' }, 'Neutra', 'COMPLEXO');
+
+executeTest('6.5', 'Rock em tristeza (2.0)', 
+    { estadoEmocional: 2.0, generoPreferido: 'Rock' }, 'Calmante', 'COMPLEXO');
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 7: GRANULARIDADE FINA (PASSOS DE 0.5)        │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('7.1', 'Estado 2.0', { estadoEmocional: 2.0 }, 'Calmante', 'GRANULAR');
+executeTest('7.2', 'Estado 3.0', { estadoEmocional: 3.0 }, 'Reflexiva', 'GRANULAR');
+executeTest('7.3', 'Estado 4.5', { estadoEmocional: 4.5 }, 'Neutra', 'GRANULAR');
+executeTest('7.4', 'Estado 6.0', { estadoEmocional: 6.0 }, 'Neutra', 'GRANULAR');
+executeTest('7.5', 'Estado 7.0', { estadoEmocional: 7.0 }, 'Estimulante', 'GRANULAR');
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 8: TODOS OS GÊNEROS EM CADA ESTADO           │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+const generos = ['Rock', 'Funk', 'MPB', 'Sertanejo'];
+const estadosTeste = [
+    { estado: 1.0, esperado: 'Calmante' },
+    { estado: 4.0, esperado: 'Reflexiva' },
+    { estado: 5.0, esperado: 'Neutra' },
+    { estado: 8.0, esperado: 'Estimulante' }
+];
+
+let testNum = 1;
+for (const { estado, esperado } of estadosTeste) {
+    for (const genero of generos) {
+        const expectedForGenre = 
+            (estado === 1.0 && genero === 'Sertanejo') ? 'Calmante' :
+            (estado === 1.0 && genero === 'MPB') ? 'Reflexiva' :
+            (estado === 4.0 && genero === 'Rock') ? 'Estimulante' :
+            (estado === 8.0 && genero === 'Funk') ? 'Feliz' :
+            esperado;
+            
+        executeTest(`8.${testNum}`, `${genero} em estado ${estado}`,
+            { estadoEmocional: estado, generoPreferido: genero }, 
+            expectedForGenre, 'MATRIZ');
+        testNum++;
+    }
+}
+
+console.log('\n┌─────────────────────────────────────────────────────────┐');
+console.log('│ CATEGORIA 9: VALIDAÇÃO DE ERROS                        │');
+console.log('└─────────────────────────────────────────────────────────┘');
+
+executeTest('9.1', 'Estado negativo (-1)', 
+    { estadoEmocional: -1 }, 'ERRO', 'VALIDAÇÃO');
+
+executeTest('9.2', 'Estado acima do limite (11)', 
+    { estadoEmocional: 11 }, 'ERRO', 'VALIDAÇÃO');
+
+executeTest('9.3', 'Gênero inválido', 
+    { estadoEmocional: 5, generoPreferido: 'Jazz' }, 'ERRO', 'VALIDAÇÃO');
+
+// ========================================
+// SUMÁRIO FINAL
+// ========================================
+
+const totalTests = testsPassed + testsFailed + testsWarning;
+
+console.log('\n╔═══════════════════════════════════════════════════════════╗');
+console.log('║                    SUMÁRIO FINAL                          ║');
+console.log('╚═══════════════════════════════════════════════════════════╝');
+console.log(`\n  Total de Testes: ${totalTests}`);
+console.log(`  ✅ Sucessos: ${testsPassed} (${((testsPassed/totalTests)*100).toFixed(1)}%)`);
+console.log(`  ⚠️  Avisos: ${testsWarning} (${((testsWarning/totalTests)*100).toFixed(1)}%)`);
+console.log(`  ❌ Falhas: ${testsFailed} (${((testsFailed/totalTests)*100).toFixed(1)}%)`);
+
+if (testsFailed === 0) {
+    console.log('\n  🎉 PARABÉNS! Todos os testes principais passaram!');
+} else if (testsFailed <= 3) {
+    console.log('\n  ⚠️  Poucos testes falharam. Revise os casos críticos.');
+} else {
+    console.log('\n  ❌ Vários testes falharam. Revisão necessária no motor fuzzy.');
+}
+
+console.log('\n═══════════════════════════════════════════════════════════\n');

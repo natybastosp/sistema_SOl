@@ -1,5 +1,6 @@
 /**
  * Módulo de defuzzificação para converter saídas fuzzy em valores crisp
+ * CORRIGIDO: Ajustados thresholds de interpretação
  */
 
 import { 
@@ -147,24 +148,22 @@ export function defuzzifyWeightedAverage(
 
 /**
  * Interpreta valor defuzzificado em categoria de intenção
- * Mapeia valor [0,1] para as 5 intenções do sistema
+ * CORRIGIDO: Thresholds ajustados para refletir corretamente as funções de pertinência
+ * 
+ * Mapeamento baseado nas funções de pertinência:
+ * - calmante: [0, 0, 0.2, 0.4]    -> até ~0.30
+ * - reflexiva: [0.3, 0.5, 0.7]    -> ~0.30 a ~0.60
+ * - neutra: [0.4, 0.6, 0.8]       -> ~0.55 a ~0.70
+ * - estimulante: [0.6, 0.8, 1.0, 1.0] -> ~0.70 a ~0.88
+ * - feliz: [0.7, 0.9, 1.0, 1.0]   -> ~0.88+
  */
 export function interpretIntention(value: number): string {
-  const interpretations = [
-    { threshold: 0.25, label: 'Calmante' },
-    { threshold: 0.45, label: 'Reflexiva' },
-    { threshold: 0.65, label: 'Neutra' },
-    { threshold: 0.85, label: 'Estimulante' },
-    { threshold: 1.0, label: 'Feliz' }
-  ];
-
-  for (const interpretation of interpretations) {
-    if (value <= interpretation.threshold) {
-      return interpretation.label;
-    }
-  }
-
-  return 'Feliz'; // Fallback
+  // Thresholds ajustados para serem consistentes com as funções de pertinência
+  if (value <= 0.30) return 'Calmante';
+  if (value <= 0.60) return 'Reflexiva';
+  if (value <= 0.70) return 'Neutra';
+  if (value <= 0.88) return 'Estimulante';
+  return 'Feliz';
 }
 
 /**

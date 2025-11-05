@@ -73,7 +73,7 @@ export const EMOCIONAL_MEMBERSHIP_FUNCTIONS: MembershipFunction[] = [
   {
     name: 'triste',
     type: 'trapezoidal',
-    points: [0, 0, 2, 3]
+    points: [0, 0, 2, 4]
   },
   {
     name: 'ansioso',
@@ -88,7 +88,7 @@ export const EMOCIONAL_MEMBERSHIP_FUNCTIONS: MembershipFunction[] = [
   {
     name: 'alegre',
     type: 'trapezoidal',
-    points: [6, 8, 10, 10]
+    points: [5, 7, 9, 10]
   }
 ];
 
