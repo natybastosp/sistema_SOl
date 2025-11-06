@@ -65,6 +65,7 @@ model EmotionalState {
 model Music {
   id           String @id @default(cuid())
   spotifyId    String? @unique
+  spotifyUri   String? // URI do Spotify para reprodução (spotify:track:xxxxx)
   name         String
   artist       String
   album        String?

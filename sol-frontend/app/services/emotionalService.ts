@@ -26,6 +26,7 @@ export interface FuzzyAnalysisResult {
 export interface MusicTrack {
   id: string;
   spotifyId: string;
+  spotify_uri?: string; // Para Spotify Web Playback SDK
   name: string;
   artist: string;
   album?: string;
@@ -178,15 +179,17 @@ export class EmotionalService {
             alegre: emotionalData.joy || 0,
           },
         },
+        // USAR PLAYLIST DIRETAMENTE DO BACKEND COM TODOS OS CAMPOS
         playlist:
-          fuzzyData.top_tracks?.map((track: string, idx: number) => ({
-            id: `track_${idx}`,
-            spotifyId: "",
-            name: track.split(" - ")[0] || track,
-            artist: track.split(" - ")[1] || "Artista",
+          fuzzyData.playlist?.map((track: any, idx: number) => ({
+            id: track.id || `track_${idx}`,
+            spotifyId: track.spotifyId || "",
+            spotify_uri: track.spotify_uri, // Campo crítico para playback!
+            name: track.name,
+            artist: track.artist,
             duration: 180000,
-            genre: fuzzyData.genres?.[0] || "Rock",
-            position: idx + 1,
+            genre: track.genre || "Rock",
+            position: track.position || idx + 1,
             scores: {
               sadness: emotionalData.sadness || 0,
               joy: emotionalData.joy || 0,
@@ -202,8 +205,11 @@ export class EmotionalService {
             },
           })) || [],
         stats: {
-          totalMusicas: fuzzyData.top_tracks?.length || 0,
-          duracaoMinutos: (fuzzyData.top_tracks?.length || 0) * 3,
+          totalMusicas:
+            fuzzyData.playlist?.length || fuzzyData.top_tracks?.length || 0,
+          duracaoMinutos:
+            (fuzzyData.playlist?.length || fuzzyData.top_tracks?.length || 0) *
+            3,
           valenciaMedia: fuzzyData.intensity || 0.5,
           energiaMedia: fuzzyData.intensity || 0.5,
           tristezaMedia: emotionalData.sadness || 0,
