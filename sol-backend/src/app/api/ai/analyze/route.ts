@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         medo: emotionalInput.fear,
         alegria: emotionalInput.joy,
         tristeza: emotionalInput.sadness,
-        surpresa: emotionalInput.surprise,
+        // surpresa: emotionalInput.surprise, // removido (comentado) conforme solicitado
       },
       emotionalInput.generoPreferido
     );

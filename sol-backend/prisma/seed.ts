@@ -61,6 +61,26 @@ interface MusicasPerifericasData {
   Década: string;
 }
 
+interface EnrichedMusicData {
+  spotifyId: string;
+  spotifyUri: string;
+  name: string;
+  artist: string;
+  album: string;
+  duration: string;
+  genre: string;
+  sadnessScore: string;
+  joyScore: string;
+  angerScore: string;
+  fearScore: string;
+  surpriseScore: string;
+  danceability: string;
+  energy: string;
+  valence: string;
+  acousticness: string;
+  instrumentalness: string;
+}
+
 // Função para ler CSV
 function readCSV<T>(filePath: string): Promise<T[]> {
   return new Promise((resolve, reject) => {
@@ -230,6 +250,77 @@ async function main() {
   console.log("\n📈 Estatísticas do processamento:");
   console.log(`✅ Músicas processadas com sucesso: ${processedCount}`);
   console.log(`❌ Erros encontrados: ${errorCount}`);
+
+  // Processar arquivo enriquecido (se existir)
+  const enrichedPath = path.join(dataPath, "music_data_enriched.csv");
+  if (fs.existsSync(enrichedPath)) {
+    console.log(`\n🎵 Processando músicas enriquecidas...`);
+    const enrichedData = await readCSV<EnrichedMusicData>(enrichedPath);
+
+    let enrichedProcessedCount = 0;
+    let enrichedErrorCount = 0;
+
+    for (const musica of enrichedData) {
+      const spotifyId = normalizeString(musica.spotifyId);
+
+      if (!spotifyId) {
+        continue;
+      }
+
+      try {
+        // Verificar se já existe (da periférica)
+        const existing = await prisma.music.findUnique({
+          where: { spotifyId: spotifyId },
+        });
+
+        if (existing) {
+          // Já existe, pular
+          continue;
+        }
+
+        const musicData = {
+          spotifyId: spotifyId,
+          spotifyUri: normalizeString(musica.spotifyUri) || undefined,
+          name: normalizeString(musica.name) || "Desconhecido",
+          artist: normalizeString(musica.artist) || "Desconhecido",
+          album: normalizeString(musica.album) || undefined,
+          duration: parseFloat(musica.duration) || undefined,
+          genre: normalizeString(musica.genre) || "Desconhecido",
+          sadnessScore: parseFloat(musica.sadnessScore) || 0.5,
+          joyScore: parseFloat(musica.joyScore) || 0.5,
+          angerScore: parseFloat(musica.angerScore) || 0.5,
+          fearScore: parseFloat(musica.fearScore) || 0.5,
+          surpriseScore: parseFloat(musica.surpriseScore) || 0.5,
+          danceability: parseFloat(musica.danceability) || undefined,
+          energy: parseFloat(musica.energy) || undefined,
+          valence: parseFloat(musica.valence) || undefined,
+          acousticness: parseFloat(musica.acousticness) || undefined,
+          instrumentalness: parseFloat(musica.instrumentalness) || undefined,
+        };
+
+        await prisma.music.create({
+          data: musicData,
+        });
+
+        enrichedProcessedCount++;
+
+        if (enrichedProcessedCount % 500 === 0) {
+          console.log(
+            `  ⏳ Processadas ${enrichedProcessedCount} músicas enriquecidas...`
+          );
+        }
+      } catch (error) {
+        enrichedErrorCount++;
+        if (enrichedErrorCount <= 5) {
+          console.log(`  ❌ Erro ao processar música enriquecida: ${error}`);
+        }
+      }
+    }
+
+    console.log(`\n📈 Estatísticas das enriquecidas:`);
+    console.log(`✅ Músicas enriquecidas inseridas: ${enrichedProcessedCount}`);
+    console.log(`❌ Erros: ${enrichedErrorCount}`);
+  }
 
   // Criar 2 usuários de exemplo para testes
   console.log("\n👤 Criando usuários de exemplo...");

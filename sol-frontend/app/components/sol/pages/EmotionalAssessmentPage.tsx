@@ -14,7 +14,7 @@ interface EmotionalAssessmentPageProps {
 }
 
 interface EmocaoSlider {
-  id: "sadness" | "joy" | "anger" | "fear" | "surprise";
+  id: "sadness" | "joy" | "anger" | "fear" /* | "surprise" */;
   label: string;
   descricao: string;
   icone: string;
@@ -45,12 +45,12 @@ const emocoes: EmocaoSlider[] = [
     descricao: "Qual é seu nível de medo ou ansiedade?",
     icone: "😨",
   },
-  {
+  /*   {
     id: "surprise",
     label: "Surpresa",
     descricao: "Qual é seu nível de surpresa ou espanto?",
     icone: "😮",
-  },
+  }, */
 ];
 
 export default function EmotionalAssessmentPage({
@@ -67,7 +67,7 @@ export default function EmotionalAssessmentPage({
     joy: 5,
     anger: 5,
     fear: 5,
-    surprise: 5,
+    /*  surprise: 5, */
   });
 
   const [selectedGenre, setSelectedGenre] = useState<string>(
@@ -109,7 +109,7 @@ export default function EmotionalAssessmentPage({
         joy: emocoes_valores.joy,
         anger: emocoes_valores.anger,
         fear: emocoes_valores.fear,
-        surprise: emocoes_valores.surprise,
+        /* surprise: emocoes_valores.surprise, */
         generoPreferido: selectedGenre || undefined,
       });
 
@@ -208,11 +208,11 @@ export default function EmotionalAssessmentPage({
                         accent: "accent-emotion-fear",
                         border: "border-emotion-fear",
                       },
-                      surprise: {
+                      /* surprise: {
                         bg: "bg-emotion-surprise/10",
                         accent: "accent-emotion-surprise",
                         border: "border-emotion-surprise",
-                      },
+                      }, */
                     };
                     const emotionColor = emotionColors[emocao.id];
                     const percentage = (emocoes_valores[emocao.id] / 10) * 100;
@@ -245,7 +245,7 @@ export default function EmotionalAssessmentPage({
                         {/* Barra de progresso visual */}
                         <input
                           type="range"
-                          min="0"
+                          min="1"
                           max="10"
                           value={emocoes_valores[emocao.id]}
                           onChange={(e) =>
@@ -263,17 +263,12 @@ export default function EmotionalAssessmentPage({
                                 joy: "#FFD700",
                                 anger: "#FF4444",
                                 fear: "#9C27B0",
-                                surprise: "#00BCD4",
+                                /* surprise: "#00BCD4", */
                               }[emocao.id]
                             } 0%, ${
-                              {
-                                sadness: "#4A90E2",
-                                joy: "#FFD700",
-                                anger: "#FF4444",
-                                fear: "#9C27B0",
-                                surprise: "#00BCD4",
-                              }[emocao.id]
-                            } ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`,
+                              // map 1..10 to 0..100%
+                              ((emocoes_valores[emocao.id] - 1) / 9) * 100
+                            }%, #e5e7eb ${((emocoes_valores[emocao.id] - 1) / 9) * 100}%, #e5e7eb 100%)`,
                           }}
                         />
 
