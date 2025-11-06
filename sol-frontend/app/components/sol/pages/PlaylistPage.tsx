@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 import Header from "../Header";
+import { useSpotifyPlayer } from "../hooks/useSpotifyPlayer";
+import {
+  initiateSpotifyAuthV2,
+  disconnectSpotify,
+} from "../../../services/spotifyServiceV2";
 
 const PAGES = {
   DASHBOARD: "dashboard",
@@ -22,9 +27,44 @@ export default function PlaylistPage({
     Record<string, "positive" | "negative">
   >({});
   const [showFinalFeedback, setShowFinalFeedback] = useState(false);
+  const [spotifyConnected, setSpotifyConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { deviceId, isConnected, playTrack } = useSpotifyPlayer();
 
   const musics = playlistData?.playlist || [];
   const analysis = playlistData?.analysis || {};
+
+  // Verificar conexão Spotify ao carregar
+  useEffect(() => {
+    checkSpotifyStatus();
+  }, []);
+
+  const checkSpotifyStatus = async () => {
+    try {
+      // Tentar obter token para verificar se conectado
+      const solToken = localStorage.getItem("sol-auth-token");
+      if (!solToken) {
+        setSpotifyConnected(false);
+        return;
+      }
+
+      const response = await fetch("/api/spotify/auth/token", {
+        headers: {
+          Authorization: `Bearer ${solToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSpotifyConnected(data.success);
+      } else {
+        setSpotifyConnected(false);
+      }
+    } catch (error) {
+      console.log("Spotify not connected:", error);
+      setSpotifyConnected(false);
+    }
+  };
 
   const handleTrackFeedback = (
     musicId: string,
@@ -245,14 +285,56 @@ export default function PlaylistPage({
                 </svg>
               </button>
 
-              <button className="w-20 h-20 flex items-center justify-center  rounded-full text-black hover:text-[#6f1a07] ">
-                <svg
-                  className="w-8 h-8 ml-1"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+              <button
+                onClick={async () => {
+                  if (!spotifyConnected) {
+                    setIsConnecting(true);
+                    await initiateSpotifyAuthV2();
+                    setIsConnecting(false);
+                  } else {
+                    try {
+                      const trackUri = currentMusic.spotify_uri;
+                      if (
+                        !trackUri ||
+                        typeof trackUri !== "string" ||
+                        trackUri.trim() === ""
+                      ) {
+                        alert(
+                          "❌ Esta música não tem Spotify URI disponível.\n\nTente a próxima música!"
+                        );
+                        nextTrack();
+                        return;
+                      }
+                      await playTrack(trackUri);
+                    } catch (error) {
+                      console.error("Erro ao tocar música:", error);
+                      alert("❌ Erro ao tocar a música.\n\nTente a próxima!");
+                      nextTrack();
+                    }
+                  }
+                }}
+                disabled={isConnecting}
+                className={`w-20 h-20 flex items-center justify-center rounded-full transition-all ${
+                  spotifyConnected
+                    ? "text-black hover:text-[#6f1a07]"
+                    : isConnecting
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-green-500 hover:bg-green-600 text-white"
+                }`}
+              >
+                {isConnecting ? (
+                  <span className="text-xl">⏳</span>
+                ) : spotifyConnected ? (
+                  <svg
+                    className="w-8 h-8 ml-1"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                ) : (
+                  <span className="text-xl">🎵</span>
+                )}
               </button>
 
               <button
@@ -268,6 +350,38 @@ export default function PlaylistPage({
                 </svg>
               </button>
             </div>
+
+            {!spotifyConnected && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-center">
+                <p className="text-sm text-blue-800 mb-2">
+                  🎵 Conecte sua conta Spotify para ouvir as músicas!
+                </p>
+                <button
+                  onClick={async () => {
+                    setIsConnecting(true);
+                    await initiateSpotifyAuthV2();
+                    setIsConnecting(false);
+                  }}
+                  disabled={isConnecting}
+                  className={`${
+                    isConnecting
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-500 hover:bg-green-600"
+                  } text-white font-semibold py-2 px-6 rounded-lg transition-all`}
+                >
+                  {isConnecting ? "Conectando..." : "Conectar Spotify"}
+                </button>
+              </div>
+            )}
+
+            {spotifyConnected && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 text-center">
+                <p className="text-xs text-green-700">
+                  ✅ Spotify conectado{" "}
+                  {isConnected ? "e pronto" : "mas aguardando..."}
+                </p>
+              </div>
+            )}
 
             <div className="flex gap-4 mt-6">
               <button

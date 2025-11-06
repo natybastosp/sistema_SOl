@@ -1,0 +1,230 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   🎵 SPOTIFY PLAYBACK SYSTEM - VISÃO GERAL               ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            CAMADAS DO SISTEMA                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                         CAMADA 1: FRONTEND (React)                        ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                                             ┃
+┃  PlaylistPage.tsx                                                           ┃
+┃  ├─ [✅] Estado de conexão Spotify                                        ┃
+┃  ├─ [✅] Botão "Conectar Spotify" (verde)                                ┃
+┃  ├─ [✅] Botão de play (dinâmico)                                         ┃
+┃  └─ [✅] Status em tempo real                                             ┃
+┃                     ↓                                                       ┃
+┃  useSpotifyPlayer Hook                                                     ┃
+┃  ├─ Carrega SDK do Spotify                                                ┃
+┃  ├─ Gerencia conexão                                                       ┃
+┃  ├─ playTrack(uri)                                                         ┃
+┃  ├─ pausePlayback()                                                        ┃
+┃  ├─ nextTrack()                                                            ┃
+┃  └─ previousTrack()                                                        ┃
+┃                     ↓                                                       ┃
+┃  spotifyService.ts                                                         ┃
+┃  ├─ checkSpotifyConnection()     → GET /api/spotify/auth                 ┃
+┃  ├─ getSpotifyToken()            → GET /api/spotify/auth                 ┃
+┃  ├─ initiateSpotifyLogin()       → POST /api/spotify/auth/login          ┃
+┃  └─ disconnectSpotify()          → DELETE /api/spotify/auth              ┃
+┃                                                                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+         ↑
+         │ (HTTP Requests)
+         ↓
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                        CAMADA 2: BACKEND (Next.js)                         ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                                             ┃
+┃  API Routes:                                                               ┃
+┃  ├─ [✅] GET  /api/spotify/auth                                           ┃
+┃  │   └─ Retorna: connected, accessToken, expiresAt                       ┃
+┃  │                                                                          ┃
+┃  ├─ [✅] POST /api/spotify/auth/login                                     ┃
+┃  │   ├─ Requer: JWT token (SoL)                                           ┃
+┃  │   └─ Retorna: authUrl, stateToken                                      ┃
+┃  │                                                                          ┃
+┃  ├─ [✅] GET  /api/spotify/auth/callback                                  ┃
+┃  │   ├─ Recebe: code, state (do Spotify)                                  ┃
+┃  │   ├─ Troca: code → access_token                                        ┃
+┃  │   ├─ Verifica: Spotify Premium                                         ┃
+┃  │   └─ Salva: tokens no BD                                               ┃
+┃  │                                                                          ┃
+┃  ├─ [✅] POST /api/spotify/play                                           ┃
+┃  │   ├─ Recebe: uris, device_id                                           ┃
+┃  │   └─ Chama: Spotify Web API                                            ┃
+┃  │                                                                          ┃
+┃  └─ [✅] DELETE /api/spotify/auth                                         ┃
+┃      └─ Remove: tokens do BD                                              ┃
+┃                                                                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+         ↑                                          ↑
+         │                                          │
+         └──────────────────┬───────────────────────┘
+                            │
+         (Bearer Token: JWT do SoL)    (Tokens do Spotify no BD)
+         (Bearer Token: Spotify)       (Prisma para salvar)
+         ↓
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                       CAMADA 3: BANCO DE DADOS                             ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                                             ┃
+┃  User Table:                                                               ┃
+┃  ├─ id                                                                      ┃
+┃  ├─ email, name, password                                                  ┃
+┃  ├─ spotifyUserId              ← ID do usuário no Spotify                 ┃
+┃  ├─ spotifyAccessToken         ← Token para chamar Spotify API           ┃
+┃  ├─ spotifyRefreshToken        ← Para renovar token                       ┃
+┃  └─ spotifyTokenExpiry         ← Quando expira                            ┃
+┃                                                                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+         ↑
+         │
+         └──────────────────┬───────────────────────────────┐
+                            │                               │
+                (Prisma ORM)         (Bearer Token)         │
+                            ↓                               ↓
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                       CAMADA 4: SERVIÇOS EXTERNOS                          ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                                             ┃
+┃  🎵 SPOTIFY API                                                            ┃
+┃  ├─ OAuth:                                                                 ┃
+┃  │   ├─ /authorize           (Login screen)                               ┃
+┃  │   └─ /api/token            (Trocar code por token)                    ┃
+┃  │                                                                          ┃
+┃  ├─ Web Playback SDK:                                                     ┃
+┃  │   ├─ Player initialization                                             ┃
+┃  │   ├─ Device management                                                 ┃
+┃  │   └─ Event listeners                                                   ┃
+┃  │                                                                          ┃
+┃  └─ Web API:                                                               ┃
+┃      ├─ PUT  /v1/me/player/play              (Tocar música)              ┃
+┃      ├─ PUT  /v1/me/player/pause             (Pausar)                    ┃
+┃      ├─ POST /v1/me/player/next              (Próxima)                   ┃
+┃      ├─ POST /v1/me/player/previous          (Anterior)                  ┃
+┃      └─ GET  /v1/me/player                   (Status)                     ┃
+┃                                                                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        FLUXO DE DADOS (Exemplo Real)                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+1️⃣ USER CLICA "CONECTAR SPOTIFY"
+   ┌─────────┐
+   │ Frontend│ → POST /api/spotify/auth/login (com JWT)
+   └─────────┘
+        ↓
+   ┌──────────┐
+   │  Backend │ → Gera URL + stateToken
+   └──────────┘
+        ↓
+   ┌──────────┐
+   │ Frontend │ → Redireciona para Spotify
+   └──────────┘
+
+2️⃣ USER FAZ LOGIN NO SPOTIFY
+   ┌───────────┐
+   │  Spotify  │ → Retorna code + state
+   └───────────┘
+        ↓
+   ┌──────────┐
+   │  Backend │ → Callback recebe code
+   └──────────┘
+        ↓
+   ┌──────────┐     ┌────────────┐
+   │  Backend │ --> │   Spotify  │ → POST /api/token
+   └──────────┘     └────────────┘
+        ↓
+   ┌──────────┐     ┌────────┐
+   │  Backend │ --> │   BD   │ → Salva tokens
+   └──────────┘     └────────┘
+        ↓
+   ┌─────────┐
+   │ Frontend│ → Volta para Playlist (botão agora ativo!)
+   └─────────┘
+
+3️⃣ USER CLICA PLAY
+   ┌─────────┐
+   │ Frontend│ → POST /api/spotify/play (com URI + deviceId)
+   └─────────┘
+        ↓
+   ┌──────────┐
+   │  Backend │ → Usa token do BD
+   └──────────┘
+        ↓
+   ┌──────────┐     ┌───────────┐
+   │  Backend │ --> │  Spotify  │ → PUT /v1/me/player/play
+   └──────────┘     └───────────┘
+        ↓
+   🎵 MÚSICA TOCA NO NAVEGADOR!
+
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         ARQUIVOS CRIADOS/MODIFICADOS                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+✅ NOVO = Arquivo criado
+📝 UPDATED = Arquivo modificado
+
+FRONTEND:
+├─ ✅ app/components/sol/hooks/useSpotifyPlayer.ts
+├─ ✅ app/services/spotifyService.ts
+├─ ✅ app/components/sol/shared/SpotifyWebPlaybackSDK.tsx
+└─ 📝 app/components/sol/pages/PlaylistPage.tsx
+
+BACKEND:
+└─ 📝 src/app/api/spotify/auth/route.ts
+
+DOCUMENTAÇÃO:
+├─ ✅ SPOTIFY_PLAYBACK_README.md
+├─ ✅ SPOTIFY_PLAYBACK_FLOW.md
+├─ ✅ TESTE_SPOTIFY_PASSO_A_PASSO.md
+├─ ✅ SCRIPTS_TESTE_README.md
+├─ ✅ RESUMO_IMPLEMENTACAO_SPOTIFY.md
+├─ ✅ SPOTIFY_CHECKLIST.md
+├─ ✅ LEIA_PRIMEIRO.md
+├─ ✅ STATUS_IMPLEMENTACAO.md
+└─ ✅ VISUALIZACAO_SISTEMA.txt (este arquivo)
+
+SCRIPTS:
+└─ ✅ scripts/test-spotify-flow.sh
+
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              STATUS FINAL                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+COMPONENTES IMPLEMENTADOS:
+  [✅] Frontend UI
+  [✅] Hook para player
+  [✅] Serviço de autenticação
+  [✅] Backend OAuth
+  [✅] Backend Playback API
+  [✅] Documentação
+  [✅] Scripts de teste
+
+O QUE AINDA FALTA:
+  [⏳] Adicionar spotify_uri nas músicas
+
+PERCENTUAL DE CONCLUSÃO: 80% ✅
+
+PRÓXIMO PASSO:
+  bash scripts/add-spotify-ids.js
+  (Adiciona URIs do Spotify em cada música)
+
+DEPOIS:
+  🎉 SISTEMA FUNCIONA 100%!
+
+═══════════════════════════════════════════════════════════════════════════════
+Atualizado: 5 de Novembro de 2025

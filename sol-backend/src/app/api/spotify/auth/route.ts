@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         connected: true,
+        accessToken: userWithSpotify.spotifyAccessToken,
         spotifyId: userWithSpotify.spotifyUserId,
         tokenExpired: isExpired,
         expiresAt: userWithSpotify.spotifyTokenExpiry,

@@ -33,6 +33,15 @@ interface FuzzyAnalysisResponse {
       therapy_type: string;
       confidence: number;
       top_tracks: string[];
+      playlist?: Array<{
+        id: string;
+        spotifyId: string | null;
+        spotify_uri: string | null;
+        name: string;
+        artist: string;
+        genre: string;
+        position: number;
+      }>;
     };
     emotional_state: {
       sadness: number;
@@ -139,6 +148,7 @@ export async function POST(request: NextRequest) {
         artist: true,
         genre: true,
         spotifyId: true,
+        spotifyUri: true,
       },
       take: 5, // Máximo 5 faixas por playlist
       orderBy: {
@@ -150,10 +160,18 @@ export async function POST(request: NextRequest) {
       `✅ ${topTracks.length} faixas encontradas com gêneros preferidos`
     );
 
+    // Filtrar apenas músicas que têm spotifyUri
+    let validTracks = topTracks.filter(
+      (t) => t.spotifyUri && t.spotifyUri.trim() !== ""
+    );
+    Logger.debug(
+      `🎵 ${validTracks.length}/${topTracks.length} faixas têm Spotify URI`
+    );
+
     // 7. Se não encontrou músicas, buscar de TODOS os gêneros
-    if (topTracks.length === 0) {
+    if (validTracks.length === 0) {
       Logger.warn(
-        "⚠️ Nenhuma música encontrada nos gêneros preferidos, buscando em todos..."
+        "⚠️ Nenhuma música com URI encontrada, buscando em todos os gêneros..."
       );
       topTracks = await prisma.music.findMany({
         select: {
@@ -162,13 +180,21 @@ export async function POST(request: NextRequest) {
           artist: true,
           genre: true,
           spotifyId: true,
+          spotifyUri: true,
         },
-        take: 5, // Máximo 5 faixas
+        take: 20, // Aumentar para 20 para ter mais opções
         orderBy: {
           createdAt: "desc",
         },
       });
-      Logger.info(`✅ ${topTracks.length} faixas encontradas (busca geral)`);
+
+      // Filtrar novamente apenas as com URI
+      validTracks = topTracks.filter(
+        (t) => t.spotifyUri && t.spotifyUri.trim() !== ""
+      );
+      Logger.info(
+        `✅ ${validTracks.length} faixas encontradas (busca geral com URI)`
+      );
     }
 
     // 8. Salvar análise emocional no histórico
@@ -210,7 +236,7 @@ export async function POST(request: NextRequest) {
     const intensity = intensityMap[intention] || 0.5;
     const therapyType = therapyTypeMap[intention] || "Equilíbrio Geral";
 
-    // 9. Criar resposta formatada
+    // 9. Criar resposta formatada COM PLAYLIST COMPLETA
     const response: FuzzyAnalysisResponse = {
       success: true,
       data: {
@@ -222,7 +248,17 @@ export async function POST(request: NextRequest) {
           confidence: Number(
             fuzzyRecommendation.output.grauConfianca.toFixed(2)
           ),
-          top_tracks: topTracks.map((t) => `${t.name} - ${t.artist}`),
+          top_tracks: validTracks.map((t) => `${t.name} - ${t.artist}`),
+          // NOVO: Incluir playlist completa com todos os campos (APENAS COM URI VÁLIDA!)
+          playlist: validTracks.map((track, idx) => ({
+            id: track.id,
+            spotifyId: track.spotifyId || "",
+            spotify_uri: track.spotifyUri!, // Garantido que é não-nulo
+            name: track.name,
+            artist: track.artist,
+            genre: track.genre,
+            position: idx + 1,
+          })),
         },
         emotional_state: {
           sadness: emotionalInput.sadness,
@@ -236,7 +272,7 @@ export async function POST(request: NextRequest) {
             name: `Playlist ${fuzzyRecommendation.output.intencaoPlaylist}`,
             description: `Seleção personalizada para ${fuzzyRecommendation.output.intencaoPlaylist.toLowerCase()}`,
             reason: `Baseado na análise fuzzy: ${fuzzyRecommendation.output.intencaoPlaylist}`,
-            tracks_count: topTracks.length,
+            tracks_count: validTracks.length,
           },
         ],
       },

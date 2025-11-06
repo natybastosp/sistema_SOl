@@ -47,18 +47,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Construir payload para Spotify Web API
-    const playPayload: any = {
-      device_id: validated.device_id,
-    };
+    const playPayload: any = {};
 
     if (validated.context_uri) {
       playPayload.context_uri = validated.context_uri;
-      playPayload.offset = { position: validated.offset };
-      playPayload.position_ms = validated.position_ms;
+      if ((validated.offset ?? 0) > 0) {
+        playPayload.offset = { position: validated.offset };
+      }
+      if ((validated.position_ms ?? 0) > 0) {
+        playPayload.position_ms = validated.position_ms;
+      }
     } else if (validated.uris && validated.uris.length > 0) {
       playPayload.uris = validated.uris;
-      playPayload.offset = { position: validated.offset };
-      playPayload.position_ms = validated.position_ms;
+      // Para uris, offset é opcional
+      if ((validated.offset ?? 0) > 0) {
+        playPayload.offset = { position: 0 }; // Começar na primeira track
+      }
     } else {
       return NextResponse.json(
         { error: "Either context_uri or uris is required" },
@@ -66,16 +70,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    Logger.debug("▶️  Play payload:", JSON.stringify(playPayload));
+    Logger.debug("🎵 Device ID:", validated.device_id);
+
     // Enviar para Spotify API
-    // Usando axios ou fetch para fazer requisição autenticada
-    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${userWithTokens.spotifyAccessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(playPayload),
-    });
+    // device_id deve ser passado como query parameter, não no body
+    const response = await fetch(
+      `https://api.spotify.com/v1/me/player/play?device_id=${validated.device_id}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${userWithTokens.spotifyAccessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(playPayload),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
