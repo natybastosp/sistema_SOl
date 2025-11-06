@@ -1,5 +1,6 @@
 /**
  * Funções de pertinência fuzzy para o sistema de recomendação musical
+ * CORRIGIDO: Ajustadas funções de pertinência de intenção para evitar sobreposição excessiva
  */
 
 export interface MembershipPoint {
@@ -88,38 +89,39 @@ export const EMOCIONAL_MEMBERSHIP_FUNCTIONS: MembershipFunction[] = [
   {
     name: 'alegre',
     type: 'trapezoidal',
-    points: [5, 7, 9, 10]
+    points: [5, 7, 10, 10]  // CORRIGIDO: Era [5, 7, 9, 10], agora cobre até 10
   }
 ];
 
 /**
  * Definições das funções de pertinência para intenção da playlist
+ * CORRIGIDO: Reduzida sobreposição entre estimulante e feliz
  */
 export const INTENCAO_MEMBERSHIP_FUNCTIONS: MembershipFunction[] = [
   {
     name: 'calmante',
     type: 'trapezoidal',
-    points: [0, 0, 0.2, 0.4]
+    points: [0, 0, 0.15, 0.35]  // CORRIGIDO: Era [0, 0, 0.2, 0.4]
   },
   {
     name: 'reflexiva',
     type: 'triangular',
-    points: [0.3, 0.5, 0.7]
+    points: [0.25, 0.40, 0.55]  // CORRIGIDO: Era [0.3, 0.5, 0.7]
   },
   {
     name: 'neutra',
     type: 'triangular',
-    points: [0.4, 0.6, 0.8]
+    points: [0.45, 0.60, 0.75]  // CORRIGIDO: Era [0.4, 0.6, 0.8]
   },
   {
     name: 'estimulante',
-    type: 'trapezoidal',
-    points: [0.6, 0.8, 1.0, 1.0]
+    type: 'triangular',
+    points: [0.65, 0.80, 0.95]  // CORRIGIDO: Era trapezoidal [0.6, 0.8, 1.0, 1.0]
   },
   {
     name: 'feliz',
     type: 'trapezoidal',
-    points: [0.7, 0.9, 1.0, 1.0]
+    points: [0.85, 0.92, 1.0, 1.0]  // CORRIGIDO: Era [0.7, 0.9, 1.0, 1.0]
   }
 ];
 
@@ -159,21 +161,19 @@ export function mapDatasetEmotionsToEmotionalState(emotions: {
   medo: number;
   alegria: number;
   tristeza: number;
-  surpresa: number;
 }): number {
-  const { raiva, medo, alegria, tristeza, surpresa } = emotions;
+  const { raiva, medo, alegria, tristeza } = emotions;
   
   // Normaliza valores para escala 0-10
   const normalizedEmotions = {
     raiva: Math.max(0, Math.min(10, raiva)),
     medo: Math.max(0, Math.min(10, medo)),
     alegria: Math.max(0, Math.min(10, alegria)),
-    tristeza: Math.max(0, Math.min(10, tristeza)),
-    surpresa: Math.max(0, Math.min(10, surpresa))
+    tristeza: Math.max(0, Math.min(10, tristeza))
   };
   
   // Determina estado emocional dominante
-  if (normalizedEmotions.alegria >= 7 || normalizedEmotions.surpresa >= 6) {
+  if (normalizedEmotions.alegria >= 7) {
     return 8.0; // Alegre
   } else if (normalizedEmotions.tristeza >= 6 || normalizedEmotions.medo >= 6) {
     return 2.0; // Triste

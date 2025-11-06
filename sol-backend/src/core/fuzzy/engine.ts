@@ -163,7 +163,6 @@ export class FuzzyMusicEngine {
     medo: number;
     alegria: number;
     tristeza: number;
-    surpresa: number;
   }, genero?: string): PlaylistRecommendation {
     const estadoEmocionalEquivalente = mapDatasetEmotionsToEmotionalState(emotions);
     
@@ -195,7 +194,6 @@ export class FuzzyMusicEngine {
           medo: musica.medo || musica.Medo,
           alegria: musica.alegria || musica.Alegria,
           tristeza: musica.tristeza || musica.Tristeza,
-          surpresa: musica.surpresa || musica.Surpresa,
           energia: musica.energia || musica.Energia,
           valencia: musica.valencia || musica.Valência
         };
