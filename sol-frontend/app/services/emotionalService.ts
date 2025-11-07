@@ -181,7 +181,7 @@ export class EmotionalService {
             name: track.title,
             artist: track.artist,
             duration: track.duration || 180000,
-            genre: track.genre || "Rock",
+            genre: track.genre || "rock",
             position: idx + 1,
             scores: {
               sadness: 0,

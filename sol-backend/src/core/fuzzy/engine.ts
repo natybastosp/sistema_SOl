@@ -4,7 +4,7 @@
  * - Tratamento de estados extremos (0.0 e 10.0)
  * - Ajuste na interpretação de valores 7.0-8.0 para retornar "Estimulante"
  * - Validação aprimorada de entrada
- * - Gêneros: Rock, Funk, Rap, Samba, Sertanejo
+ * - Gêneros: rock, funk, rap, samba, sertanejo (minúsculas conforme banco de dados)
  */
 
 import {

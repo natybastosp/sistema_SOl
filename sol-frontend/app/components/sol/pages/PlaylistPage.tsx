@@ -29,6 +29,9 @@ export default function PlaylistPage({
   const [showFinalFeedback, setShowFinalFeedback] = useState(false);
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0); // Tempo em ms
+  const [duration, setDuration] = useState(0); // Duração total em ms
+  const [isPlaying, setIsPlaying] = useState(false); // Estado de reprodução
   const { deviceId, isConnected, playTrack } = useSpotifyPlayer();
 
   const musics = playlistData?.playlist || [];
@@ -38,6 +41,37 @@ export default function PlaylistPage({
   useEffect(() => {
     checkSpotifyStatus();
   }, []);
+
+  // Atualizar tempo de reprodução a cada segundo
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (!spotifyConnected) return;
+
+      try {
+        const solToken = localStorage.getItem("sol-auth-token");
+        if (!solToken) return;
+
+        const response = await fetch("/api/spotify/player/currently-playing", {
+          headers: {
+            Authorization: `Bearer ${solToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.track) {
+            setCurrentTime(data.track.progress || 0);
+            setDuration(data.track.duration || 0);
+            setIsPlaying(data.isPlaying || false);
+          }
+        }
+      } catch (error) {
+        console.log("Erro ao buscar progresso:", error);
+      }
+    }, 1000); // Atualizar a cada 1 segundo
+
+    return () => clearInterval(interval);
+  }, [spotifyConnected]);
 
   const checkSpotifyStatus = async () => {
     try {
@@ -63,6 +97,77 @@ export default function PlaylistPage({
     } catch (error) {
       console.log("Spotify not connected:", error);
       setSpotifyConnected(false);
+    }
+  };
+
+  // Função para formatar tempo em mm:ss
+  const formatTime = (ms: number): string => {
+    if (!ms || ms < 0) return "0:00";
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  // Função para pausar a música
+  const handlePause = async () => {
+    try {
+      const solToken = localStorage.getItem("sol-auth-token");
+      if (!solToken) return;
+
+      const response = await fetch("/api/spotify/player/pause", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${solToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error("Erro ao pausar música:", error);
+    }
+    console.log("Música pausada");
+  };
+
+  // Função para retomar a música
+  const handleResume = async () => {
+    try {
+      const solToken = localStorage.getItem("sol-auth-token");
+      if (!solToken) return;
+
+      // Verificar se temos deviceId
+      if (!deviceId) {
+        console.error("❌ Device ID não disponível");
+        throw new Error("Device ID não disponível");
+      }
+
+      // Usar o endpoint correto /api/spotify/play com device_id
+      const response = await fetch("/api/spotify/play", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${solToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uris: [currentMusic.spotify_uri],
+          device_id: deviceId,
+        }),
+      });
+
+      if (response.ok) {
+        setIsPlaying(true);
+        console.log("✅ Música retomada");
+      } else {
+        const errorData = await response.json();
+        console.error("❌ Erro ao retomar:", response.status, errorData);
+        throw new Error(`Erro ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Erro ao retomar música:", error);
+      throw error;
     }
   };
 
@@ -270,6 +375,32 @@ export default function PlaylistPage({
               </p>
             </div>
 
+            {/* Barra de Progresso */}
+            {
+              <div className="p-2">
+                {/* Barra de progresso visual */}
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-sol-primary to-[#FFA500] h-full transition-all duration-300"
+                    style={{
+                      width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%`,
+                    }}
+                  ></div>
+                </div>
+
+                {/* Tempo */}
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-sol-darker">
+                    {formatTime(currentTime)}
+                  </span>
+
+                  <span className="text-sm font-semibold text-sol-darker">
+                    {formatTime(duration)}
+                  </span>
+                </div>
+              </div>
+            }
+
             <div className="flex items-center justify-center gap-4 mb-8">
               <button
                 onClick={previousTrack}
@@ -291,7 +422,11 @@ export default function PlaylistPage({
                     setIsConnecting(true);
                     await initiateSpotifyAuthV2();
                     setIsConnecting(false);
+                  } else if (isPlaying) {
+                    // Se está tocando, pausar
+                    await handlePause();
                   } else {
+                    // Se não está tocando, retomar ou começar
                     try {
                       const trackUri = currentMusic.spotify_uri;
                       if (
@@ -305,11 +440,17 @@ export default function PlaylistPage({
                         nextTrack();
                         return;
                       }
-                      await playTrack(trackUri);
+                      // Tenta retomar, e se não conseguir, começa do início
+                      await handleResume();
                     } catch (error) {
-                      console.error("Erro ao tocar música:", error);
-                      alert("❌ Erro ao tocar a música.\n\nTente a próxima!");
-                      nextTrack();
+                      console.error("Erro ao retomar música:", error);
+                      try {
+                        await playTrack(currentMusic.spotify_uri);
+                      } catch (playError) {
+                        console.error("Erro ao tocar música:", playError);
+                        alert("❌ Erro ao tocar a música.\n\nTente a próxima!");
+                        nextTrack();
+                      }
                     }
                   }
                 }}
@@ -325,13 +466,25 @@ export default function PlaylistPage({
                 {isConnecting ? (
                   <span className="text-xl">⏳</span>
                 ) : spotifyConnected ? (
-                  <svg
-                    className="w-8 h-8 ml-1"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+                  isPlaying ? (
+                    // Ícone de pause quando está tocando
+                    <svg
+                      className="w-8 h-8"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                    </svg>
+                  ) : (
+                    // Ícone de play quando está pausado
+                    <svg
+                      className="w-8 h-8 ml-1"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  )
                 ) : (
                   <span className="text-xl">🎵</span>
                 )}

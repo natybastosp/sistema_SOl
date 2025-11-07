@@ -1,34 +1,66 @@
-import React, { useState } from 'react';
-import { Play, Pause, SkipForward, ThumbsUp, ThumbsDown, Music, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+import {
+  Play,
+  Pause,
+  SkipForward,
+  ThumbsUp,
+  ThumbsDown,
+  Music,
+  Sun,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // ============================================
 // CONSTANTS & DATA
 // ============================================
 
-const GENRES = ['Sertanejo', 'Rock', 'Funk', 'MPB'];
+const GENRES = ["rock", "funk", "rap", "samba", "sertanejo"];
 
 const EMOTIONS = [
-  { name: 'Tristeza', key: 'sadness', color: 'bg-blue-500' },
-  { name: 'Ansiedade', key: 'anxiety', color: 'bg-orange-500' },
-  { name: 'Alegria', key: 'joy', color: 'bg-yellow-500' },
-  { name: 'Raiva', key: 'anger', color: 'bg-red-500' },
-  { name: 'Calma', key: 'calm', color: 'bg-green-500' }
+  { name: "Tristeza", key: "sadness", color: "bg-blue-500" },
+  { name: "Ansiedade", key: "anxiety", color: "bg-orange-500" },
+  { name: "Alegria", key: "joy", color: "bg-yellow-500" },
+  { name: "Raiva", key: "anger", color: "bg-red-500" },
+  { name: "Calma", key: "calm", color: "bg-green-500" },
 ];
 
 const SAMPLE_TRACKS = [
-  { id: 1, title: "Música Relaxante 1", artist: "Artista Calmo", duration: "3:45", emotion: "calm" },
-  { id: 2, title: "Energia Positiva", artist: "Artista Alegre", duration: "4:20", emotion: "joy" },
-  { id: 3, title: "Reflexão Suave", artist: "Artista Contemplativo", duration: "5:10", emotion: "calm" },
-  { id: 4, title: "Superação", artist: "Artista Motivacional", duration: "3:55", emotion: "joy" }
+  {
+    id: 1,
+    title: "Música Relaxante 1",
+    artist: "Artista Calmo",
+    duration: "3:45",
+    emotion: "calm",
+  },
+  {
+    id: 2,
+    title: "Energia Positiva",
+    artist: "Artista Alegre",
+    duration: "4:20",
+    emotion: "joy",
+  },
+  {
+    id: 3,
+    title: "Reflexão Suave",
+    artist: "Artista Contemplativo",
+    duration: "5:10",
+    emotion: "calm",
+  },
+  {
+    id: 4,
+    title: "Superação",
+    artist: "Artista Motivacional",
+    duration: "3:55",
+    emotion: "joy",
+  },
 ];
 
 const PAGES = {
-  LOGIN: 'login',
-  PREFERENCES: 'preferences',
-  EMOTIONAL: 'emotional-assessment',
-  PLAYLIST: 'playlist',
-  DASHBOARD: 'dashboard'
+  LOGIN: "login",
+  PREFERENCES: "preferences",
+  EMOTIONAL: "emotional-assessment",
+  PLAYLIST: "playlist",
+  DASHBOARD: "dashboard",
 };
 
 // ============================================
@@ -44,33 +76,35 @@ const Header = ({ pageTitle }) => (
   </div>
 );
 
-const SunLogo = ({ size = 'large' }) => {
+const SunLogo = ({ size = "large" }) => {
   const sizes = {
-    large: { container: 'w-32 h-32', icon: 'w-16 h-16' },
-    medium: { container: 'w-24 h-24', icon: 'w-12 h-12' },
-    small: { container: 'w-16 h-16', icon: 'w-8 h-8' }
+    large: { container: "w-32 h-32", icon: "w-16 h-16" },
+    medium: { container: "w-24 h-24", icon: "w-12 h-12" },
+    small: { container: "w-16 h-16", icon: "w-8 h-8" },
   };
 
   const { container, icon } = sizes[size];
 
   return (
-    <div className={`${container} bg-gradient-to-br from-orange-300 to-orange-400 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg`}>
+    <div
+      className={`${container} bg-gradient-to-br from-orange-300 to-orange-400 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg`}
+    >
       <Sun className={`${icon} text-white`} />
     </div>
   );
 };
 
 const PageContainer = ({ children, gradient = false }) => (
-  <div className={`min-h-screen flex flex-col ${gradient ? 'bg-gradient-to-br from-orange-50 to-orange-100' : 'bg-gray-100'}`}>
+  <div
+    className={`min-h-screen flex flex-col ${gradient ? "bg-gradient-to-br from-orange-50 to-orange-100" : "bg-gray-100"}`}
+  >
     {children}
   </div>
 );
 
-const CenteredCard = ({ children, maxWidth = 'max-w-md' }) => (
+const CenteredCard = ({ children, maxWidth = "max-w-md" }) => (
   <div className="flex-1 flex items-center justify-center p-8">
-    <div className={`${maxWidth} w-full`}>
-      {children}
-    </div>
+    <div className={`${maxWidth} w-full`}>{children}</div>
   </div>
 );
 
@@ -89,13 +123,23 @@ const SocialButton = ({ onClick, icon, text }) => (
   </Button>
 );
 
-const LoginPage = ({ userData, password, onUpdateUser, onUpdatePassword, onLogin, onGoogleLogin, onFacebookLogin }) => (
+const LoginPage = ({
+  userData,
+  password,
+  onUpdateUser,
+  onUpdatePassword,
+  onLogin,
+  onGoogleLogin,
+  onFacebookLogin,
+}) => (
   <PageContainer gradient>
     <Header pageTitle="login" />
     <CenteredCard>
       <div className="text-center mb-8">
         <SunLogo size="large" />
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Bem-vindo ao SOL</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">
+          Bem-vindo ao SOL
+        </h2>
         <p className="text-gray-600">Faça login para continuar</p>
       </div>
 
@@ -149,7 +193,9 @@ const LoginPage = ({ userData, password, onUpdateUser, onUpdatePassword, onLogin
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">ou continue com</span>
+              <span className="px-4 bg-white text-gray-500 font-medium">
+                ou continue com
+              </span>
             </div>
           </div>
 
@@ -160,10 +206,22 @@ const LoginPage = ({ userData, password, onUpdateUser, onUpdatePassword, onLogin
               text="Continuar com Google"
               icon={
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
                 </svg>
               }
             />
@@ -172,8 +230,12 @@ const LoginPage = ({ userData, password, onUpdateUser, onUpdatePassword, onLogin
               onClick={onFacebookLogin}
               text="Continuar com Facebook"
               icon={
-                <svg className="w-5 h-5 mr-3" fill="#1877F2" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                <svg
+                  className="w-5 h-5 mr-3"
+                  fill="#1877F2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               }
             />
@@ -182,7 +244,7 @@ const LoginPage = ({ userData, password, onUpdateUser, onUpdatePassword, onLogin
           {/* Sign Up Link */}
           <div className="text-center pt-4">
             <p className="text-sm text-gray-600">
-              Não tem uma conta?{' '}
+              Não tem uma conta?{" "}
               <button className="text-orange-500 hover:text-orange-600 font-medium transition-colors">
                 Criar conta
               </button>
@@ -203,8 +265,8 @@ const GenreButton = ({ genre, isSelected, onClick }) => (
     onClick={onClick}
     className={`p-4 rounded-lg border-2 transition-all ${
       isSelected
-        ? 'border-orange-400 bg-orange-50 text-orange-700'
-        : 'border-gray-200 bg-white text-gray-700 hover:border-orange-200'
+        ? "border-orange-400 bg-orange-50 text-orange-700"
+        : "border-gray-200 bg-white text-gray-700 hover:border-orange-200"
     }`}
   >
     <Music className="w-6 h-6 mx-auto mb-2" />
@@ -215,7 +277,7 @@ const GenreButton = ({ genre, isSelected, onClick }) => (
 const PreferencesPage = ({ userData, onUpdatePreferences, onContinue }) => {
   const toggleGenre = (genre) => {
     const newPrefs = userData.preferences.includes(genre)
-      ? userData.preferences.filter(p => p !== genre)
+      ? userData.preferences.filter((p) => p !== genre)
       : [...userData.preferences, genre];
     onUpdatePreferences(newPrefs);
   };
@@ -226,8 +288,12 @@ const PreferencesPage = ({ userData, onUpdatePreferences, onContinue }) => {
       <CenteredCard maxWidth="max-w-2xl">
         <div className="text-center mb-8">
           <SunLogo size="large" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Página de cadastro</h2>
-          <p className="text-gray-600">Selecione seus gêneros musicais preferidos</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Página de cadastro
+          </h2>
+          <p className="text-gray-600">
+            Selecione seus gêneros musicais preferidos
+          </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-8">
@@ -276,14 +342,20 @@ const EmotionSlider = ({ emotion, value, onChange }) => (
       onChange={(e) => onChange(parseInt(e.target.value))}
       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
       style={{
-        background: `linear-gradient(to right, #fb923c 0%, #fb923c ${(value || 0) * 10}%, #e5e7eb ${(value || 0) * 10}%, #e5e7eb 100%)`
+        background: `linear-gradient(to right, #fb923c 0%, #fb923c ${(value || 0) * 10}%, #e5e7eb ${(value || 0) * 10}%, #e5e7eb 100%)`,
       }}
     />
   </div>
 );
 
-const EmotionalAssessmentPage = ({ userData, onUpdateEmotion, onGeneratePlaylist }) => {
-  const hasEmotions = Object.values(userData.emotionalState).some(value => value > 0);
+const EmotionalAssessmentPage = ({
+  userData,
+  onUpdateEmotion,
+  onGeneratePlaylist,
+}) => {
+  const hasEmotions = Object.values(userData.emotionalState).some(
+    (value) => value > 0
+  );
 
   return (
     <PageContainer>
@@ -291,8 +363,12 @@ const EmotionalAssessmentPage = ({ userData, onUpdateEmotion, onGeneratePlaylist
       <CenteredCard maxWidth="max-w-2xl">
         <div className="text-center mb-8">
           <SunLogo size="large" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Como posso te ajudar?</h2>
-          <p className="text-gray-600">Avalie como você está se sentindo agora</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Como posso te ajudar?
+          </h2>
+          <p className="text-gray-600">
+            Avalie como você está se sentindo agora
+          </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-8">
@@ -331,8 +407,8 @@ const TrackItem = ({ track, isActive, onClick }) => (
     onClick={onClick}
     className={`p-3 rounded-lg cursor-pointer transition-colors ${
       isActive
-        ? 'bg-orange-50 border border-orange-200'
-        : 'bg-gray-50 hover:bg-gray-100'
+        ? "bg-orange-50 border border-orange-200"
+        : "bg-gray-50 hover:bg-gray-100"
     }`}
   >
     <div className="font-medium text-sm text-gray-800">{track.title}</div>
@@ -350,7 +426,7 @@ const PlaylistPage = ({
   onNext,
   onFeedback,
   onSelectTrack,
-  onFinalFeedback
+  onFinalFeedback,
 }) => {
   const track = playlist[currentTrack];
 
@@ -369,7 +445,9 @@ const PlaylistPage = ({
               {track && (
                 <>
                   <div className="text-center mb-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{track.title}</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                      {track.title}
+                    </h3>
                     <p className="text-gray-600">{track.artist}</p>
                     <p className="text-sm text-gray-500">{track.duration}</p>
                   </div>
@@ -379,7 +457,11 @@ const PlaylistPage = ({
                       onClick={onPlayPause}
                       className="bg-orange-400 text-white p-4 rounded-full hover:bg-orange-500 transition-colors"
                     >
-                      {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+                      {isPlaying ? (
+                        <Pause className="w-6 h-6" />
+                      ) : (
+                        <Play className="w-6 h-6" />
+                      )}
                     </Button>
 
                     <Button
@@ -394,8 +476,12 @@ const PlaylistPage = ({
 
                   <div className="flex justify-center space-x-4">
                     <Button
-                      onClick={() => onFeedback(track.id, 'positive')}
-                      variant={feedback[track.id] === 'positive' ? 'default' : 'outline'}
+                      onClick={() => onFeedback(track.id, "positive")}
+                      variant={
+                        feedback[track.id] === "positive"
+                          ? "default"
+                          : "outline"
+                      }
                       className="flex items-center space-x-2"
                     >
                       <ThumbsUp className="w-4 h-4" />
@@ -403,8 +489,12 @@ const PlaylistPage = ({
                     </Button>
 
                     <Button
-                      onClick={() => onFeedback(track.id, 'negative')}
-                      variant={feedback[track.id] === 'negative' ? 'default' : 'outline'}
+                      onClick={() => onFeedback(track.id, "negative")}
+                      variant={
+                        feedback[track.id] === "negative"
+                          ? "default"
+                          : "outline"
+                      }
                       className="flex items-center space-x-2"
                     >
                       <ThumbsDown className="w-4 h-4" />
@@ -419,7 +509,9 @@ const PlaylistPage = ({
           {/* Playlist Sidebar */}
           <div className="w-80">
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Sua Playlist</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Sua Playlist
+              </h3>
 
               <div className="space-y-3">
                 {playlist.map((track, index) => (
@@ -433,7 +525,9 @@ const PlaylistPage = ({
               </div>
 
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Como você se sente agora?</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  Como você se sente agora?
+                </h4>
                 <div className="space-y-2">
                   {EMOTIONS.map((emotion) => (
                     <Button
@@ -481,10 +575,18 @@ const SessionCard = ({ session, index }) => (
 );
 
 const DashboardPage = ({ history, onNewSession }) => {
-  const totalTracks = history.reduce((acc, entry) => acc + entry.tracksPlayed, 0);
-  const avgSatisfaction = history.length > 0
-    ? Math.round((history.reduce((acc, entry) => acc + entry.satisfaction, 0) / history.length) * 100) / 100
-    : 0;
+  const totalTracks = history.reduce(
+    (acc, entry) => acc + entry.tracksPlayed,
+    0
+  );
+  const avgSatisfaction =
+    history.length > 0
+      ? Math.round(
+          (history.reduce((acc, entry) => acc + entry.satisfaction, 0) /
+            history.length) *
+            100
+        ) / 100
+      : 0;
 
   return (
     <PageContainer>
@@ -493,7 +595,9 @@ const DashboardPage = ({ history, onNewSession }) => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
             <SunLogo size="medium" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Seu Dashboard</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Seu Dashboard
+            </h2>
             <p className="text-gray-600">Acompanhe seu progresso emocional</p>
           </div>
 
@@ -504,10 +608,14 @@ const DashboardPage = ({ history, onNewSession }) => {
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Histórico de Sessões</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Histórico de Sessões
+            </h3>
 
             {history.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">Nenhuma sessão registrada ainda.</p>
+              <p className="text-gray-500 text-center py-8">
+                Nenhuma sessão registrada ainda.
+              </p>
             ) : (
               <div className="space-y-4">
                 {history.map((session, index) => (
@@ -538,11 +646,11 @@ const DashboardPage = ({ history, onNewSession }) => {
 const SolMusicSystem = () => {
   const [currentPage, setCurrentPage] = useState(PAGES.LOGIN);
   const [userData, setUserData] = useState({
-    name: '',
+    name: "",
     preferences: [],
-    emotionalState: {}
+    emotionalState: {},
   });
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [currentPlaylist, setCurrentPlaylist] = useState([]);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -560,7 +668,7 @@ const SolMusicSystem = () => {
   };
 
   const handleSocialLogin = (provider) => {
-    setUserData(prev => ({ ...prev, name: `Usuário ${provider}` }));
+    setUserData((prev) => ({ ...prev, name: `Usuário ${provider}` }));
     setCurrentPage(PAGES.PREFERENCES);
   };
 
@@ -571,11 +679,13 @@ const SolMusicSystem = () => {
   };
 
   const generatePlaylist = () => {
-    const dominantEmotion = Object.entries(userData.emotionalState)
-      .reduce((a, b) => userData.emotionalState[a[0]] > userData.emotionalState[b[0]] ? a : b)[0];
+    const dominantEmotion = Object.entries(userData.emotionalState).reduce(
+      (a, b) =>
+        userData.emotionalState[a[0]] > userData.emotionalState[b[0]] ? a : b
+    )[0];
 
-    const filteredTracks = SAMPLE_TRACKS.filter(track =>
-      track.emotion === dominantEmotion || track.emotion === 'calm'
+    const filteredTracks = SAMPLE_TRACKS.filter(
+      (track) => track.emotion === dominantEmotion || track.emotion === "calm"
     );
 
     setCurrentPlaylist(filteredTracks);
@@ -589,10 +699,11 @@ const SolMusicSystem = () => {
       initialEmotion: userData.emotionalState,
       finalEmotion: finalEmotion,
       tracksPlayed: currentPlaylist.length,
-      satisfaction: Object.values(feedback).filter(f => f === 'positive').length
+      satisfaction: Object.values(feedback).filter((f) => f === "positive")
+        .length,
     };
 
-    setEmotionalHistory(prev => [...prev, newEntry]);
+    setEmotionalHistory((prev) => [...prev, newEntry]);
     setCurrentPage(PAGES.DASHBOARD);
   };
 
@@ -605,27 +716,33 @@ const SolMusicSystem = () => {
       <LoginPage
         userData={userData}
         password={password}
-        onUpdateUser={(updates) => setUserData(prev => ({ ...prev, ...updates }))}
+        onUpdateUser={(updates) =>
+          setUserData((prev) => ({ ...prev, ...updates }))
+        }
         onUpdatePassword={setPassword}
         onLogin={handleLogin}
-        onGoogleLogin={() => handleSocialLogin('Google')}
-        onFacebookLogin={() => handleSocialLogin('Facebook')}
+        onGoogleLogin={() => handleSocialLogin("Google")}
+        onFacebookLogin={() => handleSocialLogin("Facebook")}
       />
     ),
     [PAGES.PREFERENCES]: (
       <PreferencesPage
         userData={userData}
-        onUpdatePreferences={(prefs) => setUserData(prev => ({ ...prev, preferences: prefs }))}
+        onUpdatePreferences={(prefs) =>
+          setUserData((prev) => ({ ...prev, preferences: prefs }))
+        }
         onContinue={handlePreferences}
       />
     ),
     [PAGES.EMOTIONAL]: (
       <EmotionalAssessmentPage
         userData={userData}
-        onUpdateEmotion={(key, value) => setUserData(prev => ({
-          ...prev,
-          emotionalState: { ...prev.emotionalState, [key]: value }
-        }))}
+        onUpdateEmotion={(key, value) =>
+          setUserData((prev) => ({
+            ...prev,
+            emotionalState: { ...prev.emotionalState, [key]: value },
+          }))
+        }
         onGeneratePlaylist={generatePlaylist}
       />
     ),
@@ -636,8 +753,13 @@ const SolMusicSystem = () => {
         isPlaying={isPlaying}
         feedback={feedback}
         onPlayPause={() => setIsPlaying(!isPlaying)}
-        onNext={() => currentTrack < currentPlaylist.length - 1 && setCurrentTrack(currentTrack + 1)}
-        onFeedback={(trackId, rating) => setFeedback(prev => ({ ...prev, [trackId]: rating }))}
+        onNext={() =>
+          currentTrack < currentPlaylist.length - 1 &&
+          setCurrentTrack(currentTrack + 1)
+        }
+        onFeedback={(trackId, rating) =>
+          setFeedback((prev) => ({ ...prev, [trackId]: rating }))
+        }
         onSelectTrack={setCurrentTrack}
         onFinalFeedback={submitFinalFeedback}
       />
@@ -647,7 +769,7 @@ const SolMusicSystem = () => {
         history={emotionalHistory}
         onNewSession={() => setCurrentPage(PAGES.EMOTIONAL)}
       />
-    )
+    ),
   };
 
   return pages[currentPage] || pages[PAGES.LOGIN];

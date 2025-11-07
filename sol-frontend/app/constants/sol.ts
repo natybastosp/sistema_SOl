@@ -1,18 +1,7 @@
 import type { Emotion, Track } from "~/types/sol";
 
-// Gêneros musicais existentes
-export const GENRES = [
-  "Rock",
-  "Pop",
-  "MPB",
-  "Sertanejo",
-  "Funk",
-  "Jazz",
-  "Clássica",
-  "Eletrônica",
-  "Reggae",
-  "Hip Hop",
-];
+// Gêneros musicais existentes (devem corresponder ao banco de dados em minúsculas)
+export const GENRES = ["rock", "funk", "rap", "samba", "sertanejo"];
 
 // Emoções existentes
 export const EMOTIONS: Emotion[] = [
