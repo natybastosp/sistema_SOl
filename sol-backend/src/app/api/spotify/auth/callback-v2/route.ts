@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
       // Redirecionar para frontend com erro
       return NextResponse.redirect(
-        `http://localhost:5173/spotify-callback?error=${error}&description=${errorDescription}`
+        `http://localhost:3001/spotify-callback?error=${error}&description=${errorDescription}`
       );
     }
 
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
     console.log(`✅ Tokens salvos para usuário: ${userId}`);
 
     // Redirecionar para frontend com sucesso
-    const redirectUrl = new URL("http://localhost:5173/spotify-callback");
+    const redirectUrl = new URL("http://localhost:3001/spotify-callback");
     redirectUrl.searchParams.set("success", "true");
     redirectUrl.searchParams.set("spotifyId", spotifyProfile.id);
 
@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
 
     // Redirecionar para frontend com erro
     return NextResponse.redirect(
-      `http://localhost:5173/spotify-callback?error=${encodeURIComponent(
+      `http://localhost:3001/spotify-callback?error=${encodeURIComponent(
         errorMessage
       )}`
     );
