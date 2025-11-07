@@ -4,6 +4,7 @@
  * - Tratamento de estados extremos (0.0 e 10.0)
  * - Ajuste na interpretação de valores 7.0-8.0 para retornar "Estimulante"
  * - Validação aprimorada de entrada
+ * - Gêneros: Rock, Funk, Rap, Samba, Sertanejo
  */
 
 import {
@@ -58,7 +59,7 @@ export interface PlaylistRecommendation {
  */
 export class FuzzyMusicEngine {
   private readonly generosDisponiveis = [
-    'Rock', 'Funk', 'MPB', 'Sertanejo'
+    'Rock', 'Funk', 'Rap', 'Samba', 'Sertanejo'
   ];
 
   /**
@@ -267,7 +268,7 @@ export class FuzzyMusicEngine {
     if (genero && this.generosDisponiveis.includes(genero)) {
       return `${baseDesc} no gênero ${genero}`;
     } else {
-      return `${baseDesc} com Rock, Funk, MPB e Sertanejo`;
+      return `${baseDesc} com Rock, Funk, Rap, Samba e Sertanejo`;
     }
   }
 

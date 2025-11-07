@@ -96,10 +96,10 @@ export const FUZZY_RULES: FuzzyRule[] = [
  * Regras específicas para gêneros musicais brasileiros
  */
 export const GENRE_SPECIFIC_RULES: FuzzyRule[] = [
-  // === REGRAS PARA MPB ===
+  // === REGRAS PARA RAP ===
   {
-    id: "MPB1",
-    description: "MPB com estado TRISTE intensifica intenção REFLEXIVA",
+    id: "RAP1",
+    description: "Rap com estado TRISTE gera intenção REFLEXIVA intensa",
     antecedent: {
       variable: "estado_emocional",
       value: "triste",
@@ -111,8 +111,8 @@ export const GENRE_SPECIFIC_RULES: FuzzyRule[] = [
     weight: 1.1,
   },
   {
-    id: "MPB2",
-    description: "MPB com estado ANSIOSO mantém intenção REFLEXIVA",
+    id: "RAP2",
+    description: "Rap com estado ANSIOSO intensifica intenção REFLEXIVA",
     antecedent: {
       variable: "estado_emocional",
       value: "ansioso",
@@ -121,11 +121,65 @@ export const GENRE_SPECIFIC_RULES: FuzzyRule[] = [
       variable: "intencao_playlist",
       value: "reflexiva",
     },
+    weight: 1.2,
+  },
+  {
+    id: "RAP3",
+    description: "Rap com estado NEUTRO gera intenção ESTIMULANTE",
+    antecedent: {
+      variable: "estado_emocional",
+      value: "neutro",
+    },
+    consequent: {
+      variable: "intencao_playlist",
+      value: "estimulante",
+    },
     weight: 1.0,
   },
   {
-    id: "MPB3",
-    description: "MPB com estado NEUTRO mantém intenção NEUTRA",
+    id: "RAP4",
+    description: "Rap com estado ALEGRE gera intenção ESTIMULANTE",
+    antecedent: {
+      variable: "estado_emocional",
+      value: "alegre",
+    },
+    consequent: {
+      variable: "intencao_playlist",
+      value: "estimulante",
+    },
+    weight: 1.0,
+  },
+
+  // === REGRAS PARA SAMBA ===
+  {
+    id: "SAMBA1",
+    description: "Samba com estado TRISTE gera intenção REFLEXIVA suave",
+    antecedent: {
+      variable: "estado_emocional",
+      value: "triste",
+    },
+    consequent: {
+      variable: "intencao_playlist",
+      value: "reflexiva",
+    },
+    weight: 0.9,
+  },
+  {
+    id: "SAMBA2",
+    description: "Samba com estado ANSIOSO gera intenção ESTIMULANTE",
+    antecedent: {
+      variable: "estado_emocional",
+      value: "ansioso",
+    },
+    consequent: {
+      variable: "intencao_playlist",
+      value: "estimulante",
+    },
+    weight: 1.0,
+  },
+  {
+    id: "SAMBA3",
+    description: "Samba com estado NEUTRO gera intenção NEUTRA alegre",
     antecedent: {
       variable: "estado_emocional",
       value: "neutro",
@@ -137,17 +191,17 @@ export const GENRE_SPECIFIC_RULES: FuzzyRule[] = [
     weight: 1.0,
   },
   {
-    id: "MPB4",
-    description: "MPB com estado ALEGRE gera intenção REFLEXIVA suave",
+    id: "SAMBA4",
+    description: "Samba com estado ALEGRE intensifica intenção FELIZ",
     antecedent: {
       variable: "estado_emocional",
       value: "alegre",
     },
     consequent: {
       variable: "intencao_playlist",
-      value: "reflexiva",
+      value: "feliz",
     },
-    weight: 0.8,
+    weight: 1.2,
   },
 
   // === REGRAS PARA FUNK ===
@@ -367,7 +421,8 @@ export function applyFuzzyRules(
  */
 export function getGenreSpecificRules(genre: string): FuzzyRule[] {
   const genreMap: Record<string, string[]> = {
-    MPB: ["MPB1", "MPB2", "MPB3", "MPB4"],
+    Rap: ["RAP1", "RAP2", "RAP3", "RAP4"],
+    Samba: ["SAMBA1", "SAMBA2", "SAMBA3", "SAMBA4"],
     Funk: ["FUNK1", "FUNK2", "FUNK3", "FUNK4"],
     Sertanejo: ["SERTANEJO1", "SERTANEJO2", "SERTANEJO3", "SERTANEJO4"],
     Rock: ["ROCK1", "ROCK2", "ROCK3", "ROCK4"],
@@ -411,8 +466,6 @@ export interface EmotionalCriteria {
   minAlegria?: number;
   maxTristeza?: number;
   minTristeza?: number;
-  maxSurpresa?: number;
-  minSurpresa?: number;
   maxEnergia?: number;
   minEnergia?: number;
   maxValencia?: number;
@@ -470,10 +523,16 @@ export const GENRE_EMOTIONAL_MODIFIERS: Record<
   string,
   Record<string, Partial<EmotionalCriteria>>
 > = {
-  MPB: {
-    reflexiva: { maxEnergia: 0.6, minTristeza: 1 },
-    neutra: { maxEnergia: 0.6, minValencia: 0.3 },
-    calmante: { maxEnergia: 0.4 },
+  Rap: {
+    reflexiva: { maxEnergia: 0.7, minTristeza: 2, maxAlegria: 5 },
+    estimulante: { minEnergia: 0.7, maxTristeza: 6 },
+    neutra: { minEnergia: 0.6 },
+  },
+  Samba: {
+    reflexiva: { maxEnergia: 0.6, minValencia: 0.3 },
+    estimulante: { minEnergia: 0.7, minAlegria: 6 },
+    neutra: { minValencia: 0.4, minEnergia: 0.5 },
+    feliz: { minEnergia: 0.6, minAlegria: 7, minValencia: 0.6 },
   },
   Funk: {
     estimulante: { minEnergia: 0.8, minAlegria: 6 },
@@ -523,7 +582,6 @@ export function evaluateMusicalEmotionalFit(
     medo?: number;
     alegria?: number;
     tristeza?: number;
-    surpresa?: number;
     energia?: number;
     valencia?: number;
   },
@@ -558,7 +616,7 @@ export function evaluateMusicalEmotionalFit(
  * Valida se um gênero é suportado
  */
 export function isValidGenre(genre: string): boolean {
-  return ["MPB", "Funk", "Sertanejo", "Rock"].includes(genre);
+  return ["Rap", "Samba", "Funk", "Sertanejo", "Rock"].includes(genre);
 }
 
 /**
@@ -568,7 +626,7 @@ export function getGenreRuleStats(): Record<
   string,
   { totalRules: number; ruleIds: string[] }
 > {
-  const genres = ["MPB", "Funk", "Sertanejo", "Rock"];
+  const genres = ["Rap", "Samba", "Funk", "Sertanejo", "Rock"];
   const stats: Record<string, { totalRules: number; ruleIds: string[] }> = {};
 
   for (const genre of genres) {
