@@ -148,7 +148,6 @@ export async function POST(request: NextRequest) {
         artist: true,
         genre: true,
         spotifyId: true,
-        spotifyUri: true,
       },
       take: 5, // Máximo 5 faixas por playlist
       orderBy: {
@@ -160,18 +159,18 @@ export async function POST(request: NextRequest) {
       `✅ ${topTracks.length} faixas encontradas com gêneros preferidos`
     );
 
-    // Filtrar apenas músicas que têm spotifyUri
+    // ✅ CORREÇÃO 1: Filtrar apenas músicas que têm spotifyId (não spotifyUri)
     let validTracks = topTracks.filter(
-      (t) => t.spotifyUri && t.spotifyUri.trim() !== ""
+      (t) => t.spotifyId && t.spotifyId.trim() !== ""
     );
     Logger.debug(
-      `🎵 ${validTracks.length}/${topTracks.length} faixas têm Spotify URI`
+      `🎵 ${validTracks.length}/${topTracks.length} faixas têm Spotify ID`
     );
 
     // 7. Se não encontrou músicas, buscar de TODOS os gêneros
     if (validTracks.length === 0) {
       Logger.warn(
-        "⚠️ Nenhuma música com URI encontrada, buscando em todos os gêneros..."
+        "⚠️ Nenhuma música com Spotify ID encontrada, buscando em todos os gêneros..."
       );
       topTracks = await prisma.music.findMany({
         select: {
@@ -180,7 +179,6 @@ export async function POST(request: NextRequest) {
           artist: true,
           genre: true,
           spotifyId: true,
-          spotifyUri: true,
         },
         take: 20, // Aumentar para 20 para ter mais opções
         orderBy: {
@@ -188,12 +186,12 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Filtrar novamente apenas as com URI
+      // ✅ CORREÇÃO 2: Filtrar novamente apenas as com spotifyId
       validTracks = topTracks.filter(
-        (t) => t.spotifyUri && t.spotifyUri.trim() !== ""
+        (t) => t.spotifyId && t.spotifyId.trim() !== ""
       );
       Logger.info(
-        `✅ ${validTracks.length} faixas encontradas (busca geral com URI)`
+        `✅ ${validTracks.length} faixas encontradas (busca geral com Spotify ID)`
       );
     }
 
@@ -249,11 +247,13 @@ export async function POST(request: NextRequest) {
             fuzzyRecommendation.output.grauConfianca.toFixed(2)
           ),
           top_tracks: validTracks.map((t) => `${t.name} - ${t.artist}`),
-          // NOVO: Incluir playlist completa com todos os campos (APENAS COM URI VÁLIDA!)
+          // ✅ CORREÇÃO 3: Usar spotifyId e construir URI manualmente
           playlist: validTracks.map((track, idx) => ({
             id: track.id,
             spotifyId: track.spotifyId || "",
-            spotify_uri: track.spotifyUri!, // Garantido que é não-nulo
+            spotify_uri: track.spotifyId 
+              ? `spotify:track:${track.spotifyId}` 
+              : null,
             name: track.name,
             artist: track.artist,
             genre: track.genre,

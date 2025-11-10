@@ -62,11 +62,25 @@ export class FuzzyMusicEngine {
     'Rock', 'Funk', 'Rap', 'Samba', 'Sertanejo'
   ];
 
+  // ✅ Novo método: normaliza o gênero musical
+  /**
+   * Normaliza o gênero musical (primeira letra maiúscula)
+   */
+  private normalizeGenre(genre: string | undefined): string | undefined {
+    if (!genre) return undefined;
+    return genre.charAt(0).toUpperCase() + genre.slice(1).toLowerCase();
+  }
+
   /**
    * Processa entrada fuzzy e gera recomendação
    */
   public processRecommendation(input: FuzzyInput): PlaylistRecommendation {
-    // Validação de entrada
+    // ✅ ADICIONE ESTAS 3 LINHAS NO INÍCIO DO MÉTODO
+    if (input.generoPreferido) {
+      input.generoPreferido = this.normalizeGenre(input.generoPreferido);
+    }
+
+    // Validação (código que já existe)
     const validation = this.validateInput(input);
     if (!validation.valid) {
       throw new Error(`Entrada inválida: ${validation.errors.join(', ')}`);
@@ -93,7 +107,7 @@ export class FuzzyMusicEngine {
       estadoAjustado,
       input.generoPreferido
     );
-    
+
     const criteriosEmocionais = getEmotionalCriteriaForIntention(intencaoPlaylist.toLowerCase());
 
     // 6. Cálculo de confiança
@@ -123,50 +137,38 @@ export class FuzzyMusicEngine {
 
   /**
    * Ajusta estados extremos para garantir pertinência
-   * Estados 0.0 e 10.0 são movidos levemente para dentro do domínio
    */
   private adjustExtremeStates(estado: number): number {
-    if (estado === 0.0) {
-      return 0.1; // Move para garantir pertinência a "triste"
-    }
-    if (estado === 10.0) {
-      return 9.9; // Move para garantir pertinência a "alegre"
-    }
+    if (estado === 0.0) return 0.1;
+    if (estado === 10.0) return 9.9;
     return estado;
   }
 
   /**
    * Interpreta intenção com ajustes para faixa específica
-   * Estados 7.0-8.0 devem retornar "Estimulante" (exceto com Funk que retorna "Feliz")
    */
   private interpretWithAdjustments(
     valor: number,
     estadoEmocional: number,
     genero?: string
   ): string {
-    // Faixa 7.0-8.0: Estimulante (exceto Funk)
     if (estadoEmocional >= 7.0 && estadoEmocional <= 8.0) {
       if (genero === 'Funk') {
         return 'Feliz';
       }
       return 'Estimulante';
     }
-
-    // Para outros estados, usa interpretação padrão
     return interpretIntention(valor);
   }
 
   /**
    * Processa música do dataset e retorna análise emocional
    */
-  public analyzeDatasetMusic(emotions: {
-    raiva: number;
-    medo: number;
-    alegria: number;
-    tristeza: number;
-  }, genero?: string): PlaylistRecommendation {
+  public analyzeDatasetMusic(
+    emotions: { raiva: number; medo: number; alegria: number; tristeza: number },
+    genero?: string
+  ): PlaylistRecommendation {
     const estadoEmocionalEquivalente = mapDatasetEmotionsToEmotionalState(emotions);
-    
     return this.processRecommendation({
       estadoEmocional: estadoEmocionalEquivalente,
       generoPreferido: genero
@@ -201,14 +203,10 @@ export class FuzzyMusicEngine {
 
         const fuzzyScore = evaluateMusicalEmotionalFit(emotions, criterios);
 
-        return {
-          ...musica,
-          fuzzyScore
-        };
+        return { ...musica, fuzzyScore };
       })
       .filter(musica => musica.fuzzyScore >= minScore)
       .sort((a, b) => {
-        // Ordena primeiro por score fuzzy, depois pelo campo especificado
         if (Math.abs(a.fuzzyScore - b.fuzzyScore) < 0.1) {
           const aValue = a[sortBy] || 0;
           const bValue = b[sortBy] || 0;
@@ -235,20 +233,15 @@ export class FuzzyMusicEngine {
     membershipDegrees: Record<string, number>,
     ruleActivations: RuleActivation[]
   ): number {
-    // Confiança baseada na clareza do estado emocional
     const maxMembership = Math.max(...Object.values(membershipDegrees));
     const membershipClarity = maxMembership;
-
-    // Confiança baseada no número de regras ativadas
     const activeRules = ruleActivations.filter(r => r.activationLevel > 0.1).length;
-    const ruleConsistency = Math.min(1, activeRules / 3); // Normaliza para 3 regras
+    const ruleConsistency = Math.min(1, activeRules / 3);
+    const avgActivation =
+      ruleActivations.reduce((sum, r) => sum + r.activationLevel, 0) /
+      Math.max(1, ruleActivations.length);
 
-    // Confiança baseada na força das ativações
-    const avgActivation = ruleActivations.reduce((sum, r) => sum + r.activationLevel, 0) / 
-                         Math.max(1, ruleActivations.length);
-
-    // Combina métricas de confiança
-    return (membershipClarity * 0.4 + ruleConsistency * 0.3 + avgActivation * 0.3);
+    return membershipClarity * 0.4 + ruleConsistency * 0.3 + avgActivation * 0.3;
   }
 
   /**
@@ -256,15 +249,14 @@ export class FuzzyMusicEngine {
    */
   private generatePlaylistDescription(intencao: string, genero?: string): string {
     const descricoes: Record<string, string> = {
-      'Calmante': 'Músicas suaves e relaxantes para acalmar e diminuir o estresse',
-      'Reflexiva': 'Músicas que convidam à introspecção e reflexão pessoal',
-      'Neutra': 'Músicas equilibradas para acompanhar atividades do dia a dia',
-      'Estimulante': 'Músicas energéticas para motivar e animar',
-      'Feliz': 'Músicas alegres e positivas para celebrar bons momentos'
+      Calmante: 'Músicas suaves e relaxantes para acalmar e diminuir o estresse',
+      Reflexiva: 'Músicas que convidam à introspecção e reflexão pessoal',
+      Neutra: 'Músicas equilibradas para acompanhar atividades do dia a dia',
+      Estimulante: 'Músicas energéticas para motivar e animar',
+      Feliz: 'Músicas alegres e positivas para celebrar bons momentos'
     };
 
     const baseDesc = descricoes[intencao] || 'Playlist personalizada';
-    
     if (genero && this.generosDisponiveis.includes(genero)) {
       return `${baseDesc} no gênero ${genero}`;
     } else {
@@ -278,22 +270,17 @@ export class FuzzyMusicEngine {
   public validateInput(input: FuzzyInput): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    // Valida estado emocional
     if (typeof input.estadoEmocional !== 'number' || isNaN(input.estadoEmocional)) {
       errors.push('Estado emocional deve ser um número entre 0 e 10');
     } else if (input.estadoEmocional < 0 || input.estadoEmocional > 10) {
       errors.push('Estado emocional deve ser um número entre 0 e 10');
     }
 
-    // Valida gênero preferido
     if (input.generoPreferido && !this.generosDisponiveis.includes(input.generoPreferido)) {
       errors.push(`Gênero deve ser um dos: ${this.generosDisponiveis.join(', ')}`);
     }
 
-    return {
-      valid: errors.length === 0,
-      errors
-    };
+    return { valid: errors.length === 0, errors };
   }
 
   /**
@@ -306,7 +293,7 @@ export class FuzzyMusicEngine {
     playlistIntentions: string[];
   } {
     return {
-      totalRules: 5, // apenas regras base
+      totalRules: 5,
       availableGenres: this.generosDisponiveis,
       emotionalStates: EMOCIONAL_MEMBERSHIP_FUNCTIONS.map(f => f.name),
       playlistIntentions: INTENCAO_MEMBERSHIP_FUNCTIONS.map(f => f.name)
@@ -324,7 +311,6 @@ export class FuzzyMusicEngine {
     step5_finalIntention: string;
     step6_confidence: number;
   } {
-    // Executa cada passo mantendo o estado intermediário
     const estadoAjustado = this.adjustExtremeStates(input.estadoEmocional);
     const step1 = this.fuzzifyEmotionalState(estadoAjustado);
     const step2 = applyFuzzyRules(step1, undefined, input.generoPreferido);
