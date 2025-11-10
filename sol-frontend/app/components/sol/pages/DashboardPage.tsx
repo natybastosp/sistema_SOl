@@ -33,11 +33,32 @@ export default function DashboardPage({
         {/* Boas-vindas */}
         <Card className="mb-6 border-sol-primary border-2">
           <CardHeader className="bg-gradient-to-r from-sol-pale to-transparent">
-            <CardTitle className="text-2xl text-sol-darker">
-              Olá, {userData.name}! 👋
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl text-sol-darker">
+                Olá, {userData.name}! 👋
+              </CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="relative w-max">
+                  <span
+                    className="text-7xl inline-block animate-spin z-0"
+                    style={{ animationDuration: "4s" }}
+                    role="img"
+                    aria-label="sol"
+                  >
+                    ☀️
+                  </span>
+                  <span
+                    className="absolute left-[65%] top-[80%] transform -translate-x-1/2 -translate-y-1/2 text-4xl text-sol-primary z-10 pointer-events-none"
+                    role="img"
+                    aria-label="nota-musical"
+                  >
+                    🎵
+                  </span>
+                </div>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-1">
             <p className="text-gray-700">
               Bem-vindo ao sistema SOL. O que você gostaria de fazer hoje?
             </p>
@@ -61,7 +82,8 @@ export default function DashboardPage({
               </p>
               <Button
                 onClick={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
-                className="w-full bg-gradient-to-r from-sol-primary to-sol-primary hover:shadow-lg text-primary font-bold py-3 rounded-lg transition-all"
+                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all"
+                variant="outline"
               >
                 🎵 Começar Análise
               </Button>
@@ -81,7 +103,7 @@ export default function DashboardPage({
               </p>
               <Button
                 onClick={() => setCurrentPage(PAGES.HISTORY)}
-                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all"
+                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all mt-5"
                 variant="outline"
               >
                 Ver Histórico

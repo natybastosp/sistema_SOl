@@ -88,6 +88,13 @@ export async function POST(request: NextRequest) {
     // 2. Parse e validar corpo da requisição
     const body = await request.json();
     const emotionalInput = emotionalInputSchema.parse(body);
+
+    // 🔧 Normalizar gênero para minúsculas
+    if (emotionalInput.generoPreferido) {
+      emotionalInput.generoPreferido =
+        emotionalInput.generoPreferido.toLowerCase();
+    }
+
     Logger.debug("✅ Entrada validada", emotionalInput);
 
     // 3. Inicializar motor Fuzzy
@@ -251,8 +258,8 @@ export async function POST(request: NextRequest) {
           playlist: validTracks.map((track, idx) => ({
             id: track.id,
             spotifyId: track.spotifyId || "",
-            spotify_uri: track.spotifyId 
-              ? `spotify:track:${track.spotifyId}` 
+            spotify_uri: track.spotifyId
+              ? `spotify:track:${track.spotifyId}`
               : null,
             name: track.name,
             artist: track.artist,

@@ -133,7 +133,10 @@ export class EmotionalService {
           joy,
           anger,
           fear,
-          generoPreferido: input.generoPreferido,
+          // 🔧 Normalizar gênero para minúsculas
+          generoPreferido: input.generoPreferido
+            ? input.generoPreferido.toLowerCase()
+            : undefined,
         }),
       });
 
