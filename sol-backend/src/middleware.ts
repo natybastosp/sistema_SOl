@@ -9,9 +9,11 @@ export function middleware(request: NextRequest) {
 
   // 3. Lista de origens permitidas
   const allowedOrigins = [
-    "http://localhost:3000", // Frontend em desenvolvimento
-    "http://localhost:5173", // Vite
-    "http://localhost:3000", // Frontend pode rodar na 3000 também
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:5173",
+    "http://127.0.0.1:3001",
+    "http://127.0.0.1:5173",
   ];
 
   // 4. Verificar se a origem está permitida

@@ -38,23 +38,12 @@ export default function ProfilePage({
   const [userStats] = useState<UserStats>({
     totalSessions: 12,
     totalMusic: 156,
-    favoriteGenre: "Rock",
+    favoriteGenre: "rock",
     favoriteEmotion: "Alegria",
     joinDate: "2024-09-15",
   });
 
-  const allGenres = [
-    "Rock",
-    "Pop",
-    "MPB",
-    "Sertanejo",
-    "Funk",
-    "Jazz",
-    "Clássica",
-    "Eletrônica",
-    "Reggae",
-    "Hip Hop",
-  ];
+  const allGenres = ["rock", "funk", "rap", "samba", "sertanejo"];
 
   const handleSave = () => {
     if (setUserData) {

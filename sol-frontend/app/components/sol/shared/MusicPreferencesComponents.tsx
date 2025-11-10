@@ -43,16 +43,11 @@ export function GenreSelector({
 
   const getGenreInsight = (genre: string): string => {
     const insights: Record<string, string> = {
-      Rock: "Ótimo para energia e motivação",
-      Pop: "Perfeito para elevar o humor",
-      MPB: "Ideal para reflexão e conexão emocional",
-      Sertanejo: "Excelente para nostalgia e conforto",
-      Funk: "Fantástico para energia e diversão",
-      Jazz: "Perfeito para relaxamento e sofisticação",
-      Clássica: "Ideal para foco e tranquilidade",
-      Eletrônica: "Ótimo para energia e modernidade",
-      Reggae: "Excelente para paz e positividade",
-      "Hip Hop": "Perfeito para expressão e atitude",
+      rock: "Ótimo para energia e motivação",
+      funk: "Fantástico para energia e diversão",
+      rap: "Perfeito para expressão e empoderamento",
+      samba: "Excelente para nostalgia e conforto",
+      sertanejo: "Ideal para reflexão e conexão emocional",
     };
     return insights[genre] || "Estilo único com características especiais";
   };
@@ -265,12 +260,11 @@ export function EmotionalConnectionInput({
 }: MusicPreferencesContextProps) {
   const getSuggestionPrompts = (): string[] => {
     return [
-      "Música clássica me ajuda a me concentrar",
       "Rock me dá energia para enfrentar desafios",
-      "MPB me faz sentir nostalgia e aconchego",
-      "Jazz me relaxa após dias estressantes",
-      "Pop me anima e eleva meu humor",
+      "Funk me faz dançar e me diverte",
       "Sertanejo me conecta com minhas raízes",
+      "Rap me inspira a expressar minha visão",
+      "Samba me traz alegria e nostalgia",
     ];
   };
 
@@ -578,16 +572,11 @@ export function PreferencesPreview({
  */
 function generateMusicPersonalityInsight(genres: string[]): string {
   const genrePersonalities: Record<string, string[]> = {
-    Rock: ["energético", "determinado", "expressivo"],
-    Pop: ["otimista", "social", "versátil"],
-    MPB: ["reflexivo", "cultural", "emocional"],
-    Sertanejo: ["nostálgico", "familiar", "tradicional"],
-    Funk: ["dinâmico", "festivo", "urbano"],
-    Jazz: ["sofisticado", "contemplativo", "criativo"],
-    Clássica: ["analítico", "calmo", "intelectual"],
-    Eletrônica: ["moderno", "inovador", "tecnológico"],
-    Reggae: ["pacífico", "espiritual", "descontraído"],
-    "Hip Hop": ["autêntico", "consciente", "urbano"],
+    rock: ["energético", "determinado", "expressivo"],
+    funk: ["dinâmico", "festivo", "urbano"],
+    rap: ["autêntico", "consciente", "expressivo"],
+    samba: ["nostálgico", "familiar", "tradicional"],
+    sertanejo: ["reflexivo", "cultural", "emocional"],
   };
 
   const traits = new Set<string>();

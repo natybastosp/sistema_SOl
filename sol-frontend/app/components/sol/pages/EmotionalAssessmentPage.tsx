@@ -45,12 +45,6 @@ const emocoes: EmocaoSlider[] = [
     descricao: "Qual é seu nível de medo ou ansiedade?",
     icone: "😨",
   },
-  /*   {
-    id: "surprise",
-    label: "Surpresa",
-    descricao: "Qual é seu nível de surpresa ou espanto?",
-    icone: "😮",
-  }, */
 ];
 
 export default function EmotionalAssessmentPage({
@@ -67,7 +61,6 @@ export default function EmotionalAssessmentPage({
     joy: 5,
     anger: 5,
     fear: 5,
-    /*  surprise: 5, */
   });
 
   const [selectedGenre, setSelectedGenre] = useState<string>(
@@ -81,7 +74,7 @@ export default function EmotionalAssessmentPage({
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   // Gêneros disponíveis
-  const genres = ["rock", "mpb", "samba", "funk", "rap"];
+  const genres = ["Rock", "Funk", "Rap", "Samba", "Mpb"];
 
   const handleSliderChange = (id: string, valor: number) => {
     setEmocoes_valores((prev) => ({
@@ -103,14 +96,13 @@ export default function EmotionalAssessmentPage({
       console.log("   Emoções:", emocoes_valores);
       console.log("   Gênero Preferido:", selectedGenre || "Todos");
 
-      // Chamar serviço de análise emocional COM TODAS AS 5 EMOÇÕES
+      // Chamar serviço de análise emocional COM AS 4 EMOÇÕES
       const result = await EmotionalService.analyzeWithFuzzy({
         sadness: emocoes_valores.sadness,
         joy: emocoes_valores.joy,
         anger: emocoes_valores.anger,
         fear: emocoes_valores.fear,
-        /* surprise: emocoes_valores.surprise, */
-        generoPreferido: selectedGenre || undefined,
+        generoPreferido: selectedGenre === "Todos" ? undefined : selectedGenre,
       });
 
       if (result.success && result.data) {

@@ -31,12 +31,47 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse e validação
     const body = await request.json();
-    const validatedData = emotionalAnalysisSchema.parse(body);
+    let validatedData = emotionalAnalysisSchema.parse(body);
     Logger.debug("✅ Dados validados", validatedData);
+
+    // 2.3 Normalizar gênero (converter para minúsculas - como está no banco)
+    if (validatedData.generoPreferido) {
+      validatedData.generoPreferido =
+        validatedData.generoPreferido.toLowerCase();
+      Logger.debug(
+        "🎵 Gênero normalizado para minúsculas:",
+        validatedData.generoPreferido
+      );
+    }
+
+    // 2.5 Converter 4 emoções para estadoEmocional se necessário
+    let estadoEmocional = validatedData.estadoEmocional;
+
+    if (
+      !estadoEmocional &&
+      validatedData.joy !== undefined &&
+      validatedData.sadness !== undefined
+    ) {
+      // Converter: (joy - sadness) normalizado para escala 0-10
+      // joy alta (10) + sadness baixa (0) = estado alegre (10)
+      // joy baixa (0) + sadness alta (10) = estado triste (0)
+      estadoEmocional = (validatedData.joy - validatedData.sadness + 10) / 2;
+      Logger.debug("📊 Conversão de emoções para estado", {
+        joy: validatedData.joy,
+        sadness: validatedData.sadness,
+        anger: validatedData.anger,
+        fear: validatedData.fear,
+        estadoEmocionalCalculado: estadoEmocional,
+      });
+    }
+
+    if (!estadoEmocional) {
+      throw new ValidationError("Estado emocional não pode ser determinado");
+    }
 
     // 3. Processar com Fuzzy
     const fuzzyResult = fuzzyEngine.processRecommendation({
-      estadoEmocional: validatedData.estadoEmocional,
+      estadoEmocional,
       generoPreferido: validatedData.generoPreferido,
     });
     Logger.debug("🧠 Fuzzy processado", fuzzyResult);
@@ -46,12 +81,20 @@ export async function POST(request: NextRequest) {
     // Construir filtros dinamicamente
     const whereFilters: any = {};
 
-    // Se gênero foi especificado, incluir no filtro
-    if (validatedData.generoPreferido) {
+    // Se gênero foi especificado (e não for "Todos"), incluir no filtro
+    if (
+      validatedData.generoPreferido &&
+      validatedData.generoPreferido !== "todos"
+    ) {
+      // Gênero já foi normalizado para minúsculas acima
       whereFilters.genre = validatedData.generoPreferido;
       Logger.debug("🎵 Filtrando por gênero", {
         genre: validatedData.generoPreferido,
       });
+    } else if (validatedData.generoPreferido === "todos") {
+      Logger.debug(
+        "🎵 Nenhum filtro de gênero (Todos os gêneros selecionados)"
+      );
     }
 
     // Aplicar critérios emocionais fuzzy
@@ -68,9 +111,26 @@ export async function POST(request: NextRequest) {
       genre: validatedData.generoPreferido || "Qualquer um",
     });
 
+    // Variar ordenação para evitar repetição de playlists
+    const tipoOrdenacao = Math.random();
+    let orderBy: any;
+
+    if (tipoOrdenacao < 0.33) {
+      orderBy = { joyScore: "desc" };
+    } else if (tipoOrdenacao < 0.66) {
+      orderBy = { energy: "desc" };
+    } else {
+      orderBy = { valence: "desc" };
+    }
+
+    Logger.debug("🎲 Variação de ordenação", {
+      tipo: Object.keys(orderBy)[0],
+      random: tipoOrdenacao,
+    });
+
     const musicas = await prisma.music.findMany({
       where: whereFilters,
-      take: 20,
+      take: 15, // Pega mais para ter margem de embaralhamento
       select: {
         id: true,
         name: true,
@@ -83,10 +143,21 @@ export async function POST(request: NextRequest) {
         joyScore: true,
         sadnessScore: true,
       },
-      orderBy: { joyScore: "desc" },
+      orderBy: orderBy,
     });
 
-    if (musicas.length === 0) {
+    Logger.debug("📊 Resultado da busca", {
+      totalEncontradas: musicas.length,
+      genroFiltrado: validatedData.generoPreferido,
+      generosMusicaEncontradas: musicas.map((m) => m.genre),
+    });
+
+    // Embaralhar as 15 músicas e pegar apenas 5
+    const musicasShuffladas = musicas
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 5);
+
+    if (musicasShuffladas.length === 0) {
       Logger.warn("⚠️ Nenhuma música encontrada com esses critérios", {
         genre: validatedData.generoPreferido || "Qualquer um",
         minJoy: fuzzyResult.filtrosMusica.minAlegria,
@@ -96,7 +167,7 @@ export async function POST(request: NextRequest) {
       // Tentar buscar sem critérios tão rigorosos
       Logger.info("🔄 Tentando busca mais flexível...");
       const musicasFlexivel = await prisma.music.findMany({
-        take: 20,
+        take: 5,
         select: {
           id: true,
           name: true,
@@ -118,21 +189,21 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      Logger.warn("✅ Usando busca flexível, retornando 20 melhores músicas");
-      musicas.push(...musicasFlexivel);
+      Logger.warn("✅ Usando busca flexível, retornando 5 melhores músicas");
+      musicasShuffladas.push(...musicasFlexivel.slice(0, 5));
     }
 
-    Logger.info(`✅ Encontradas ${musicas.length} músicas`);
+    Logger.info(`✅ Encontradas ${musicasShuffladas.length} músicas`);
 
     // 5. Salvar análise no histórico
     const emotionalState = await prisma.emotionalState.create({
       data: {
         userId: user.id,
-        sadness: validatedData.estadoEmocional <= 3 ? 8 : 2,
-        joy: validatedData.estadoEmocional >= 7 ? 8 : 4,
-        anger: 2,
-        fear: 2,
-        surprise: 5,
+        sadness: validatedData.sadness ?? (estadoEmocional <= 3 ? 8 : 2),
+        joy: validatedData.joy ?? (estadoEmocional >= 7 ? 8 : 4),
+        anger: validatedData.anger ?? 2,
+        fear: validatedData.fear ?? 2,
+        surprise: 5, // Mantém compatibilidade com schema, mas não usa
       },
     });
 
@@ -149,7 +220,7 @@ export async function POST(request: NextRequest) {
           generoPreferido: validatedData.generoPreferido,
           grauConfianca: fuzzyResult.output.grauConfianca,
         },
-        playlist: musicas.map((m) => ({
+        playlist: musicasShuffladas.map((m) => ({
           id: m.id,
           title: m.name,
           artist: m.artist,

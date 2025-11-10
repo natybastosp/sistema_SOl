@@ -30,12 +30,37 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 /**
  * Validação de Análise Emocional
  */
-export const emotionalAnalysisSchema = z.object({
-  estadoEmocional: z.number().min(1).max(10, "Escala de 1 a 10"),
-  generoPreferido: z.string().min(2, "Gênero muito curto"),
-  energia: z.number().min(1).max(10).optional(),
-  valencia: z.number().min(1).max(10).optional(),
-});
+export const emotionalAnalysisSchema = z
+  .object({
+    // Novo: aceitar 4 emoções (sem surprise)
+    sadness: z.number().min(0).max(10).optional(),
+    joy: z.number().min(0).max(10).optional(),
+    anger: z.number().min(0).max(10).optional(),
+    fear: z.number().min(0).max(10).optional(),
+
+    // Legacy: para compatibilidade
+    estadoEmocional: z.number().min(0).max(10).optional(),
+
+    generoPreferido: z.string().optional(),
+    energia: z.number().min(1).max(10).optional(),
+    valencia: z.number().min(1).max(10).optional(),
+  })
+  .refine(
+    (data) => {
+      // Validação: deve ter estadoEmocional OU as 4 emoções
+      const tem4Emocoes =
+        data.sadness !== undefined &&
+        data.joy !== undefined &&
+        data.anger !== undefined &&
+        data.fear !== undefined;
+      const temEstado = data.estadoEmocional !== undefined;
+      return tem4Emocoes || temEstado;
+    },
+    {
+      message:
+        "Deve fornecer estadoEmocional ou as 4 emoções (sadness, joy, anger, fear)",
+    }
+  );
 
 export type EmotionalAnalysisInput = z.infer<typeof emotionalAnalysisSchema>;
 

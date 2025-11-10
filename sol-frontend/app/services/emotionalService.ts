@@ -5,7 +5,6 @@ export interface EmotionalInput {
   joy?: number; // 0-10
   anger?: number; // 0-10
   fear?: number; // 0-10
-  surprise?: number; // 0-10
   estadoEmocional?: number; // 0-10 (deprecated - para compatibilidade)
   generoPreferido?: string;
 }
@@ -38,7 +37,6 @@ export interface MusicTrack {
     joy: number;
     anger: number;
     fear: number;
-    surprise: number;
   };
   audioFeatures: {
     energy: number;
@@ -82,13 +80,12 @@ export class EmotionalService {
     error?: string;
   }> {
     try {
-      // Se as 5 emoções não forem passadas, usar estadoEmocional para compatibilidade
+      // Se as 4 emoções não forem passadas, usar estadoEmocional para compatibilidade
       const sadness = input.sadness ?? input.estadoEmocional ?? 5;
       const joy =
         input.joy ?? (input.estadoEmocional ? 10 - input.estadoEmocional : 5);
       const anger = input.anger ?? 0;
       const fear = input.fear ?? 0;
-      const surprise = input.surprise ?? 0;
 
       // Validação
       if (
@@ -99,9 +96,7 @@ export class EmotionalService {
         anger < 0 ||
         anger > 10 ||
         fear < 0 ||
-        fear > 10 ||
-        surprise < 0 ||
-        surprise > 10
+        fear > 10
       ) {
         return {
           success: false,
@@ -114,7 +109,6 @@ export class EmotionalService {
         joy,
         anger,
         fear,
-        surprise,
         generoPreferido: input.generoPreferido,
       });
 
@@ -128,7 +122,7 @@ export class EmotionalService {
       }
 
       // API Call
-      const response = await fetch(`${this.API_BASE}/ai/analyze`, {
+      const response = await fetch(`${this.API_BASE}/emotions/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,7 +133,6 @@ export class EmotionalService {
           joy,
           anger,
           fear,
-          surprise,
           generoPreferido: input.generoPreferido,
         }),
       });
@@ -162,58 +155,54 @@ export class EmotionalService {
       }
 
       // Mapear resposta do backend para o formato esperado pelo frontend
-      const fuzzyData = result.data.fuzzy_output;
-      const emotionalData = result.data.emotional_state;
+      const analysisData = result.data.analysis || {};
+      const playlistData = result.data.playlist || [];
 
       const recommendation: EmotionalRecommendation = {
-        id: `analysis_${Date.now()}`,
+        id: result.data.analysisId || `analysis_${Date.now()}`,
         fuzzyAnalysis: {
-          intencao: fuzzyData.recommendation || "Neutro",
-          confianca: fuzzyData.confidence || 0.5,
-          descricao: result.message || "Análise realizada",
-          valorIntencao: fuzzyData.intensity || 0.5,
+          intencao: "Neutro", // Será calculado baseado em estadoEmocional
+          confianca: analysisData.grauConfianca || 0.5,
+          descricao: "Análise fuzzy realizada com sucesso",
+          valorIntencao: analysisData.grauConfianca || 0.5,
           graus: {
-            triste: emotionalData.sadness || 0,
-            ansioso: emotionalData.fear || 0,
+            triste: 0,
+            ansioso: 0,
             neutro: 5,
-            alegre: emotionalData.joy || 0,
+            alegre: 0,
           },
         },
-        // USAR PLAYLIST DIRETAMENTE DO BACKEND COM TODOS OS CAMPOS
+        // Mapear playlist do backend
         playlist:
-          fuzzyData.playlist?.map((track: any, idx: number) => ({
+          playlistData.map((track: any, idx: number) => ({
             id: track.id || `track_${idx}`,
             spotifyId: track.spotifyId || "",
-            spotify_uri: track.spotify_uri, // Campo crítico para playback!
-            name: track.name,
+            spotify_uri: `spotify:track:${track.spotifyId}`, // Construir URI do Spotify
+            name: track.title,
             artist: track.artist,
-            duration: 180000,
-            genre: track.genre || "Rock",
-            position: track.position || idx + 1,
+            duration: track.duration || 180000,
+            genre: track.genre || "rock",
+            position: idx + 1,
             scores: {
-              sadness: emotionalData.sadness || 0,
-              joy: emotionalData.joy || 0,
-              anger: emotionalData.anger || 0,
-              fear: emotionalData.fear || 0,
-              surprise: emotionalData.surprise || 0,
+              sadness: 0,
+              joy: 0,
+              anger: 0,
+              fear: 0,
             },
             audioFeatures: {
-              energy: fuzzyData.intensity || 0.5,
-              valence: fuzzyData.intensity || 0.5,
+              energy: 0.5,
+              valence: 0.5,
               danceability: 0.5,
               acousticness: 0.3,
             },
           })) || [],
         stats: {
-          totalMusicas:
-            fuzzyData.playlist?.length || fuzzyData.top_tracks?.length || 0,
-          duracaoMinutos:
-            (fuzzyData.playlist?.length || fuzzyData.top_tracks?.length || 0) *
-            3,
-          valenciaMedia: fuzzyData.intensity || 0.5,
-          energiaMedia: fuzzyData.intensity || 0.5,
-          tristezaMedia: emotionalData.sadness || 0,
-          alegriaMedia: emotionalData.joy || 0,
+          totalMusicas: playlistData.length || 0,
+          duracaoMinutos: (playlistData.length || 0) * 3,
+          valenciaMedia: 0.5,
+          energiaMedia: 0.5,
+          tristezaMedia: 0,
+          alegriaMedia: 0,
         },
         timestamp: new Date().toISOString(),
       };
