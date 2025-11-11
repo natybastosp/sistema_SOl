@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Header from "../Header";
 import { PAGES } from "~/constants/sol";
+//import { playlistService } from "~/services/playlist.service";
 
 interface PlaylistListPageProps {
   userData?: { name: string };
@@ -26,20 +27,36 @@ interface SavedPlaylist {
   };
 }
 
+type SortOption = "recent" | "popular" | "name" | "duration";
+
 export default function PlaylistListPage({
   userData,
   setCurrentPage,
   setPlaylistData,
 }: PlaylistListPageProps) {
-  const [playlists] = useState<SavedPlaylist[]>([
+  const [playlists, setPlaylists] = useState<SavedPlaylist[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [filterEmotion, setFilterEmotion] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null
+  );
+
+  // Carregar playlists ao montar o componente
+  // Dados de exemplo para fallback
+  const EXAMPLE_PLAYLISTS: SavedPlaylist[] = [
     {
       id: "1",
       name: "Dia Feliz",
       description: "Músicas para um dia cheio de energia e alegria",
-      date: "2024-11-01",
+      date: "2025-11-01",
       musicCount: 15,
-      duration: "1:02:45",
-      likes: 24,
+      duration: "30:45",
+      likes: 5,
       cover: "😊",
       emotions: {
         sadness: 10,
@@ -53,10 +70,10 @@ export default function PlaylistListPage({
       id: "2",
       name: "Noite Reflexiva",
       description: "Para aqueles momentos de contemplação e paz",
-      date: "2024-10-31",
+      date: "2025-10-31",
       musicCount: 18,
-      duration: "1:15:30",
-      likes: 18,
+      duration: "25:20",
+      likes: 3,
       cover: "🌙",
       emotions: {
         sadness: 35,
@@ -66,61 +83,34 @@ export default function PlaylistListPage({
         surprise: 25,
       },
     },
-    {
-      id: "3",
-      name: "Energia Pura",
-      description: "Ritmo forte para momento de ação e motivação",
-      date: "2024-10-30",
-      musicCount: 12,
-      duration: "52:15",
-      likes: 32,
-      cover: "⚡",
-      emotions: {
-        sadness: 5,
-        joy: 85,
-        anger: 60,
-        fear: 10,
-        surprise: 75,
-      },
-    },
-    {
-      id: "4",
-      name: "Melancolia Criativa",
-      description: "Tristeza produtiva para gerar inspiração",
-      date: "2024-10-29",
-      musicCount: 16,
-      duration: "1:08:20",
-      likes: 15,
-      cover: "💙",
-      emotions: {
-        sadness: 80,
-        joy: 30,
-        anger: 25,
-        fear: 40,
-        surprise: 20,
-      },
-    },
-    {
-      id: "5",
-      name: "Mistura Explosiva",
-      description: "Variação de emoções em uma única sessão",
-      date: "2024-10-28",
-      musicCount: 20,
-      duration: "1:25:00",
-      likes: 28,
-      cover: "🎆",
-      emotions: {
-        sadness: 50,
-        joy: 60,
-        anger: 55,
-        fear: 45,
-        surprise: 70,
-      },
-    },
-  ]);
+  ];
 
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [filterEmotion, setFilterEmotion] = useState<string | null>(null);
+  useEffect(() => {
+    const loadPlaylists = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await playlistService.getPlaylists();
+        if (data && data.length > 0) {
+          setPlaylists(data);
+        } else {
+          /* console.log("Nenhuma playlist encontrada, usando dados de exemplo"); */
+          setPlaylists(EXAMPLE_PLAYLISTS);
+          setError(null);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar playlists:", err);
+        /*  setError(
+          "Usando dados de exemplo - Conecte sua conta para ver suas playlists reais"
+        ); */
+        setPlaylists(EXAMPLE_PLAYLISTS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPlaylists();
+  }, []);
 
   const emotions = ["joy", "sadness", "anger", "fear", "surprise"];
   const emotionEmojis: Record<string, string> = {
@@ -138,8 +128,12 @@ export default function PlaylistListPage({
     )[0];
   };
 
-  const filteredPlaylists = filterEmotion
-    ? playlists.filter(
+  const filteredAndSortedPlaylists = useMemo(() => {
+    let result = [...playlists];
+
+    // Aplicar filtro de emoção
+    if (filterEmotion) {
+      result = result.filter(
         (p) =>
           Math.max(
             p.emotions.sadness,
@@ -157,8 +151,80 @@ export default function PlaylistListPage({
                 : filterEmotion === "fear"
                   ? p.emotions.fear
                   : p.emotions.surprise)
-      )
-    : playlists;
+      );
+    }
+
+    // Aplicar filtro de busca (fuzzy search)
+    if (searchQuery) {
+      result = result.filter(
+        (p) =>
+          fuzzySearch(searchQuery, p.name) ||
+          fuzzySearch(searchQuery, p.description)
+      );
+    }
+
+    // Aplicar ordenação
+    switch (sortBy) {
+      case "popular":
+        result.sort((a, b) => b.likes - a.likes);
+        break;
+      case "name":
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "duration":
+        result.sort((a, b) => {
+          const durationToMinutes = (dur: string) => {
+            const parts = dur.split(":").map(Number);
+            return parts[0] * 60 + parts[1];
+          };
+          return durationToMinutes(b.duration) - durationToMinutes(a.duration);
+        });
+        break;
+      case "recent":
+      default:
+        result.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        break;
+    }
+
+    return result;
+  }, [playlists, filterEmotion, searchQuery, sortBy]);
+
+  const handleDeletePlaylist = async (id: string) => {
+    try {
+      await playlistService.deletePlaylist(id);
+      // Remover da lista local
+      setPlaylists(playlists.filter((p) => p.id !== id));
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      console.error("Erro ao deletar playlist:", error);
+      alert("Erro ao deletar playlist");
+    }
+  };
+
+  // Busca fuzzy melhorada
+  const fuzzySearch = (query: string, text: string): boolean => {
+    const searchTerms = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t.length > 0);
+    const textLower = text.toLowerCase();
+
+    return searchTerms.every((term) => {
+      // Busca exata primeiro
+      if (textLower.includes(term)) return true;
+
+      // Depois busca difusa: match characters in order
+      let textIndex = 0;
+      for (let i = 0; i < term.length; i++) {
+        const charIndex = textLower.indexOf(term[i], textIndex);
+        if (charIndex === -1) return false;
+        textIndex = charIndex + 1;
+      }
+      return true;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sol-light via-sol-pale to-sol-primary flex flex-col">
@@ -180,21 +246,26 @@ export default function PlaylistListPage({
                 🎵 Suas Playlists
               </h2>
               <p className="text-gray-600">
-                {filteredPlaylists.length} playlist
-                {filteredPlaylists.length !== 1 ? "s" : ""} salva
-                {filteredPlaylists.length !== 1 ? "s" : ""}
+                {filteredAndSortedPlaylists.length} playlist
+                {filteredAndSortedPlaylists.length !== 1 ? "s" : ""} salva
+                {filteredAndSortedPlaylists.length !== 1 ? "s" : ""}
               </p>
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex gap-2 bg-white rounded-lg p-2 border-2 border-sol-primary">
+            <div className="flex gap-2 bg-white rounded-lg p-2 border-2">
               <button
                 onClick={() => setViewMode("grid")}
                 className={`px-4 py-2 rounded font-semibold transition-all ${
                   viewMode === "grid"
-                    ? "bg-sol-primary text-white"
+                    ? "text-white"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
+                style={
+                  viewMode === "grid"
+                    ? { backgroundColor: "#FFA500" }
+                    : undefined
+                }
               >
                 ⊞ Grid
               </button>
@@ -202,69 +273,169 @@ export default function PlaylistListPage({
                 onClick={() => setViewMode("list")}
                 className={`px-4 py-2 rounded font-semibold transition-all ${
                   viewMode === "list"
-                    ? "bg-sol-primary text-white"
+                    ? "text-white"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
+                style={
+                  viewMode === "list"
+                    ? { backgroundColor: "#FFA500" }
+                    : undefined
+                }
               >
                 ☰ Lista
               </button>
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="mb-8">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Filtrar por Emoção:
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setFilterEmotion(null)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                  filterEmotion === null
-                    ? "bg-sol-primary text-white"
-                    : "bg-white text-gray-700 border-2 border-gray-300 hover:border-sol-primary"
-                }`}
-              >
-                Todas
-              </button>
-              {emotions.map((emotion) => (
+          {/* Search Bar */}
+          <div className="mb-6">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="🔍 Buscar: 'Dia', 'Energia', 'Reflexão'... ou descrição"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all "
+              />
+              {searchQuery && (
                 <button
-                  key={emotion}
-                  onClick={() => setFilterEmotion(emotion)}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                    filterEmotion === emotion
-                      ? "bg-gradient-to-r from-sol-primary to-sol-dark text-white shadow-lg"
-                      : "bg-white text-gray-700 border-2 border-gray-300 hover:border-sol-primary"
-                  }`}
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 font-bold text-xl"
+                  title="Limpar busca"
                 >
-                  {emotionEmojis[emotion]}{" "}
-                  {emotion.charAt(0).toUpperCase() + emotion.slice(1)}
+                  ✕
                 </button>
-              ))}
+              )}
             </div>
+            {searchQuery && (
+              <p className="mt-2 text-xs text-gray-500">
+                🔎 {filteredAndSortedPlaylists.length} resultado(s)
+                encontrado(s)
+              </p>
+            )}
           </div>
 
+          {/* Sort and Filters */}
+          {!isLoading && (
+            <div className="mb-8">
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
+                {/* Sort */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Ordenar por:
+                  </span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="px-3 py-2 rounded-lg bg-white font-semibold text-sol-darker focus:outline-none"
+                    style={{
+                      borderWidth: "2px",
+                      borderColor: "#FFA500",
+                    }}
+                  >
+                    <option value="recent">📅 Recentes</option>
+                    <option value="popular">❤️ Mais curtidas</option>
+                    <option value="name">🔤 Por nome</option>
+                    <option value="duration">⏱️ Maior duração</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Emotion Filters */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                  Filtrar por Emoção:
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setFilterEmotion(null)}
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                      filterEmotion === null
+                        ? "text-white"
+                        : "bg-white text-gray-700 border-2 border-gray-300"
+                    }`}
+                    style={
+                      filterEmotion === null
+                        ? { backgroundColor: "#FFA500" }
+                        : undefined
+                    }
+                  >
+                    Todas
+                  </button>
+                  {emotions.map((emotion) => (
+                    <button
+                      key={emotion}
+                      onClick={() => setFilterEmotion(emotion)}
+                      style={
+                        filterEmotion === emotion
+                          ? {
+                              background:
+                                "linear-gradient(to right, #FFA500, #DD8C00)",
+                            }
+                          : undefined
+                      }
+                      className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                        filterEmotion === emotion
+                          ? "text-white shadow-lg"
+                          : "bg-white text-gray-700 border-2 border-gray-300 hover:border-[#FFA500]"
+                      }`}
+                    >
+                      {emotionEmojis[emotion]}{" "}
+                      {emotion.charAt(0).toUpperCase() + emotion.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isLoading && (
+            <div className="text-center py-16">
+              <div className="text-4xl mb-4 animate-spin">⏳</div>
+              <h3 className="text-xl font-bold text-sol-darker mb-2">
+                Carregando playlists...
+              </h3>
+              <p className="text-gray-600">Um momento</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {/*  {error && !isLoading && (
+            <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6 mb-6">
+              <p className="text-red-800 font-semibold">❌ {error}</p>
+            </div>
+          )}
+ */}
           {/* Grid View */}
           {viewMode === "grid" && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPlaylists.map((playlist) => {
+              {filteredAndSortedPlaylists.map((playlist: SavedPlaylist) => {
                 const dominantEmotion = getDominantEmotion(playlist.emotions);
 
                 return (
                   <div
                     key={playlist.id}
-                    className="bg-white rounded-lg overflow-hidden shadow-lg border-2 border-sol-primary hover:shadow-2xl transition-all transform hover:scale-105 cursor-pointer"
-                    onClick={() => {
-                      if (setPlaylistData) {
-                        setPlaylistData({ playlist });
-                        setCurrentPage(PAGES.PLAYLIST);
-                      }
-                    }}
+                    className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 cursor-pointer group"
                   >
                     {/* Cover */}
-                    <div className="relative bg-gradient-to-br from-sol-primary to-sol-dark p-8 flex items-center justify-center h-40">
-                      <span className="text-6xl">{playlist.cover}</span>
-                      <div className="absolute top-3 right-3 bg-white rounded-full w-10 h-10 flex items-center justify-center">
+                    <div
+                      style={{
+                        background:
+                          "linear-gradient(to bottom right, #FFA500, #DD8C00)",
+                      }}
+                      className="relative p-8 flex items-center justify-center h-40"
+                      onClick={() => {
+                        if (setPlaylistData) {
+                          setPlaylistData({ playlist });
+                          setCurrentPage(PAGES.PLAYLIST);
+                        }
+                      }}
+                    >
+                      <span className="text-6xl group-hover:scale-110 transition-transform">
+                        {playlist.cover}
+                      </span>
+                      <div className="absolute top-3 right-3 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md">
                         <span className="text-lg">❤️</span>
                       </div>
                     </div>
@@ -274,21 +445,67 @@ export default function PlaylistListPage({
                       <h3 className="text-lg font-bold text-sol-darker mb-1">
                         {playlist.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                         {playlist.description}
                       </p>
+
+                      {/* Emotion Bars */}
+                      <div className="mb-4 space-y-1">
+                        {emotions.map((emotion) => (
+                          <div
+                            key={emotion}
+                            className="flex items-center gap-2"
+                          >
+                            <span className="text-xs font-semibold text-gray-600 w-12">
+                              {emotionEmojis[emotion]}
+                            </span>
+                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${
+                                  emotion === "joy"
+                                    ? "bg-emotion-joy"
+                                    : emotion === "sadness"
+                                      ? "bg-emotion-sadness"
+                                      : emotion === "anger"
+                                        ? "bg-emotion-anger"
+                                        : emotion === "fear"
+                                          ? "bg-emotion-fear"
+                                          : "bg-emotion-surprise"
+                                }`}
+                                style={{
+                                  width: `${playlist.emotions[emotion as keyof typeof playlist.emotions]}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-500 w-8 text-right">
+                              {
+                                playlist.emotions[
+                                  emotion as keyof typeof playlist.emotions
+                                ]
+                              }
+                              %
+                            </span>
+                          </div>
+                        ))}
+                      </div>
 
                       {/* Stats */}
                       <div className="grid grid-cols-3 gap-2 mb-4 text-center">
                         <div className="bg-gray-50 rounded p-2">
                           <p className="text-xs text-gray-600">Músicas</p>
-                          <p className="text-lg font-bold text-sol-primary">
+                          <p
+                            className="text-lg font-bold"
+                            style={{ color: "#FFA500" }}
+                          >
                             {playlist.musicCount}
                           </p>
                         </div>
                         <div className="bg-gray-50 rounded p-2">
                           <p className="text-xs text-gray-600">Duração</p>
-                          <p className="text-sm font-bold text-sol-primary">
+                          <p
+                            className="text-sm font-bold"
+                            style={{ color: "#FFA500" }}
+                          >
                             {playlist.duration}
                           </p>
                         </div>
@@ -300,20 +517,75 @@ export default function PlaylistListPage({
                         </div>
                       </div>
 
-                      {/* Emotion Indicator */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-2xl">
-                          {emotionEmojis[dominantEmotion]}
-                        </span>
-                        <span className="text-sm font-semibold text-gray-600">
-                          Emoção dominante
-                        </span>
+                      {/* Dominant Emotion and Date */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">
+                            {emotionEmojis[dominantEmotion]}
+                          </span>
+                          <span className="text-xs font-semibold text-gray-600">
+                            Dominante
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {new Date(playlist.date).toLocaleDateString("pt-BR")}
+                        </p>
                       </div>
 
-                      {/* Date */}
-                      <p className="text-xs text-gray-500 text-center">
-                        {new Date(playlist.date).toLocaleDateString("pt-BR")}
-                      </p>
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            if (setPlaylistData) {
+                              setPlaylistData({ playlist });
+                              setCurrentPage(PAGES.PLAYLIST);
+                            }
+                          }}
+                          style={{
+                            background:
+                              "linear-gradient(to right, #FFA500, #DD8C00)",
+                          }}
+                          className="flex-1 text-white py-3 rounded-lg font-bold hover:shadow-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-lg"
+                        >
+                          <span>▶️</span>
+                          <span>Ouvir Playlist</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowDeleteConfirm(playlist.id);
+                          }}
+                          className="px-4 py-3 rounded-lg border-2 border-red-300 text-red-600 hover:bg-red-50 transition-colors font-semibold"
+                          title="Deletar"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+
+                      {/* Delete Confirmation */}
+                      {showDeleteConfirm === playlist.id && (
+                        <div className="mt-3 p-3 bg-red-50 border border-red-300 rounded-lg">
+                          <p className="text-xs text-red-800 font-semibold mb-2">
+                            Deseja deletar "{playlist.name}"?
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                handleDeletePlaylist(playlist.id);
+                              }}
+                              className="flex-1 bg-red-600 text-white py-1 rounded text-xs font-semibold hover:bg-red-700 transition-colors"
+                            >
+                              Deletar
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="flex-1 bg-gray-300 text-gray-800 py-1 rounded text-xs font-semibold hover:bg-gray-400 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -324,58 +596,117 @@ export default function PlaylistListPage({
           {/* List View */}
           {viewMode === "list" && (
             <div className="space-y-3">
-              {filteredPlaylists.map((playlist) => {
+              {filteredAndSortedPlaylists.map((playlist: SavedPlaylist) => {
                 const dominantEmotion = getDominantEmotion(playlist.emotions);
 
                 return (
                   <div
                     key={playlist.id}
-                    className="bg-white rounded-lg p-4 border-2 border-sol-primary hover:shadow-lg transition-all cursor-pointer hover:bg-sol-light/30"
-                    onClick={() => {
-                      if (setPlaylistData) {
-                        setPlaylistData({ playlist });
-                        setCurrentPage(PAGES.PLAYLIST);
-                      }
-                    }}
+                    className="bg-white rounded-lg p-4 hover:shadow-lg transition-all cursor-pointer hover:bg-sol-light/30 group"
                   >
                     <div className="flex items-center gap-4">
-                      <span className="text-4xl">{playlist.cover}</span>
+                      <span className="text-4xl group-hover:scale-110 transition-transform">
+                        {playlist.cover}
+                      </span>
 
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-sol-darker">
-                          {playlist.name}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          {playlist.description}
-                        </p>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          onClick={() => {
+                            if (setPlaylistData) {
+                              setPlaylistData({ playlist });
+                              setCurrentPage(PAGES.PLAYLIST);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <h3 className="text-lg font-bold text-sol-darker truncate">
+                            {playlist.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 line-clamp-1">
+                            {playlist.description}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="text-center">
+                      <div className="flex items-center gap-4 text-sm flex-wrap justify-end">
+                        <div className="text-center bg-gray-50 rounded px-3 py-2">
                           <p className="text-gray-600 text-xs">Músicas</p>
-                          <p className="font-bold text-sol-primary">
+                          <p className="font-bold" style={{ color: "#FFA500" }}>
                             {playlist.musicCount}
                           </p>
                         </div>
-                        <div className="text-center">
+                        <div className="text-center bg-gray-50 rounded px-3 py-2">
                           <p className="text-gray-600 text-xs">Duração</p>
-                          <p className="font-bold text-sol-primary">
+                          <p className="font-bold" style={{ color: "#FFA500" }}>
                             {playlist.duration}
                           </p>
                         </div>
-                        <div className="text-center">
+                        <div className="text-center bg-gray-50 rounded px-3 py-2">
                           <p className="text-gray-600 text-xs">Curtidas</p>
                           <p className="font-bold text-emotion-joy">
                             {playlist.likes}
                           </p>
                         </div>
-                        <div className="text-2xl">
+                        <div className="text-2xl" title={dominantEmotion}>
                           {emotionEmojis[dominantEmotion]}
                         </div>
                         <div className="text-gray-500 text-xs">
                           {new Date(playlist.date).toLocaleDateString("pt-BR")}
                         </div>
                       </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 ml-4 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            if (setPlaylistData) {
+                              setPlaylistData({ playlist });
+                              setCurrentPage(PAGES.PLAYLIST);
+                            }
+                          }}
+                          style={{
+                            background:
+                              "linear-gradient(to right, #FFA500, #DD8C00)",
+                          }}
+                          className="px-4 py-2 text-white rounded-lg hover:shadow-lg transition-all font-bold flex items-center gap-1"
+                          title="Ouvir Playlist"
+                        >
+                          <span>▶️</span>
+                          <span>Ouvir</span>
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(playlist.id)}
+                          className="px-3 py-2 border-2 border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-semibold"
+                          title="Deletar"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+
+                      {/* Delete Confirmation */}
+                      {showDeleteConfirm === playlist.id && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-red-50 border-2 border-red-300 rounded-lg p-3 z-10 shadow-lg">
+                          <p className="text-xs text-red-800 font-semibold mb-2">
+                            Deseja deletar "{playlist.name}"?
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                handleDeletePlaylist(playlist.id);
+                              }}
+                              className="flex-1 bg-red-600 text-white py-1 rounded text-xs font-semibold hover:bg-red-700 transition-colors"
+                            >
+                              Deletar
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="flex-1 bg-gray-300 text-gray-800 py-1 rounded text-xs font-semibold hover:bg-gray-400 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -384,7 +715,7 @@ export default function PlaylistListPage({
           )}
 
           {/* Empty State */}
-          {filteredPlaylists.length === 0 && (
+          {filteredAndSortedPlaylists.length === 0 && (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🎵</div>
               <h3 className="text-xl font-bold text-sol-darker mb-2">
@@ -395,7 +726,10 @@ export default function PlaylistListPage({
               </p>
               <button
                 onClick={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
-                className="bg-gradient-to-r from-sol-primary to-sol-dark text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg"
+                style={{
+                  background: "linear-gradient(to right, #FFA500, #DD8C00)",
+                }}
+                className="text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg"
               >
                 Criar Playlist
               </button>
