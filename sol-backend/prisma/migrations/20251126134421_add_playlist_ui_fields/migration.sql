@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "playlists" ADD COLUMN IF NOT EXISTS "likes" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "playlists" ADD COLUMN IF NOT EXISTS "cover" TEXT;
+ALTER TABLE "playlists" ADD COLUMN IF NOT EXISTS "spotifyPlaylistId" TEXT;

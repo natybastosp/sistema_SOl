@@ -209,12 +209,72 @@ export async function POST(request: NextRequest) {
 
     Logger.debug("💾 Análise salva", { id: emotionalState.id });
 
-    // 6. Retornar resultado
-    Logger.success("✅ Análise concluída com sucesso");
+    // 6. Criar e salvar playlist automaticamente
+    const dataAtual = new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+    const playlistName = `${fuzzyResult.output.intencaoPlaylist} - ${dataAtual}`;
+
+    // Determinar emoji padrão baseado na emoção dominante
+    const emotions = {
+      sadness: validatedData.sadness ?? (estadoEmocional <= 3 ? 8 : 2),
+      joy: validatedData.joy ?? (estadoEmocional >= 7 ? 8 : 4),
+      anger: validatedData.anger ?? 2,
+      fear: validatedData.fear ?? 2,
+    };
+
+    const dominantEmotion = Object.entries(emotions).reduce((max, curr) =>
+      curr[1] > max[1] ? curr : max
+    )[0];
+
+    const emotionEmojis: Record<string, string> = {
+      joy: "😊",
+      sadness: "😢",
+      anger: "😠",
+      fear: "😨",
+    };
+    const coverEmoji = emotionEmojis[dominantEmotion] || "🎵";
+
+    const playlist = await prisma.playlist.create({
+      data: {
+        userId: user.id,
+        emotionalStateId: emotionalState.id,
+        name: playlistName,
+        description: `Playlist gerada com ${fuzzyResult.output.grauConfianca.toFixed(
+          0
+        )}% de confiança`,
+        cover: coverEmoji,
+        likes: 0,
+      },
+    });
+
+    Logger.debug("💾 Playlist criada", { id: playlist.id, name: playlistName });
+
+    // 7. Adicionar músicas à playlist
+    if (musicasShuffladas.length > 0) {
+      await prisma.playlistMusic.createMany({
+        data: musicasShuffladas.map((musica, index) => ({
+          playlistId: playlist.id,
+          musicId: musica.id,
+          position: index + 1,
+        })),
+      });
+
+      Logger.debug(
+        `💾 ${musicasShuffladas.length} músicas adicionadas à playlist`
+      );
+    }
+
+    // 8. Retornar resultado
+    Logger.success("✅ Análise concluída e playlist salva com sucesso");
     return NextResponse.json({
       success: true,
       data: {
         analysisId: emotionalState.id,
+        playlistId: playlist.id,
         analysis: {
           estadoEmocional: validatedData.estadoEmocional,
           generoPreferido: validatedData.generoPreferido,

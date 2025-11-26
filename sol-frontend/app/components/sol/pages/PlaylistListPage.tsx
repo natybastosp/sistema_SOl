@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Header from "../Header";
 import { PAGES } from "~/constants/sol";
-//import { playlistService } from "~/services/playlist.service";
+import { PlaylistService } from "~/services/playlistService";
 
 interface PlaylistListPageProps {
   userData?: { name: string };
@@ -90,9 +90,9 @@ export default function PlaylistListPage({
       try {
         setIsLoading(true);
         setError(null);
-        const data = await playlistService.getPlaylists();
-        if (data && data.length > 0) {
-          setPlaylists(data);
+        const result = await PlaylistService.getPlaylists();
+        if (result.success && result.data && result.data.length > 0) {
+          setPlaylists(result.data);
         } else {
           /* console.log("Nenhuma playlist encontrada, usando dados de exemplo"); */
           setPlaylists(EXAMPLE_PLAYLISTS);
@@ -193,10 +193,15 @@ export default function PlaylistListPage({
 
   const handleDeletePlaylist = async (id: string) => {
     try {
-      await playlistService.deletePlaylist(id);
-      // Remover da lista local
-      setPlaylists(playlists.filter((p) => p.id !== id));
-      setShowDeleteConfirm(null);
+      const result = await PlaylistService.deletePlaylist(id);
+      if (result.success) {
+        // Remover da lista local
+        setPlaylists(playlists.filter((p) => p.id !== id));
+        setShowDeleteConfirm(null);
+      } else {
+        console.error("Erro ao deletar playlist:", result.error);
+        alert(result.error || "Erro ao deletar playlist");
+      }
     } catch (error) {
       console.error("Erro ao deletar playlist:", error);
       alert("Erro ao deletar playlist");

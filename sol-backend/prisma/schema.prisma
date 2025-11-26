@@ -104,6 +104,11 @@ model Playlist {
   name              String
   description       String?
   
+  // Campos adicionais para integração com UI
+  likes             Int      @default(0)
+  cover             String?  // emoji ou URL da imagem
+  spotifyPlaylistId String?  // ID da playlist no Spotify (se exportada)
+  
   createdAt         DateTime @default(now())
   
   // Relacionamentos
