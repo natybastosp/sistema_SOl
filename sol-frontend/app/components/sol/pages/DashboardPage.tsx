@@ -69,7 +69,7 @@ export default function DashboardPage({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 🧠 ANÁLISE EMOCIONAL */}
-          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 border-sol-primary bg-white hover:scale-105 transform">
+          <Card className="hover:shadow-2xl transition-all border-2 border-sol-primary bg-white hover:scale-105 transform">
             <CardHeader className="bg-gradient-to-br from-sol-pale/50 via-sol-light/30 to-transparent rounded-t-lg">
               <CardTitle className="flex items-center gap-3 text-sol-darker text-xl">
                 🧠 Análise Emocional
@@ -82,7 +82,7 @@ export default function DashboardPage({
               </p>
               <Button
                 onClick={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
-                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all"
+                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all cursor-pointer"
                 variant="outline"
               >
                 🎵 Começar Análise
@@ -91,7 +91,7 @@ export default function DashboardPage({
           </Card>
 
           {/* 📜 HISTÓRICO */}
-          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 border-sol-pale bg-white hover:scale-105 transform">
+          {/*  <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 border-sol-pale bg-white hover:scale-105 transform">
             <CardHeader className="bg-gradient-to-br from-sol-light/70 to-sol-pale/30 rounded-t-lg">
               <CardTitle className="flex items-center gap-3 text-sol-darker text-xl">
                 📜 Histórico
@@ -109,10 +109,10 @@ export default function DashboardPage({
                 Ver Histórico
               </Button>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* 🎵 MINHAS PLAYLISTS */}
-          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 border-sol-pale bg-white hover:scale-105 transform">
+          <Card className="hover:shadow-2xl transition-all  border-2 border-sol-pale bg-white hover:scale-105 transform">
             <CardHeader className="bg-gradient-to-br from-sol-light/70 to-sol-pale/30 rounded-t-lg">
               <CardTitle className="flex items-center gap-3 text-sol-darker text-xl">
                 🎵 Minhas Playlists
@@ -124,7 +124,7 @@ export default function DashboardPage({
               </p>
               <Button
                 onClick={() => setCurrentPage(PAGES.PLAYLIST_LIST)}
-                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all"
+                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 mt-6 rounded-lg transition-all cursor-pointer"
                 variant="outline"
               >
                 Ver Playlists
@@ -133,7 +133,7 @@ export default function DashboardPage({
           </Card>
 
           {/* 👤 PERFIL */}
-          <Card className="hover:shadow-2xl transition-all cursor-pointer border-2 border-sol-pale bg-white hover:scale-105 transform">
+          <Card className="hover:shadow-2xl transition-all  border-2 border-sol-pale bg-white hover:scale-105 transform">
             <CardHeader className="bg-gradient-to-br from-sol-light/70 to-sol-pale/30 rounded-t-lg">
               <CardTitle className="flex items-center gap-3 text-sol-darker text-xl">
                 👤 Perfil
@@ -145,7 +145,7 @@ export default function DashboardPage({
               </p>
               <Button
                 onClick={() => setCurrentPage(PAGES.PROFILE)}
-                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all"
+                className="w-full border-2 border-sol-primary text-sol-primary hover:bg-sol-pale font-bold py-2 rounded-lg transition-all cursor-pointer"
                 variant="outline"
               >
                 Ver Perfil
