@@ -295,7 +295,7 @@ export default function PlaylistListPage({
                     }}
                   >
                     <option value="recent">📅 Recentes</option>
-                    <option value="popular">❤️ Mais curtidas</option>
+                    {/* <option value="popular">❤️ Mais curtidas</option> */}
                     <option value="name">🔤 Por nome</option>
                     <option value="duration">⏱️ Maior duração</option>
                   </select>
@@ -386,10 +386,35 @@ export default function PlaylistListPage({
                           "linear-gradient(to bottom right, #FFA500, #DD8C00)",
                       }}
                       className="relative p-8 flex items-center justify-center h-40"
-                      onClick={() => {
+                      onClick={async () => {
                         if (setPlaylistData) {
-                          setPlaylistData({ playlist });
-                          setCurrentPage(PAGES.PLAYLIST);
+                          // Buscar dados completos da playlist (incluindo músicas)
+                          const result = await PlaylistService.getPlaylist(
+                            playlist.id
+                          );
+                          if (result.success && result.data) {
+                            // Formatar dados para o formato esperado pela PlaylistPage
+                            setPlaylistData({
+                              playlist: result.data.musics.map(
+                                (music: any) => ({
+                                  ...music,
+                                  spotify_uri: music.spotifyUri, // Mapear para snake_case
+                                  nome: music.name, // Adicionar compatibilidade com nome
+                                  artista: music.artist, // Adicionar compatibilidade com artista
+                                })
+                              ),
+                              analysis: {
+                                sadness: result.data.emotions.sadness,
+                                joy: result.data.emotions.joy,
+                                anger: result.data.emotions.anger,
+                                fear: result.data.emotions.fear,
+                                surprise: result.data.emotions.surprise,
+                              },
+                              playlistName: result.data.name,
+                              playlistId: result.data.id,
+                            });
+                            setCurrentPage(PAGES.PLAYLIST);
+                          }
                         }
                       }}
                     >
@@ -450,7 +475,7 @@ export default function PlaylistListPage({
                       </div>
 
                       {/* Stats */}
-                      <div className="grid grid-cols-3 gap-2 mb-4 text-center">
+                      <div className="grid grid-cols-2 gap-2 mb-4 text-center">
                         <div className="bg-gray-50 rounded p-2">
                           <p className="text-xs text-gray-600">Músicas</p>
                           <p
@@ -469,12 +494,12 @@ export default function PlaylistListPage({
                             {playlist.duration}
                           </p>
                         </div>
-                        <div className="bg-gray-50 rounded p-2">
+                        {/*  <div className="bg-gray-50 rounded p-2">
                           <p className="text-xs text-gray-600">Curtidas</p>
                           <p className="text-lg font-bold text-emotion-joy">
                             {playlist.likes}
                           </p>
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* Dominant Emotion and Date */}
@@ -495,10 +520,35 @@ export default function PlaylistListPage({
                       {/* Action Buttons */}
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (setPlaylistData) {
-                              setPlaylistData({ playlist });
-                              setCurrentPage(PAGES.PLAYLIST);
+                              // Buscar dados completos da playlist (incluindo músicas)
+                              const result = await PlaylistService.getPlaylist(
+                                playlist.id
+                              );
+                              if (result.success && result.data) {
+                                // Formatar dados para o formato esperado pela PlaylistPage
+                                setPlaylistData({
+                                  playlist: result.data.musics.map(
+                                    (music: any) => ({
+                                      ...music,
+                                      spotify_uri: music.spotifyUri, // Mapear para snake_case
+                                      nome: music.name, // Adicionar compatibilidade com nome
+                                      artista: music.artist, // Adicionar compatibilidade com artista
+                                    })
+                                  ),
+                                  analysis: {
+                                    sadness: result.data.emotions.sadness,
+                                    joy: result.data.emotions.joy,
+                                    anger: result.data.emotions.anger,
+                                    fear: result.data.emotions.fear,
+                                    surprise: result.data.emotions.surprise,
+                                  },
+                                  playlistName: result.data.name,
+                                  playlistId: result.data.id,
+                                });
+                                setCurrentPage(PAGES.PLAYLIST);
+                              }
                             }
                           }}
                           style={{
@@ -571,10 +621,35 @@ export default function PlaylistListPage({
 
                       <div className="flex-1 min-w-0">
                         <div
-                          onClick={() => {
+                          onClick={async () => {
                             if (setPlaylistData) {
-                              setPlaylistData({ playlist });
-                              setCurrentPage(PAGES.PLAYLIST);
+                              // Buscar dados completos da playlist (incluindo músicas)
+                              const result = await PlaylistService.getPlaylist(
+                                playlist.id
+                              );
+                              if (result.success && result.data) {
+                                // Formatar dados para o formato esperado pela PlaylistPage
+                                setPlaylistData({
+                                  playlist: result.data.musics.map(
+                                    (music: any) => ({
+                                      ...music,
+                                      spotify_uri: music.spotifyUri, // Mapear para snake_case
+                                      nome: music.name, // Adicionar compatibilidade com nome
+                                      artista: music.artist, // Adicionar compatibilidade com artista
+                                    })
+                                  ),
+                                  analysis: {
+                                    sadness: result.data.emotions.sadness,
+                                    joy: result.data.emotions.joy,
+                                    anger: result.data.emotions.anger,
+                                    fear: result.data.emotions.fear,
+                                    surprise: result.data.emotions.surprise,
+                                  },
+                                  playlistName: result.data.name,
+                                  playlistId: result.data.id,
+                                });
+                                setCurrentPage(PAGES.PLAYLIST);
+                              }
                             }
                           }}
                           className="cursor-pointer"
@@ -601,12 +676,12 @@ export default function PlaylistListPage({
                             {playlist.duration}
                           </p>
                         </div>
-                        <div className="text-center bg-gray-50 rounded px-3 py-2">
+                        {/*  <div className="text-center bg-gray-50 rounded px-3 py-2">
                           <p className="text-gray-600 text-xs">Curtidas</p>
                           <p className="font-bold text-emotion-joy">
                             {playlist.likes}
                           </p>
-                        </div>
+                        </div> */}
                         <div className="text-2xl" title={dominantEmotion}>
                           {emotionEmojis[dominantEmotion]}
                         </div>
@@ -618,10 +693,35 @@ export default function PlaylistListPage({
                       {/* Action Buttons */}
                       <div className="flex gap-2 ml-4 flex-shrink-0">
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (setPlaylistData) {
-                              setPlaylistData({ playlist });
-                              setCurrentPage(PAGES.PLAYLIST);
+                              // Buscar dados completos da playlist (incluindo músicas)
+                              const result = await PlaylistService.getPlaylist(
+                                playlist.id
+                              );
+                              if (result.success && result.data) {
+                                // Formatar dados para o formato esperado pela PlaylistPage
+                                setPlaylistData({
+                                  playlist: result.data.musics.map(
+                                    (music: any) => ({
+                                      ...music,
+                                      spotify_uri: music.spotifyUri, // Mapear para snake_case
+                                      nome: music.name, // Adicionar compatibilidade com nome
+                                      artista: music.artist, // Adicionar compatibilidade com artista
+                                    })
+                                  ),
+                                  analysis: {
+                                    sadness: result.data.emotions.sadness,
+                                    joy: result.data.emotions.joy,
+                                    anger: result.data.emotions.anger,
+                                    fear: result.data.emotions.fear,
+                                    surprise: result.data.emotions.surprise,
+                                  },
+                                  playlistName: result.data.name,
+                                  playlistId: result.data.id,
+                                });
+                                setCurrentPage(PAGES.PLAYLIST);
+                              }
                             }
                           }}
                           style={{
