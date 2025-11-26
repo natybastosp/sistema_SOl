@@ -46,56 +46,18 @@ export default function PlaylistListPage({
     null
   );
 
-  // Carregar playlists ao montar o componente
-  // Dados de exemplo para fallback
-  const EXAMPLE_PLAYLISTS: SavedPlaylist[] = [
-    {
-      id: "1",
-      name: "Dia Feliz",
-      description: "Músicas para um dia cheio de energia e alegria",
-      date: "2025-11-01",
-      musicCount: 15,
-      duration: "30:45",
-      likes: 5,
-      cover: "😊",
-      emotions: {
-        sadness: 10,
-        joy: 95,
-        anger: 5,
-        fear: 2,
-        surprise: 40,
-      },
-    },
-    {
-      id: "2",
-      name: "Noite Reflexiva",
-      description: "Para aqueles momentos de contemplação e paz",
-      date: "2025-10-31",
-      musicCount: 18,
-      duration: "25:20",
-      likes: 3,
-      cover: "🌙",
-      emotions: {
-        sadness: 35,
-        joy: 45,
-        anger: 15,
-        fear: 20,
-        surprise: 25,
-      },
-    },
-  ];
-
   useEffect(() => {
     const loadPlaylists = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const result = await PlaylistService.getPlaylists();
+        console.log("Playlists carregadas:", result);
         if (result.success && result.data && result.data.length > 0) {
           setPlaylists(result.data);
         } else {
           /* console.log("Nenhuma playlist encontrada, usando dados de exemplo"); */
-          setPlaylists(EXAMPLE_PLAYLISTS);
+          setPlaylists([]);
           setError(null);
         }
       } catch (err) {
@@ -103,7 +65,7 @@ export default function PlaylistListPage({
         /*  setError(
           "Usando dados de exemplo - Conecte sua conta para ver suas playlists reais"
         ); */
-        setPlaylists(EXAMPLE_PLAYLISTS);
+        setPlaylists([]);
       } finally {
         setIsLoading(false);
       }
@@ -112,13 +74,12 @@ export default function PlaylistListPage({
     loadPlaylists();
   }, []);
 
-  const emotions = ["joy", "sadness", "anger", "fear", "surprise"];
+  const emotions = ["joy", "sadness", "anger", "fear"];
   const emotionEmojis: Record<string, string> = {
     joy: "😊",
     sadness: "😢",
     anger: "😠",
     fear: "😨",
-    surprise: "😮",
   };
 
   const getDominantEmotion = (emotions: SavedPlaylist["emotions"]): string => {
@@ -139,8 +100,7 @@ export default function PlaylistListPage({
             p.emotions.sadness,
             p.emotions.joy,
             p.emotions.anger,
-            p.emotions.fear,
-            p.emotions.surprise
+            p.emotions.fear
           ) ===
           (filterEmotion === "sadness"
             ? p.emotions.sadness
@@ -150,17 +110,13 @@ export default function PlaylistListPage({
                 ? p.emotions.anger
                 : filterEmotion === "fear"
                   ? p.emotions.fear
-                  : p.emotions.surprise)
+                  : null)
       );
     }
 
     // Aplicar filtro de busca (fuzzy search)
     if (searchQuery) {
-      result = result.filter(
-        (p) =>
-          fuzzySearch(searchQuery, p.name) ||
-          fuzzySearch(searchQuery, p.description)
-      );
+      result = result.filter((p) => fuzzySearch(searchQuery, p.name));
     }
 
     // Aplicar ordenação
@@ -450,9 +406,9 @@ export default function PlaylistListPage({
                       <h3 className="text-lg font-bold text-sol-darker mb-1">
                         {playlist.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      {/* <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                         {playlist.description}
-                      </p>
+                      </p> */}
 
                       {/* Emotion Bars */}
                       <div className="mb-4 space-y-1">
@@ -466,19 +422,19 @@ export default function PlaylistListPage({
                             </span>
                             <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                               <div
-                                className={`h-full transition-all ${
-                                  emotion === "joy"
-                                    ? "bg-emotion-joy"
-                                    : emotion === "sadness"
-                                      ? "bg-emotion-sadness"
-                                      : emotion === "anger"
-                                        ? "bg-emotion-anger"
-                                        : emotion === "fear"
-                                          ? "bg-emotion-fear"
-                                          : "bg-emotion-surprise"
-                                }`}
+                                className="h-full transition-all"
                                 style={{
-                                  width: `${playlist.emotions[emotion as keyof typeof playlist.emotions]}%`,
+                                  width: `${(playlist.emotions[emotion as keyof typeof playlist.emotions] / 10) * 100}%`,
+                                  backgroundColor:
+                                    emotion === "joy"
+                                      ? "#FCD34D" // Amarelo alegre
+                                      : emotion === "sadness"
+                                        ? "#60A5FA" // Azul tristeza
+                                        : emotion === "anger"
+                                          ? "#F87171" // Vermelho raiva
+                                          : emotion === "fear"
+                                            ? "#A78BFA" // Roxo medo
+                                            : "", // Laranja surpresa
                                 }}
                               />
                             </div>
@@ -488,7 +444,6 @@ export default function PlaylistListPage({
                                   emotion as keyof typeof playlist.emotions
                                 ]
                               }
-                              %
                             </span>
                           </div>
                         ))}
@@ -627,9 +582,9 @@ export default function PlaylistListPage({
                           <h3 className="text-lg font-bold text-sol-darker truncate">
                             {playlist.name}
                           </h3>
-                          <p className="text-sm text-gray-600 line-clamp-1">
+                          {/*  <p className="text-sm text-gray-600 line-clamp-1">
                             {playlist.description}
-                          </p>
+                          </p> */}
                         </div>
                       </div>
 
