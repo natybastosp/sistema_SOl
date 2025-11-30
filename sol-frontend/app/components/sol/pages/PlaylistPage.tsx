@@ -323,8 +323,8 @@ export default function PlaylistPage({
         pageTitle="Playlist"
         showBackButton={true}
         showLogoutButton={true}
-        onBack={() => setCurrentPage(PAGES.EMOTIONAL_ASSESSMENT)}
-        onLogout={() => setCurrentPage(PAGES.DASHBOARD)}
+        onBack={() => setCurrentPage(PAGES.DASHBOARD)}
+        onLogout={() => setCurrentPage(PAGES.LOGIN)}
         userName={userData?.name}
       />
       <div className="flex p-8 gap-6">
@@ -332,7 +332,7 @@ export default function PlaylistPage({
           <div className="bg-white rounded-3xl shadow-2xl p-8 flex-1 border-2 border-sol-primary">
             {/* Header Info */}
             <div className="bg-gradient-to-r from-sol-pale/50 to-sol-light rounded-2xl p-4 mb-6 border border-sol-pale">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center jfustify-between">
                 <div>
                   <p className="text-xs text-gray-600 font-medium">
                     🎯 Intenção
