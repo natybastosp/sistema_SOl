@@ -3,7 +3,7 @@ import { Button } from "~/components/ui/button";
 import Header from "../Header";
 import SunLogo from "../SunLogo";
 import type { UserData } from "~/types/sol";
-import { PAGES } from "~/constants/sol";
+import { PAGES, GENRES } from "~/constants/sol";
 import { EmotionalService } from "~/services/emotionalService";
 
 interface EmotionalAssessmentPageProps {
@@ -14,7 +14,7 @@ interface EmotionalAssessmentPageProps {
 }
 
 interface EmocaoSlider {
-  id: "sadness" | "joy" | "anger" | " fear" /* | "surprise" */;
+  id: "sadness" | "joy" | "anger" | "fear" /* | "surprise" */;
   label: string;
   descricao: string;
   icone: string;
@@ -73,9 +73,6 @@ export default function EmotionalAssessmentPage({
   const [showResults, setShowResults] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
-  // Gêneros disponíveis
-  const genres = ["Rock", "Funk", "Rap", "Samba", "Sertanejo"];
-
   const handleSliderChange = (id: string, valor: number) => {
     setEmocoes_valores((prev) => ({
       ...prev,
@@ -119,9 +116,19 @@ export default function EmotionalAssessmentPage({
         setAnalysisResult(result.data);
         setShowResults(true);
 
+        // Mapear dados para o formato esperado pela PlaylistPage
+        const playlistData = {
+          playlist: result.data.playlist,
+          analysis: {
+            intencaoPlaylist: result.data.fuzzyAnalysis.intencao,
+            grauConfianca: result.data.fuzzyAnalysis.confianca,
+            valorIntencao: result.data.fuzzyAnalysis.valorIntencao,
+          },
+        };
+
         // Salvar playlist no estado global
         if (onPlaylistGenerated) {
-          onPlaylistGenerated(result.data);
+          onPlaylistGenerated(playlistData);
         }
 
         // Aguardar 2 segundos antes de navegar
@@ -294,7 +301,7 @@ export default function EmotionalAssessmentPage({
                     </button>
 
                     {/* Gêneros */}
-                    {genres.map((genre) => (
+                    {GENRES.map((genre) => (
                       <button
                         key={genre}
                         onClick={() => setSelectedGenre(genre)}

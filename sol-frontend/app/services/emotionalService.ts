@@ -161,13 +161,23 @@ export class EmotionalService {
       const analysisData = result.data.analysis || {};
       const playlistData = result.data.playlist || [];
 
+      // 🔍 DEBUG: Verificar dados brutos do backend
+      console.log("📥 Dados brutos do backend:");
+      console.log("   Analysis:", analysisData);
+      console.log("   Playlist (length):", playlistData.length);
+      if (playlistData.length > 0) {
+        console.log("   Primeira música (raw):", playlistData[0]);
+        console.log("   Campos disponíveis:", Object.keys(playlistData[0]));
+      }
+
       const recommendation: EmotionalRecommendation = {
         id: result.data.analysisId || `analysis_${Date.now()}`,
         fuzzyAnalysis: {
-          intencao: "Neutro", // Será calculado baseado em estadoEmocional
+          intencao: analysisData.intencaoPlaylist || "Neutra",
           confianca: analysisData.grauConfianca || 0.5,
           descricao: "Análise fuzzy realizada com sucesso",
-          valorIntencao: analysisData.grauConfianca || 0.5,
+          valorIntencao:
+            analysisData.valorIntencao || analysisData.grauConfianca || 0.5,
           graus: {
             triste: 0,
             ansioso: 0,
@@ -180,11 +190,14 @@ export class EmotionalService {
           playlistData.map((track: any, idx: number) => ({
             id: track.id || `track_${idx}`,
             spotifyId: track.spotifyId || "",
-            spotify_uri: `spotify:track:${track.spotifyId}`, // Construir URI do Spotify
-            name: track.title,
-            artist: track.artist,
+            spotify_uri:
+              track.spotify_uri ||
+              track.spotifyUri ||
+              `spotify:track:${track.spotifyId}`, // URI do Spotify
+            name: track.name || track.nome || "Música Desconhecida",
+            artist: track.artist || track.artista || "Artista Desconhecido",
             duration: track.duration || 180000,
-            genre: track.genre || "rock",
+            genre: track.genre || track.genero || "rock",
             position: idx + 1,
             scores: {
               sadness: 0,
@@ -213,6 +226,18 @@ export class EmotionalService {
       console.log("✅ Análise completa!");
       console.log(`   Intenção: ${recommendation.fuzzyAnalysis.intencao}`);
       console.log(`   Músicas: ${recommendation.playlist.length}`);
+
+      // 🔍 DEBUG: Verificar mapeamento dos campos
+      if (recommendation.playlist.length > 0) {
+        console.log("🎵 Primeira música mapeada:", recommendation.playlist[0]);
+        console.log("   - Name:", recommendation.playlist[0].name);
+        console.log("   - Artist:", recommendation.playlist[0].artist);
+        console.log("   - Genre:", recommendation.playlist[0].genre);
+        console.log(
+          "   - Spotify URI:",
+          recommendation.playlist[0].spotify_uri
+        );
+      }
 
       return {
         success: true,

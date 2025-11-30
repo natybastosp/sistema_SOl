@@ -37,6 +37,18 @@ export default function PlaylistPage({
   const musics = playlistData?.playlist || [];
   const analysis = playlistData?.analysis || {};
 
+  // 🔍 DEBUG: Verificar estrutura dos dados
+  useEffect(() => {
+    console.log("🎵 PlaylistPage - Dados recebidos:");
+    console.log("   playlistData:", playlistData);
+    console.log("   musics:", musics);
+    console.log("   analysis:", analysis);
+    if (musics.length > 0) {
+      console.log("   Primeira música:", musics[0]);
+      console.log("   Campos disponíveis:", Object.keys(musics[0]));
+    }
+  }, [playlistData]);
+
   // Verificar conexão Spotify ao carregar
   useEffect(() => {
     checkSpotifyStatus();
@@ -329,7 +341,7 @@ export default function PlaylistPage({
                     {analysis.intencaoPlaylist}
                   </p>
                 </div>
-                <div className="text-right">
+                {/*  <div className="text-right">
                   <p className="text-xs text-gray-600 font-medium">
                     🤖 Confiança da IA
                   </p>
@@ -340,7 +352,7 @@ export default function PlaylistPage({
                       : "—"}
                     %
                   </p>
-                </div>
+                </div> */}
                 <div className="h-12 w-px bg-sol-primary/20"></div>
                 <div className="text-right">
                   <p className="text-xs text-gray-600 font-medium">
