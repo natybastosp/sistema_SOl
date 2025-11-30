@@ -60,7 +60,8 @@ export default function DashboardPage({
           </CardHeader>
           <CardContent className="pt-1">
             <p className="text-gray-700">
-              Bem-vindo ao sistema SOL. O que você gostaria de fazer hoje?
+              Bem-vindo ao arcabouço SOL. 
+              Como você está se sentindo hoje?
             </p>
           </CardContent>
         </Card>
