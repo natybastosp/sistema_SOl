@@ -35,13 +35,13 @@ const emocoes: EmocaoSlider[] = [
   },
   {
     id: "anger",
-    label: "Anger",
+    label: "Raiva",
     descricao: "Como está seu nível de raiva?",
     icone: "😐",
   },
   {
     id: "fear",
-    label: "Ansiedade",
+    label: "Medo",
     descricao: "Qual é seu nível de medo?",
     icone: "😨",
   },
@@ -277,7 +277,7 @@ export default function EmotionalAssessmentPage({
                 {/* Seletor de Gênero */}
                 <div className="mb-8">
                   <label className="block text-lg font-medium text-sol-darker mb-4">
-                    🎵 Gênero musical preferido 
+                    🎵 Gênero musical preferido
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {/* Opção "Todos" */}

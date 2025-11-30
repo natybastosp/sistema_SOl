@@ -88,15 +88,14 @@ export default function ProfilePage({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="gap-10">
             {/* LEFT COLUMN */}
             <div className="lg:col-span-2 space-y-8">
-
               {/* PROFILE CARD */}
-              <div className="backdrop-blur-xl bg-white/70 shadow-xl rounded-2xl p-8 border border-white/40">
+              <div className=" bg-white/70 rounded-2xl p-8 border border-white/40">
                 <div className="flex items-center gap-6 mb-10">
-                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-sol-primary to-sol-dark flex items-center justify-center shadow-lg">
-                    <span className="text-5xl drop-shadow-md">☀️</span>
+                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-sol-primary to-sol-dark flex items-center justify-center ">
+                    <span className="text-5xl ">☀️</span>
                   </div>
 
                   <div>
@@ -117,7 +116,7 @@ export default function ProfilePage({
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="w-full py-3 rounded-xl bg-sol-primary text-white font-semibold shadow-md hover:bg-sol-dark hover:scale-[1.02] transition-all"
+                    className="w-full py-3 rounded-xl bg-sol-primary text-black font-semibold shadow-md hover:bg-sol-dark hover:scale-[1.02] transition-all"
                   >
                     ✏️ Editar Perfil
                   </button>
@@ -156,7 +155,7 @@ export default function ProfilePage({
                     <div className="flex gap-4 pt-4">
                       <button
                         onClick={handleSave}
-                        className="flex-1 py-2 rounded-xl bg-emotion-joy text-white font-semibold shadow-md hover:scale-[1.03] transition-all"
+                        className="flex-1 py-2 rounded-xl bg-emotion-joy text-black font-semibold shadow-md hover:scale-[1.03] transition-all"
                       >
                         💾 Salvar
                       </button>
@@ -174,48 +173,44 @@ export default function ProfilePage({
 
               {/* STATS */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  {
-                    label: "Sessões Totais",
-                    value: userStats.totalSessions,
-                    color: "emotion-joy",
-                  },
-                  {
-                    label: "Músicas Ouvidas",
-                    value: userStats.totalMusic,
-                    color: "emotion-calm",
-                  },
-                  {
-                    label: "Gênero Favorito",
-                    value: userStats.favoriteGenre,
-                    color: "emotion-surprise",
-                  },
-                  {
-                    label: "Emoção Favorita",
-                    value: "😊",
-                    color: "emotion-sadness",
-                  },
-                ].map((stat, i) => (
-                  <div
-                    key={i}
-                    className={`p-4 rounded-xl border-2 border-${stat.color} bg-${stat.color}/10`}
-                  >
-                    <p className="text-xs text-gray-600">{stat.label}</p>
-                    <p
-                      className={`text-3xl font-bold text-${stat.color} mt-1`}
-                    >
-                      {stat.value}
-                    </p>
-                  </div>
-                ))}
+                {/* Sessões Totais */}
+                <div className="p-4 rounded-xl border-2 border-emotion-joy bg-emotion-joy/10">
+                  <p className="text-xs text-gray-600">Sessões Totais</p>
+                  <p className="text-3xl font-bold text-emotion-joy mt-1">
+                    {userStats.totalSessions}
+                  </p>
+                </div>
+
+                {/* Músicas Ouvidas */}
+                <div className="p-4 rounded-xl border-2 border-emotion-calm bg-emotion-calm/10">
+                  <p className="text-xs text-gray-600">Músicas Ouvidas</p>
+                  <p className="text-3xl font-bold text-emotion-calm mt-1">
+                    {userStats.totalMusic}
+                  </p>
+                </div>
+
+                {/* Gênero Favorito */}
+                <div className="p-4 rounded-xl border-2 border-emotion-surprise bg-emotion-surprise/10">
+                  <p className="text-xs text-gray-600">Gênero Favorito</p>
+                  <p className="text-3xl font-bold text-emotion-surprise mt-1">
+                    {userStats.favoriteGenre}
+                  </p>
+                </div>
+
+                {/* Emoção Favorita */}
+                <div className="p-4 rounded-xl border-2 border-emotion-sadness bg-emotion-sadness/10">
+                  <p className="text-xs text-gray-600">Emoção Favorita</p>
+                  <p className="text-3xl font-bold text-emotion-sadness mt-1">
+                    😊
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* RIGHT COLUMN */}
             <div className="space-y-8">
-
               {/* GENRES */}
-              <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/40 shadow-xl">
+              {/* <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/40 shadow-xl">
                 <h3 className="text-xl font-bold text-sol-darker mb-4 flex items-center gap-2">
                   🎵 Gêneros Favoritos
                 </h3>
@@ -247,10 +242,10 @@ export default function ProfilePage({
                     Selecione seus gêneros favoritos
                   </p>
                 )}
-              </div>
+              </div> */}
 
-             // {/* ACTIONS */}
-              <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/40 shadow-xl space-y-4">
+              {/* ACTIONS */}
+              {/*  <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/40 shadow-xl space-y-4">
                 <h3 className="font-bold text-lg text-sol-darker">⚙️ Ações</h3>
 
                 <button className="w-full py-2 rounded-lg bg-emotion-sadness text-white font-semibold hover:scale-[1.02] transition-all">
@@ -264,7 +259,7 @@ export default function ProfilePage({
                 <button className="w-full py-2 rounded-lg bg-emotion-anger text-white font-semibold hover:scale-[1.02] transition-all">
                   🗑️ Excluir Conta
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
