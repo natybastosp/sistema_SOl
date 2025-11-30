@@ -17,11 +17,11 @@ export interface HistoryStats {
   estadoEmocionalMedio: number;
   intencoesMaisComuns: Array<{
     intencao: string;
-    quantidade: number;
+    count: number;
   }>;
   generosFavoritos: Array<{
     genero: string;
-    quantidade: number;
+    count: number;
   }>;
   tendenciaEmocional?: {
     tendencia: "melhorando" | "piorando" | "estável";
@@ -133,6 +133,7 @@ export class HistoryService {
       }
 
       console.log("📊 Carregando estatísticas...");
+      console.log("🔗 URL:", `${this.API_BASE}/history/stats`);
 
       const response = await fetch(`${this.API_BASE}/history/stats`, {
         method: "GET",
@@ -141,9 +142,12 @@ export class HistoryService {
         },
       });
 
+      console.log("📡 Response status:", response.status);
       const result = await response.json();
+      console.log("📦 Response completa:", JSON.stringify(result, null, 2));
 
       if (!result.success) {
+        console.log("❌ Resposta indicou falha:", result.error);
         return {
           success: false,
           error: result.error || "Erro ao buscar estatísticas",
@@ -151,6 +155,7 @@ export class HistoryService {
       }
 
       console.log("✅ Estatísticas carregadas!");
+      console.log("📊 Stats data:", result.stats);
 
       return {
         success: true,

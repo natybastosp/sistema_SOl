@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import Header from "../Header";
 import { PAGES } from "~/constants/sol";
+import { HistoryService } from "~/services/historyService";
+import type { HistoryStats } from "~/services/historyService";
 
 interface DashboardPageProps {
   userData: {
@@ -16,6 +18,27 @@ export default function DashboardPage({
   userData,
   setCurrentPage,
 }: DashboardPageProps) {
+  const [stats, setStats] = useState<HistoryStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      setIsLoadingStats(true);
+      console.log("🔍 DashboardPage: Buscando estatísticas...");
+      const result = await HistoryService.getStats();
+      console.log("📊 DashboardPage: Resultado recebido:", result);
+      if (result.success && result.data) {
+        console.log("✅ DashboardPage: Estatísticas carregadas:", result.data);
+        setStats(result.data);
+      } else {
+        console.log("❌ DashboardPage: Falha ao carregar:", result.error);
+      }
+      setIsLoadingStats(false);
+    };
+
+    loadStats();
+  }, []);
+
   const handleLogout = () => {
     setCurrentPage(PAGES.LOGIN);
   };
@@ -60,8 +83,7 @@ export default function DashboardPage({
           </CardHeader>
           <CardContent className="pt-1">
             <p className="text-gray-700">
-              Bem-vindo ao arcabouço SOL. 
-              Como você está se sentindo hoje?
+              Bem-vindo ao arcabouço SOL. Como você está se sentindo hoje?
             </p>
           </CardContent>
         </Card>
@@ -142,7 +164,7 @@ export default function DashboardPage({
             </CardHeader>
             <CardContent className="pt-6">
               <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                Edite suas preferências e informações pessoais.
+                Edite suas informações pessoais.
               </p>
               <Button
                 onClick={() => setCurrentPage(PAGES.PROFILE)}
@@ -154,31 +176,6 @@ export default function DashboardPage({
             </CardContent>
           </Card>
         </div>
-
-        {/* 📊 ESTATÍSTICAS */}
-        <Card className="mt-8 border-2 border-sol-primary bg-white hover:shadow-lg transition-all">
-          <CardHeader className="bg-gradient-to-r from-sol-pale to-transparent">
-            <CardTitle className="text-sol-darker">
-              📊 Suas Estatísticas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-3xl font-bold text-sol-primary">12</div>
-                <div className="text-sm text-gray-600">Análises</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-sol-dark">240</div>
-                <div className="text-sm text-gray-600">Músicas</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-sol-darker">8.5</div>
-                <div className="text-sm text-gray-600">Bem-estar médio</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

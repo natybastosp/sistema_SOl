@@ -24,7 +24,7 @@ export default function Header({
             ☀️ SOL
           </h1>
           <div className="h-8 w-px bg-white/30"></div>
-          <p className="text-lg font-semibold text-sol-light">{pageTitle}</p>
+          {/* <p className="text-lg font-semibold text-sol-light">{pageTitle}</p> */}
         </div>
 
         {/* Botões de Ação */}
