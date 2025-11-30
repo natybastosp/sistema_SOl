@@ -14,7 +14,7 @@ interface EmotionalAssessmentPageProps {
 }
 
 interface EmocaoSlider {
-  id: "sadness" | "joy" | "anger" | "anxiety" /* | "surprise" */;
+  id: "sadness" | "joy" | "anger" | " fear" /* | "surprise" */;
   label: string;
   descricao: string;
   icone: string;
@@ -35,14 +35,14 @@ const emocoes: EmocaoSlider[] = [
   },
   {
     id: "anger",
-    label: "Neutro",
-    descricao: "Como está seu nível de neutro?",
+    label: "Anger",
+    descricao: "Como está seu nível de raiva?",
     icone: "😐",
   },
   {
-    id: "anxiety",
+    id: "fear",
     label: "Ansiedade",
-    descricao: "Qual é seu nível de ansiedade?",
+    descricao: "Qual é seu nível de medo?",
     icone: "😨",
   },
 ];
@@ -60,7 +60,7 @@ export default function EmotionalAssessmentPage({
     sadness: 5,
     joy: 5,
     anger: 5,
-    anxiety: 5,
+    fear: 5,
   });
 
   const [selectedGenre, setSelectedGenre] = useState<string>(
@@ -74,7 +74,7 @@ export default function EmotionalAssessmentPage({
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   // Gêneros disponíveis
-  const genres = ["Rock", "Funk", "Rap", "Samba", "Mpb"];
+  const genres = ["Rock", "Funk", "Rap", "Samba", "Sertanejo"];
 
   const handleSliderChange = (id: string, valor: number) => {
     setEmocoes_valores((prev) => ({
@@ -101,7 +101,7 @@ export default function EmotionalAssessmentPage({
         sadness: emocoes_valores.sadness,
         joy: emocoes_valores.joy,
         anger: emocoes_valores.anger,
-        anxiety: emocoes_valores.anxiety,
+        fear: emocoes_valores.fear,
         generoPreferido: selectedGenre === "Todos" ? undefined : selectedGenre,
       });
 
@@ -195,10 +195,10 @@ export default function EmotionalAssessmentPage({
                         accent: "accent-emotion-anger",
                         border: "border-emotion-anger",
                       },
-                      anxiety: {
-                        bg: "bg-emotion-anxiety/10",
-                        accent: "accent-emotion-anxiety",
-                        border: "border-emotion-anxiety",
+                      fear: {
+                        bg: "bg-emotion-fear/10",
+                        accent: "accent-emotion-fear",
+                        border: "border-emotion-fear",
                       },
                       /* surprise: {
                         bg: "bg-emotion-surprise/10",
@@ -254,7 +254,7 @@ export default function EmotionalAssessmentPage({
                                 sadness: "#4A90E2",
                                 joy: "#FFD700",
                                 anger: "#FF4444",
-                                anxiety: "#9C27B0",
+                                fear: "#9C27B0",
                                 /* surprise: "#00BCD4", */
                               }[emocao.id]
                             } 0%, ${
